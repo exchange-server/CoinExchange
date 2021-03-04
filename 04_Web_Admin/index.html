@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <title>币严|管理后台|全球数字资产交易平台</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+    <link rel="stylesheet" href="/dist/main.css">
+    <link rel="stylesheet" name="theme" href="">
+    <link rel="shortcut icon" href="/dist/favicon.ico" type="image/x-icon">
+    <style>
+        ::-webkit-scrollbar {
+          width: 24px;
+          height: 24px;
+        }
+
+        ::-webkit-scrollbar-track,
+        ::-webkit-scrollbar-thumb {
+          border-radius: 999px;
+          border: 10px solid transparent;
+        }
+
+        ::-webkit-scrollbar-track {
+          box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2) inset;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          min-height: 20px;
+          background-clip: content-box;
+          box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.2) inset;
+        }
+
+        ::-webkit-scrollbar-corner {
+          background: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id='canv' style="z-index: 99;"></canvas>
+    <div id="app" style="position: absolute;top:0;left:0;z-index: 9999;"></div>
+    <div class="lock-screen-back" id="lock_screen_back"></div>
+    <script type="text/javascript" src="/dist/vender-base.js"></script>
+    <script type="text/javascript" src="/dist/vender-exten.js"></script>
+    <script type="text/javascript" src="/dist/main.js"></script>
+</body>
+<script>
+
+        window.requestAnimFrame = (function () {
+            return window.requestAnimationFrame ||
+              window.webkitRequestAnimationFrame ||
+              window.mozRequestAnimationFrame ||
+              window.oRequestAnimationFrame ||
+              window.msRequestAnimationFrame ||
+              function (callback) {
+                  window.setTimeout(callback, 3000 / 60);
+              };
+        })();
+        window.addEventListener('load', start, false);
+
+        var c,
+          $,
+          w,
+          h,
+          msX,
+          msY,
+          midX,
+          midY,
+          num = 400,
+          parts = [],
+          begin = 50,
+          repeat = 10,
+          end = Math.PI * 2,
+          force = null,
+          msdn = false;
+
+        function start() {
+            c = document.getElementById('canv');
+            $ = c.getContext('2d');
+            w = c.width = window.innerWidth;
+            h = c.height = window.innerHeight;
+            midX = w / 2;
+            midY = h / 1.8;
+            force = Math.max(w, h) * 0.09;
+            flow = begin;
+
+            window.requestAnimFrame(create);
+            run();
+        }
+
+        function run() {
+            window.requestAnimFrame(run);
+            go();
+        }
+
+        function Part() {
+            this.deg = 0;
+            this.rad = 0;
+            this.x = 0;
+            this.y = 0;
+            this.distX = 0;
+            this.distY = 0;
+            this.color = 'rgb(' + Math.floor(Math.random() * 130) + ',' + Math.floor(Math.random() * 50) + ',' + Math.floor(Math.random() * 100) + ')';
+            this.size;
+        }
+
+        function create() {
+            var n = num;
+            while (n--) {
+                var p = new Part();
+                p.deg = Math.floor(Math.random() * 360);
+                p.rad = Math.floor(Math.random() * w * 0.7);
+                p.x = p.distX = Math.floor(Math.random() * w);
+                p.y = p.distY = Math.floor(Math.random() * h);
+                p.size = 1 + Math.floor(Math.random() * (p.rad * 0.025));
+                parts[n] = p;
+            }
+
+            var int = setInterval(function () {
+                flow--;
+                if (flow === repeat) clearInterval(int);
+            }, 80);
+        }
+
+        function go() {
+            $.globalCompositeOperation = 'source-over';
+            $.fillStyle = 'hsla(242, 30%, 5%, .15)';//'hsla(242, 120%, 10%, .15)';
+            $.fillRect(0, 0, w, h);
+            $.globalCompositeOperation = 'lighter';
+            var mx = msX;
+            var my = msY;
+            var bounds = force;
+            if (msdn) {
+                bounds = force * 2;
+            }
+            var n = num;
+            while (n--) {
+                var p = parts[n];
+                var radi = Math.PI / 180 * p.deg;
+                p.distX = midX + p.rad * Math.cos(radi);
+                p.distY = midY + p.rad * Math.sin(radi) * 0.4;
+                if (mx && my) {
+                    var react = Math.floor((bounds * 0.5) + Math.random() * (bounds * 0.9));
+                    if (p.distX - mx > 0 &&
+                      p.distX - mx < bounds &&
+                      p.distY - my > 0 &&
+                      p.distY - my < bounds) {
+                        p.distX += react;
+                        p.distY += react;
+                    } else if (p.distX - mx > 0 &&
+                      p.distX - mx < bounds &&
+                      p.distY - my < 0 &&
+                      p.distY - my > -bounds) {
+                        p.distX += react;
+                        p.distY -= react;
+                    } else if (p.distX - mx < 0 &&
+                      p.distX - mx > -bounds &&
+                      p.distY - my > 0 &&
+                      p.distY - my < bounds) {
+                        p.distX -= react;
+                        p.distY += react;
+                    } else if (p.distX - mx < 0 &&
+                      p.distX - mx > -bounds &&
+                      p.distY - my < 0 &&
+                      p.distY - my > -bounds) {
+                        p.distY -= react;
+                        p.distY -= react;
+                    }
+                }
+                p.x += ((p.distX - p.x) / flow);
+                p.y += ((p.distY - p.y) / flow);
+                var x = p.x;
+                var y = p.y;
+                var s = p.size * (p.y * 1.5 / h);
+                if (s < 0.1) {
+                    s = 0;
+                }
+                $.beginPath();
+                $.fillStyle = p.color;
+                $.arc(x, y, s, 0, end, true);
+                $.fill();
+                $.closePath();
+                var vary;
+                if (p.size < 2) {
+                    vary = 4;
+                } else if (p.size < 3) {
+                    vary = 3;
+                } else if (p.size < 4) {
+                    vary = 2;
+                } else {
+                    vary = 1;
+                }
+                vary *= (p.y / (h * 0.9));
+                p.deg += vary;
+                p.deg = p.deg % 360;
+            }
+        }
+
+        function msmv(e) {
+            var p = getPos(e.target);
+            var sX = window.pageXOffset;
+            var sY = window.pageYOffset;
+            msX = e.clientX - p.x + sX;
+            msY = e.clientY - p.y + sY;
+        }
+
+        function msdn(e) {
+            msdn = true;
+        }
+
+        function msup(e) {
+            msdn = false;
+        }
+
+        function getPos(el) {
+            var cosmo = {};
+            cosmo.x = el.offsetLeft;
+            cosmo.y = el.offsetTop;
+            while (el.offsetParent) {
+                el = el.offsetParent;
+                cosmo.x += el.offsetLeft;
+                cosmo.y += el.offsetTop;
+            }
+            return cosmo;
+        }
+    </script>
+</html>
