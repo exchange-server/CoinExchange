@@ -8,7 +8,6 @@ import com.bizzan.bitrade.entity.ExchangeTrade;
 import com.bizzan.bitrade.entity.KLine;
 import com.bizzan.bitrade.handler.MarketHandler;
 import com.bizzan.bitrade.service.MarketService;
-
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +132,7 @@ public class DefaultCoinProcessor implements CoinProcessor {
 
     @Override
     public void update24HVolume(long time) {
-        if(coinThumb!=null) {
+        if (coinThumb != null) {
             synchronized (coinThumb) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(time);
@@ -161,7 +160,7 @@ public class DefaultCoinProcessor implements CoinProcessor {
     public void autoGenerate() {
         DateFormat df = new SimpleDateFormat("HH:mm:ss");
         //logger.info("auto generate 1min kline in {},data={}", df.format(new Date(currentKLine.getTime())), JSON.toJSONString(currentKLine));
-        if(coinThumb != null) {
+        if (coinThumb != null) {
             synchronized (currentKLine) {
                 //没有成交价时存储上一笔成交价
                 if (currentKLine.getOpenPrice().compareTo(BigDecimal.ZERO) == 0) {
@@ -318,32 +317,32 @@ public class DefaultCoinProcessor implements CoinProcessor {
 
         List<ExchangeTrade> exchangeTrades = null;
         // 分钟线、日线，直接查询时间周期内的订单成交详情
-        if(field == Calendar.MINUTE || field == Calendar.HOUR_OF_DAY || field == Calendar.DAY_OF_YEAR){
+        if (field == Calendar.MINUTE || field == Calendar.HOUR_OF_DAY || field == Calendar.DAY_OF_YEAR) {
             exchangeTrades = service.findTradeByTimeRange(this.symbol, startTick, endTick);
             // 处理K线信息
             for (ExchangeTrade exchangeTrade : exchangeTrades) {
                 processTrade(kLine, exchangeTrade);
             }
-        }else{ // 周线和月线的处理方法
+        } else { // 周线和月线的处理方法
             processKline(kLine, startTick, endTick, field);
         }
 
         // 如果开盘价为0，则设置为前一个价格
-        if(kLine.getOpenPrice().compareTo(BigDecimal.ZERO) == 0) {
-        	kLine.setOpenPrice(coinThumb.getClose());
-        	kLine.setClosePrice(coinThumb.getClose());
-        	kLine.setLowestPrice(coinThumb.getClose());
-        	kLine.setHighestPrice(coinThumb.getClose());
+        if (kLine.getOpenPrice().compareTo(BigDecimal.ZERO) == 0) {
+            kLine.setOpenPrice(coinThumb.getClose());
+            kLine.setClosePrice(coinThumb.getClose());
+            kLine.setLowestPrice(coinThumb.getClose());
+            kLine.setHighestPrice(coinThumb.getClose());
         }
         logger.info("generate " + range + rangeUnit + " kline in {},data={}", df.format(new Date(kLine.getTime())), JSON.toJSONString(kLine));
         service.saveKLine(symbol, kLine);
     }
 
     // 处理周K线和月K线的更具效率的方法
-    public void processKline(KLine kline, long fromTime, long endTime, int field){
+    public void processKline(KLine kline, long fromTime, long endTime, int field) {
         // 查询过去时间段的日线（7条）
-        List<KLine> lines = service.findAllKLine(symbol, fromTime, endTime,"1day");
-        if(lines.size() > 0) {
+        List<KLine> lines = service.findAllKLine(symbol, fromTime, endTime, "1day");
+        if (lines.size() > 0) {
             kline.setOpenPrice(lines.get(0).getOpenPrice()); // 开盘价设置为首日开盘价
             for (KLine item : lines) {
                 kline.setHighestPrice(kline.getHighestPrice().max(item.getHighestPrice()));
@@ -361,13 +360,13 @@ public class DefaultCoinProcessor implements CoinProcessor {
         return currentKLine;
     }
 
-	@Override
-	public void setIsStopKLine(boolean stop) {
-		this.stopKLine = stop;
-	}
+    @Override
+    public void setIsStopKLine(boolean stop) {
+        this.stopKLine = stop;
+    }
 
-	@Override
-	public boolean isStopKline() {
-		return this.stopKLine;
-	}
+    @Override
+    public boolean isStopKline() {
+        return this.stopKLine;
+    }
 }

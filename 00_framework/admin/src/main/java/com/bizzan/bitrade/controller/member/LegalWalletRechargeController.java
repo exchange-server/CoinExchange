@@ -14,11 +14,16 @@ import com.bizzan.bitrade.util.PredicateUtils;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 
@@ -28,9 +33,9 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("legal-wallet-recharge")
 public class LegalWalletRechargeController extends BaseAdminController {
-    @Autowired
+    @Resource
     private LegalWalletRechargeService legalWalletRechargeService;
-    @Autowired
+    @Resource
     private MemberWalletService walletService;
 
     @GetMapping("page")

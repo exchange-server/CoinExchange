@@ -1,16 +1,19 @@
 package com.bizzan.bitrade.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.constant.SysAdvertiseLocation;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -32,11 +35,11 @@ public class SysAdvertise {
     @Excel(name = "系统广告位置", orderNum = "1", width = 20)
     @NotNull(message = "广告位置不得为空")
     private SysAdvertiseLocation sysAdvertiseLocation;//广告位置
-    
+
     @Excel(name = "广告语言", orderNum = "1", width = 20)
     @NotBlank(message = "广告语言不能为空")
     private String lang;//广告语言
-    
+
     @Excel(name = "开始时间", orderNum = "1", width = 20)
     @NotBlank(message = "开始时间不能空")
     private String startTime;//开始时间
@@ -51,7 +54,7 @@ public class SysAdvertise {
      * 图片链接url
      */
     private String linkUrl;
-    
+
     private String remark;//备注
 
     @NotNull(message = "状态不得为空")
@@ -67,6 +70,6 @@ public class SysAdvertise {
 
     private String author;
 
-    private int sort = 0 ;
+    private int sort = 0;
 
 }

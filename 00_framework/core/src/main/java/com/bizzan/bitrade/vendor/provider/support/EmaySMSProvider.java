@@ -5,7 +5,6 @@ import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.regex.Matcher;
@@ -14,6 +13,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class EmaySMSProvider implements SMSProvider {
 
+    private static Pattern RESPONSE_PATTERN = Pattern.compile("<response><error>(-?\\d+)</error><message>(.*[\\\\u4e00-\\\\u9fa5]*)</message></response>");
     private String gateway;
     private String username;
     private String password;
@@ -23,9 +23,6 @@ public class EmaySMSProvider implements SMSProvider {
         this.username = username;
         this.password = password;
     }
-
-    private static Pattern RESPONSE_PATTERN = Pattern.compile("<response><error>(-?\\d+)</error><message>(.*[\\\\u4e00-\\\\u9fa5]*)</message></response>");
-
 
     public static String getName() {
         return "emay";
@@ -68,9 +65,9 @@ public class EmaySMSProvider implements SMSProvider {
         return result;
     }
 
-	@Override
-	public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

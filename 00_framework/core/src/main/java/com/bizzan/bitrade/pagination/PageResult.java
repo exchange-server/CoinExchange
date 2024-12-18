@@ -15,6 +15,18 @@ public class PageResult<T> implements Serializable {
     private int size;
     private Long totalElements;
 
+    public PageResult(List<T> list, Long totalNumber) {
+        this.content = list;
+        this.totalElements = totalNumber;
+    }
+
+    public PageResult(List<T> content, int number, int size, Long totalElements) {
+        this.content = content;
+        this.number = number - 1;
+        this.size = size;
+        this.totalElements = totalElements;
+    }
+
     public List<T> getContent() {
         return content;
     }
@@ -44,18 +56,6 @@ public class PageResult<T> implements Serializable {
     }
 
     public void setTotalElements(Long totalElements) {
-        this.totalElements = totalElements;
-    }
-
-    public PageResult(List<T> list, Long totalNumber) {
-        this.content = list;
-        this.totalElements = totalNumber;
-    }
-
-    public PageResult(List<T> content, int number, int size, Long totalElements) {
-        this.content = content;
-        this.number = number - 1;
-        this.size = size;
         this.totalElements = totalElements;
     }
 }

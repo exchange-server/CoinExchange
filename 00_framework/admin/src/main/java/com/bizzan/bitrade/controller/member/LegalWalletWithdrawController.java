@@ -13,22 +13,28 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 
 @RestController
 @RequestMapping("legal-wallet-withdraw")
 public class LegalWalletWithdrawController extends BaseAdminController {
-    @Autowired
+    @Resource
     private LegalWalletWithdrawService legalWalletWithdrawService;
 
-    @Autowired
+    @Resource
     private MemberWalletService walletService;
 
     @GetMapping("page")

@@ -38,6 +38,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
 
     /**
      * RedisTemplate配置
+     *
      * @param factory
      * @return
      */

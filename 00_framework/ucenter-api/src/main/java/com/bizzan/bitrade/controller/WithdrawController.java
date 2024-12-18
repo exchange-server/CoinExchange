@@ -1,23 +1,46 @@
 package com.bizzan.bitrade.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.bizzan.bitrade.constant.*;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CommonStatus;
+import com.bizzan.bitrade.constant.RealNameStatus;
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.constant.WithdrawStatus;
+import com.bizzan.bitrade.entity.Coin;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberAddress;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.ScanMemberAddress;
+import com.bizzan.bitrade.entity.ScanWithdrawRecord;
+import com.bizzan.bitrade.entity.WithdrawRecord;
+import com.bizzan.bitrade.entity.WithdrawWalletInfo;
 import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.exception.InformationExpiredException;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.CoinService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberAddressService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.WithdrawRecordService;
 import com.bizzan.bitrade.util.Md5;
 import com.bizzan.bitrade.util.MessageResult;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -28,7 +51,9 @@ import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 import static com.bizzan.bitrade.util.BigDecimalUtils.compare;
 import static com.bizzan.bitrade.util.BigDecimalUtils.sub;
 import static com.bizzan.bitrade.util.MessageResult.error;
-import static org.springframework.util.Assert.*;
+import static org.springframework.util.Assert.hasText;
+import static org.springframework.util.Assert.isTrue;
+import static org.springframework.util.Assert.notNull;
 
 /**
  * @author GS
@@ -38,27 +63,28 @@ import static org.springframework.util.Assert.*;
 @Slf4j
 @RequestMapping(value = "/withdraw", method = RequestMethod.POST)
 public class WithdrawController {
-    @Autowired
+    @Resource
     private MemberAddressService memberAddressService;
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private CoinService coinService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private WithdrawRecordService withdrawApplyService;
-    @Autowired
+    @Resource
     private KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService sourceService;
-    @Autowired
-    private MemberTransactionService memberTransactionService ;
+    @Resource
+    private MemberTransactionService memberTransactionService;
 
     /**
      * 增加提现地址
+     *
      * @param address
      * @param unit
      * @param remark
@@ -78,7 +104,7 @@ public class WithdrawController {
         Member member = memberService.findOne(user.getId());
         if (member.getMobilePhone() != null && aims.equals(member.getMobilePhone())) {
             Object info = valueOperations.get(SysConstant.PHONE_ADD_ADDRESS_PREFIX + member.getMobilePhone());
-            if ( info==null ||!info.toString().equals(code)) {
+            if (info == null || !info.toString().equals(code)) {
                 return MessageResult.error(sourceService.getMessage("VERIFICATION_CODE_INCORRECT"));
             } else {
                 valueOperations.getOperations().delete(SysConstant.PHONE_ADD_ADDRESS_PREFIX + member.getMobilePhone());
@@ -106,6 +132,7 @@ public class WithdrawController {
 
     /**
      * 删除提现地址
+     *
      * @param id
      * @param user
      * @return
@@ -124,6 +151,7 @@ public class WithdrawController {
 
     /**
      * 提现地址分页信息
+     *
      * @param user
      * @param pageNo
      * @param pageSize
@@ -141,6 +169,7 @@ public class WithdrawController {
 
     /**
      * 支持提现的地址
+     *
      * @return
      */
     @RequestMapping("support/coin")
@@ -155,6 +184,7 @@ public class WithdrawController {
 
     /**
      * 提现币种详细信息
+     *
      * @param user
      * @return
      */
@@ -185,11 +215,10 @@ public class WithdrawController {
     }
 
 
-
-
     /**
      * 申请提币(请到PC端提币或升级APP)
      * 没有验证码校验
+     *
      * @param user
      * @param unit
      * @param address
@@ -203,12 +232,13 @@ public class WithdrawController {
     @RequestMapping("apply")
     @Transactional(rollbackFor = Exception.class)
     public MessageResult withdraw(@SessionAttribute(SESSION_MEMBER) AuthMember user, String unit, String address,
-                                  BigDecimal amount, BigDecimal fee,String remark,String jyPassword) throws Exception {
+                                  BigDecimal amount, BigDecimal fee, String remark, String jyPassword) throws Exception {
         return MessageResult.success(sourceService.getMessage("WITHDRAW_TO_PC"));
     }
 
     /**
      * 申请提币（添加验证码校验）
+     *
      * @param user
      * @param unit
      * @param address
@@ -222,11 +252,11 @@ public class WithdrawController {
     @RequestMapping("apply/code")
     @Transactional(rollbackFor = Exception.class)
     public MessageResult withdrawCode(@SessionAttribute(SESSION_MEMBER) AuthMember user, String unit, String address,
-                                  BigDecimal amount, BigDecimal fee,String remark,String jyPassword,@RequestParam("code") String code) throws Exception {
+                                      BigDecimal amount, BigDecimal fee, String remark, String jyPassword, @RequestParam("code") String code) throws Exception {
         hasText(jyPassword, sourceService.getMessage("MISSING_JYPASSWORD"));
         hasText(unit, sourceService.getMessage("MISSING_COIN_TYPE"));
         Coin coin = coinService.findByUnit(unit);
-        amount.setScale(coin.getWithdrawScale(),BigDecimal.ROUND_DOWN);
+        amount.setScale(coin.getWithdrawScale(), BigDecimal.ROUND_DOWN);
         notNull(coin, sourceService.getMessage("COIN_ILLEGAL"));
 
         isTrue(coin.getStatus().equals(CommonStatus.NORMAL) && coin.getCanWithdraw().equals(BooleanEnum.IS_TRUE), sourceService.getMessage("COIN_NOT_SUPPORT"));
@@ -237,18 +267,18 @@ public class WithdrawController {
         MemberWallet memberWallet = memberWalletService.findByCoinAndMemberId(coin, user.getId());
         isTrue(compare(memberWallet.getBalance(), amount), sourceService.getMessage("INSUFFICIENT_BALANCE"));
 //        isTrue(memberAddressService.findByMemberIdAndAddress(user.getId(), address).size() > 0, sourceService.getMessage("WRONG_ADDRESS"));
-        isTrue(memberWallet.getIsLock()==BooleanEnum.IS_FALSE,"钱包已锁定");
+        isTrue(memberWallet.getIsLock() == BooleanEnum.IS_FALSE, "钱包已锁定");
         Member member = memberService.findOne(user.getId());
         RealNameStatus realNameStatus = member.getRealNameStatus();
-        if(!"已认证".equals(realNameStatus.getCnName())){
+        if (!"已认证".equals(realNameStatus.getCnName())) {
             return MessageResult.error(sourceService.getMessage("NO_REALNAM"));
         }
         String mbPassword = member.getJyPassword();
         Assert.hasText(mbPassword, sourceService.getMessage("NO_SET_JYPASSWORD"));
         Assert.isTrue(Md5.md5Digest(jyPassword + member.getSalt()).toLowerCase().equals(mbPassword), sourceService.getMessage("ERROR_JYPASSWORD"));
         ValueOperations valueOperations = redisTemplate.opsForValue();
-        String phone= member.getMobilePhone();
-        Object codeRedis =valueOperations.get(SysConstant.PHONE_WITHDRAW_MONEY_CODE_PREFIX + phone);
+        String phone = member.getMobilePhone();
+        Object codeRedis = valueOperations.get(SysConstant.PHONE_WITHDRAW_MONEY_CODE_PREFIX + phone);
         notNull(codeRedis, sourceService.getMessage("VERIFICATION_CODE_NOT_EXISTS"));
         if (!codeRedis.toString().equals(code)) {
             return error(sourceService.getMessage("VERIFICATION_CODE_INCORRECT"));
@@ -291,9 +321,9 @@ public class WithdrawController {
             json.put("withdrawId", withdrawRecord.getId());
 
             // 如果是USDT提现，并且地址符合ERC20地址格式，则走ERC20通道提现
-            if(coin.getUnit().equals("USDT") && address.substring(0, 2).equals("0x")) {
+            if (coin.getUnit().equals("USDT") && address.substring(0, 2).equals("0x")) {
                 kafkaTemplate.send("withdraw", "EUSDT", json.toJSONString());
-            }else{
+            } else {
                 kafkaTemplate.send("withdraw", coin.getUnit(), json.toJSONString());
             }
 
@@ -312,6 +342,7 @@ public class WithdrawController {
 
     /**
      * 提币记录
+     *
      * @param user
      * @param page
      * @param pageSize

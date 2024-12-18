@@ -4,16 +4,16 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
 import com.bizzan.bitrade.config.AliyunConfig;
-import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.util.GeneratorUtil;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.UploadFileUtil;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 import org.springframework.util.Base64Utils;
@@ -38,9 +38,9 @@ public class UploadController {
 
     private String allowedFormat = ".jpg,.gif,.png,.jpeg";
 
-    @Autowired
+    @Resource
     private AliyunConfig aliyunConfig;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService sourceService;
 
     /**
@@ -61,30 +61,30 @@ public class UploadController {
         response.setContentType("text/html; charset=UTF-8");
         Assert.isTrue(ServletFileUpload.isMultipartContent(request), sourceService.getMessage("FORM_FORMAT_ERROR"));
         Assert.isTrue(file != null, sourceService.getMessage("NOT_FIND_FILE"));
-        log.info("该文件的文件流为转为类型>>>>>>>>>>>"+UploadFileUtil.getFileHeader(file.getInputStream()));
-        String fileType=UploadFileUtil.getFileType(file.getInputStream());
-        System.out.println("fileType="+fileType);
+        log.info("该文件的文件流为转为类型>>>>>>>>>>>" + UploadFileUtil.getFileHeader(file.getInputStream()));
+        String fileType = UploadFileUtil.getFileType(file.getInputStream());
+        System.out.println("fileType=" + fileType);
         String directory = new SimpleDateFormat("yyyy/MM/dd/").format(new Date());
         OSSClient ossClient = new OSSClient(aliyunConfig.getOssEndpoint(), aliyunConfig.getAccessKeyId(), aliyunConfig.getAccessKeySecret());
         try {
             String fileName = file.getOriginalFilename();
             String suffix = fileName.substring(fileName.lastIndexOf("."), fileName.length());
-            System.out.println("suffix="+suffix);
+            System.out.println("suffix=" + suffix);
             if (!allowedFormat.contains(suffix.trim().toLowerCase())) {
                 return MessageResult.error(sourceService.getMessage("FORMAT_NOT_SUPPORT"));
             }
-            if(fileType==null||!allowedFormat.contains(fileType.trim().toLowerCase())){
+            if (fileType == null || !allowedFormat.contains(fileType.trim().toLowerCase())) {
                 return MessageResult.error(sourceService.getMessage("FORMAT_NOT_SUPPORT"));
             }
             String key = directory + GeneratorUtil.getUUID() + suffix;
             System.out.println(key);
             //压缩文件
-            String path = request.getSession().getServletContext().getRealPath("/") + "upload/"+file.getOriginalFilename();
-            File tempFile=new File(path);
+            String path = request.getSession().getServletContext().getRealPath("/") + "upload/" + file.getOriginalFilename();
+            File tempFile = new File(path);
             FileUtils.copyInputStreamToFile(file.getInputStream(), tempFile);
-            log.info("=================压缩前"+tempFile.length());
-            UploadFileUtil.zipWidthHeightImageFile(tempFile,tempFile,425,638,0.7f);
-            log.info("=================压缩后"+tempFile.length());
+            log.info("=================压缩前" + tempFile.length());
+            UploadFileUtil.zipWidthHeightImageFile(tempFile, tempFile, 425, 638, 0.7f);
+            log.info("=================压缩后" + tempFile.length());
             ossClient.putObject(aliyunConfig.getOssBucketName(), key, file.getInputStream());
             String uri = aliyunConfig.toUrl(key);
             log.info(">>>>>>>>>>上传成功>>>>>>>>>>>>>");
@@ -103,10 +103,11 @@ public class UploadController {
             ossClient.shutdown();
         }
     }
+
     @RequestMapping(value = "upload/local/image", method = RequestMethod.POST)
     @ResponseBody
     public MessageResult uploadLocalImage(HttpServletRequest request, HttpServletResponse response,
-                                        @RequestParam("file") MultipartFile file) throws IOException {
+                                          @RequestParam("file") MultipartFile file) throws IOException {
         log.info(request.getSession().getServletContext().getResource("/").toString());
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
@@ -118,12 +119,12 @@ public class UploadController {
         if (!allowedFormat.contains(suffix.trim().toLowerCase())) {
             return MessageResult.error(sourceService.getMessage("FORMAT_NOT_SUPPORT"));
         }
-        String result= UploadFileUtil.uploadFile(file,fileName);
-        if(result!=null){
+        String result = UploadFileUtil.uploadFile(file, fileName);
+        if (result != null) {
             MessageResult mr = new MessageResult(0, sourceService.getMessage("UPLOAD_SUCCESS"));
             mr.setData(result);
             return mr;
-        }else{
+        } else {
             MessageResult mr = new MessageResult(0, sourceService.getMessage("FAILED_TO_WRITE"));
             mr.setData(result);
             return mr;

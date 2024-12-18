@@ -4,7 +4,6 @@ import com.bizzan.bitrade.ability.ScreenAbility;
 import com.bizzan.bitrade.constant.Platform;
 import com.bizzan.bitrade.entity.QAppRevision;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 

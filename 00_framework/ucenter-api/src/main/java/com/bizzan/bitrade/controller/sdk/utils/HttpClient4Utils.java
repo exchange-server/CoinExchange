@@ -1,22 +1,11 @@
 /*
  * @(#) HttpClientUtils.java 2020年2月3日
- * 
+ *
  * Copyright 2010 NetEase.com, Inc. All rights reserved.
  */
 package com.bizzan.bitrade.controller.sdk.utils;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -30,7 +19,17 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * HttpClient工具类
@@ -73,34 +72,34 @@ public class HttpClient4Utils {
         return httpClient;
     }
 
-	/**
-	 * 增加定时任务, 每隔一段时间清理连接
-	 *
-	 * @param cm
-	 */
-	private static void startMonitorThread(final PoolingHttpClientConnectionManager cm) {
-		// 参数是线程的数量
-		ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("start-monitor-pool-%d").build();
-		ScheduledExecutorService singleThreadPool = (ScheduledExecutorService) new ThreadPoolExecutor(1, 1, 0L,
-				TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>(),namedThreadFactory,new ThreadPoolExecutor.AbortPolicy());
-		/**
-		 * 第二个参数，是首次执行该线程的延迟时间，之后失效 第三个参数是，首次执行完之后，再过该段时间再次执行该线程，具有周期性
-		 */
-		singleThreadPool.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						cm.closeExpiredConnections();
-						cm.closeIdleConnections(30, TimeUnit.SECONDS);
+    /**
+     * 增加定时任务, 每隔一段时间清理连接
+     *
+     * @param cm
+     */
+    private static void startMonitorThread(final PoolingHttpClientConnectionManager cm) {
+        // 参数是线程的数量
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("start-monitor-pool-%d").build();
+        ScheduledExecutorService singleThreadPool = (ScheduledExecutorService) new ThreadPoolExecutor(1, 1, 0L,
+                TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>(), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+        /**
+         * 第二个参数，是首次执行该线程的延迟时间，之后失效 第三个参数是，首次执行完之后，再过该段时间再次执行该线程，具有周期性
+         */
+        singleThreadPool.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        cm.closeExpiredConnections();
+                        cm.closeIdleConnections(30, TimeUnit.SECONDS);
 
-                       // log.info("closing expired & idle connections, stat={}", cm.getTotalStats());
-                       TimeUnit.SECONDS.sleep(10);
-                   } catch (Exception e) {
-                       // ignore exceptoin
-                   }
-               }
-           }
+                        // log.info("closing expired & idle connections, stat={}", cm.getTotalStats());
+                        TimeUnit.SECONDS.sleep(10);
+                    } catch (Exception e) {
+                        // ignore exceptoin
+                    }
+                }
+            }
         }, 10, 3, TimeUnit.SECONDS);
 
 

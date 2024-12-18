@@ -1,15 +1,19 @@
 package com.bizzan.bitrade.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CommonStatus;
 import lombok.Data;
 import lombok.ToString;
 import org.hibernate.validator.constraints.NotBlank;
 
-import com.bizzan.bitrade.constant.BooleanEnum;
-import com.bizzan.bitrade.constant.CommonStatus;
-import org.hibernate.validator.constraints.NotEmpty;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -135,18 +139,18 @@ public class Coin {
     private Boolean hasLegal = false;
 
     @Transient
-    private BigDecimal allBalance ;
+    private BigDecimal allBalance;
 
     /**
      * 冷钱包地址
      */
-    private String coldWalletAddress ;
+    private String coldWalletAddress;
 
     @Transient
-    private BigDecimal hotAllBalance ;
-    
+    private BigDecimal hotAllBalance;
+
     @Transient
-    private Long blockHeight ;
+    private Long blockHeight;
 
     /**
      * 转账时付给矿工的手续费
@@ -156,23 +160,23 @@ public class Coin {
 
     @Column(columnDefinition = "int default 4 comment '提币精度'")
     private int withdrawScale;
-    
+
     /**
      * 币种资料链接
      */
     private String infolink;
-    
+
     /**
      * 币种简介
      */
-    private String information ;
-    
+    private String information;
+
     /**
      * 账户类型：0：默认  1：EOS类型
      */
     @Column(columnDefinition = "int default 0 comment '币种账户类型'")
     private int accountType;
-    
+
     /**
      * 充值地址（仅账户类型为EOS类型有效）
      */

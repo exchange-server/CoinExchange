@@ -7,17 +7,17 @@ import java.math.BigDecimal;
 
 @Data
 @ToString(callSuper = true)
-public class MemberWalletDTO extends BaseMemberDTO{
+public class MemberWalletDTO extends BaseMemberDTO {
 
-    private Long id ;
+    private Long id;
 
-    private String unit ;
+    private String unit;
 
-    private BigDecimal balance ;
+    private BigDecimal balance;
 
-    private BigDecimal frozenBalance ;
+    private BigDecimal frozenBalance;
 
-    private BigDecimal allBalance ;
+    private BigDecimal allBalance;
 
-    private String address ;
+    private String address;
 }

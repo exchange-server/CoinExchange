@@ -1,10 +1,8 @@
 package com.bizzan.bitrade.vendor.provider;
 
 
-import lombok.extern.slf4j.Slf4j;
-import org.dom4j.DocumentException;
-
 import com.bizzan.bitrade.util.MessageResult;
+import org.dom4j.DocumentException;
 
 import java.io.IOException;
 
@@ -27,17 +25,18 @@ public interface SMSProvider {
      * @return
      * @throws Exception
      */
-    MessageResult sendMessageByTempId(String mobile, String content,String templateId) throws Exception;
+    MessageResult sendMessageByTempId(String mobile, String content, String templateId) throws Exception;
 
     /**
      * 发送自定义短信
+     *
      * @param mobile
      * @param content
      * @return
      * @throws Exception
      */
     MessageResult sendCustomMessage(String mobile, String content) throws Exception;
-    
+
     /**
      * 发送验证码短信
      *

@@ -1,14 +1,5 @@
 package com.bizzan.bitrade.controller.member;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
@@ -16,6 +7,16 @@ import com.bizzan.bitrade.entity.MemberLevel;
 import com.bizzan.bitrade.service.MemberLevelService;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.MessageResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.List;
 @RequestMapping("member/member-level")
 public class MemberLevelController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private MemberLevelService memberLevelService;
 
     @RequiresPermissions("member:member-level:all")
@@ -60,7 +61,7 @@ public class MemberLevelController extends BaseAdminController {
             return error("修改对象不存在");
         }
         if (memberLevel.getIsDefault() && !one.getIsDefault())
-            //修改对象为默认 原本为false 则 修改默认的等级的isDefault为false
+        //修改对象为默认 原本为false 则 修改默认的等级的isDefault为false
         {
             memberLevelService.updateDefault();
         }

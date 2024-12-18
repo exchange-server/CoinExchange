@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Entity
 @Data
-@Table(name="exchange_favor_symbol")
+@Table(name = "exchange_favor_symbol")
 public class FavorSymbol {
     @Id
     @GeneratedValue

@@ -17,8 +17,8 @@ public enum ContractRewardRecordType implements BaseEnum {
      * 活动
      */
     CLOSE("平仓返佣"),
-    LEVEL( "平级奖励"),
-    PLATFORM( "平台手续费收入");
+    LEVEL("平级奖励"),
+    PLATFORM("平台手续费收入");
     @Setter
     private String cnName;
 

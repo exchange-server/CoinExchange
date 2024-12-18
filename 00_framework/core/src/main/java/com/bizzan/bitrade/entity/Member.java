@@ -1,16 +1,29 @@
 package com.bizzan.bitrade.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-
-import com.bizzan.bitrade.constant.*;
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
+import com.bizzan.bitrade.constant.CommonStatus;
+import com.bizzan.bitrade.constant.MemberLevelEnum;
+import com.bizzan.bitrade.constant.RealNameStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.util.Date;
 
 /**
@@ -101,7 +114,7 @@ public class Member {
     private String token;
 
     //超级合伙人 标识0  普通 1超级合伙人 ...
-    private String superPartner="0";
+    private String superPartner = "0";
 
 
     /**
@@ -180,7 +193,6 @@ public class Member {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date certifiedBusinessCheckTime;
-
 
 
     /**

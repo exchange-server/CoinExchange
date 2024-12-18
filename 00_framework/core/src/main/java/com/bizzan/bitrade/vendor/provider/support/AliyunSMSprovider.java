@@ -10,18 +10,13 @@ import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
 import com.bizzan.bitrade.dto.SmsDTO;
 import com.bizzan.bitrade.service.SmsService;
-import com.bizzan.bitrade.util.HttpSend;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.swing.text.html.FormSubmitEvent;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.rmi.ServerException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 public class AliyunSMSprovider implements SMSProvider {
@@ -31,7 +26,7 @@ public class AliyunSMSprovider implements SMSProvider {
     private String ali_smsSign; // smsSign
     private String ali_smsTemplate; // smsTemplate
 
-    @Autowired
+    @Resource
     private SmsService smsService;
 
     public AliyunSMSprovider(String ali_region, String ali_accessKeyId, String ali_accessSecret, String ali_smsSign, String ali_smsTemplate) {
@@ -49,8 +44,8 @@ public class AliyunSMSprovider implements SMSProvider {
     @Override
     public MessageResult sendSingleMessage(String mobile, String content) throws Exception {
         SmsDTO smsDTO = smsService.getByStatus();
-        if("aliyun".equals(smsDTO.getSmsName())){
-            return sendMessage(mobile,content,smsDTO);
+        if ("aliyun".equals(smsDTO.getSmsName())) {
+            return sendMessage(mobile, content, smsDTO);
         }
         return null;
     }
@@ -60,7 +55,7 @@ public class AliyunSMSprovider implements SMSProvider {
         return null;
     }
 
-    public MessageResult sendMessage(String mobile, String content,SmsDTO smsDTO) throws Exception{
+    public MessageResult sendMessage(String mobile, String content, SmsDTO smsDTO) throws Exception {
         DefaultProfile profile = DefaultProfile.getProfile(ali_region, ali_accessKeyId, ali_accessSecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
@@ -104,10 +99,10 @@ public class AliyunSMSprovider implements SMSProvider {
         JSONObject jsonObject = JSONObject.parseObject(result);
 
         MessageResult mr = new MessageResult(500, "系统错误");
-        if(jsonObject.getString("Message").equals("OK")) {
+        if (jsonObject.getString("Message").equals("OK")) {
             mr.setCode(0);
             mr.setMessage("短信发送成功！");
-        }else{
+        } else {
             mr.setCode(1);
             mr.setMessage("短信发送失败，请联系平台处理！");
         }
@@ -116,6 +111,7 @@ public class AliyunSMSprovider implements SMSProvider {
 
     /**
      * 转换返回值类型为UTF-8格式.
+     *
      * @param is
      * @return
      */

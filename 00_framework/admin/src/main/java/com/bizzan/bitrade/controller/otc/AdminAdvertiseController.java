@@ -16,12 +16,17 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,9 +44,9 @@ import java.util.List;
 @RequestMapping("/otc/advertise")
 public class AdminAdvertiseController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private AdvertiseService advertiseService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
     @RequiresPermissions("otc:advertise:detail")
@@ -64,7 +69,7 @@ public class AdminAdvertiseController extends BaseAdminController {
     public MessageResult statue(
             @RequestParam(value = "ids") Long[] ids,
             @RequestParam(value = "status") AdvertiseControlStatus status) {
-        advertiseService.turnOffBatch(status,ids);
+        advertiseService.turnOffBatch(status, ids);
         return success(messageSource.getMessage("SUCCESS"));
     }
 
@@ -115,10 +120,10 @@ public class AdminAdvertiseController extends BaseAdminController {
 
     private Predicate getPredicate(AdvertiseScreen screen) {
         ArrayList<BooleanExpression> booleanExpressions = new ArrayList<>();
-        if(screen.getStatus()!=AdvertiseControlStatus.TURNOFF&&screen.getStatus()!=null) {
+        if (screen.getStatus() != AdvertiseControlStatus.TURNOFF && screen.getStatus() != null) {
             booleanExpressions.add(QAdvertise.advertise.status.eq(screen.getStatus()));
         }
-        if (screen.getStatus() == null){
+        if (screen.getStatus() == null) {
             booleanExpressions.add(QAdvertise.advertise.status.eq(AdvertiseControlStatus.PUT_ON_SHELVES).or(QAdvertise.advertise.status.eq(AdvertiseControlStatus.PUT_OFF_SHELVES)));
         }
         if (screen.getAdvertiseType() != null) {
@@ -126,11 +131,11 @@ public class AdminAdvertiseController extends BaseAdminController {
         }
         if (StringUtils.isNotBlank(screen.getAccount())) {
             booleanExpressions.add(QAdvertise.advertise.member.realName.like("%" + screen.getAccount() + "%")
-                                    .or(QAdvertise.advertise.member.username.like("%" + screen.getAccount() + "%"))
-                                    .or(QAdvertise.advertise.member.mobilePhone.like((screen.getAccount()+"%")))
-                                    .or(QAdvertise.advertise.member.email.like((screen.getAccount()+"%"))));
+                    .or(QAdvertise.advertise.member.username.like("%" + screen.getAccount() + "%"))
+                    .or(QAdvertise.advertise.member.mobilePhone.like((screen.getAccount() + "%")))
+                    .or(QAdvertise.advertise.member.email.like((screen.getAccount() + "%"))));
         }
-        if(screen.getPayModel()!=null) {
+        if (screen.getPayModel() != null) {
             booleanExpressions.add(QAdvertise.advertise.payMode.contains(screen.getPayModel()));
         }
         return PredicateUtils.getPredicate(booleanExpressions);

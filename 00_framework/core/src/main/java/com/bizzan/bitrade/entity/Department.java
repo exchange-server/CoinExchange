@@ -6,7 +6,12 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -20,13 +25,13 @@ import java.util.Date;
 @Entity
 @Data
 @Table
-public class Department  implements Serializable {
+public class Department implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     private Long id;
     @Excel(name = "部门名称", orderNum = "1", width = 20)
     @NotNull(message = "部门名称不能为空")
-    @Column(unique = true,nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
 
     private String remark;

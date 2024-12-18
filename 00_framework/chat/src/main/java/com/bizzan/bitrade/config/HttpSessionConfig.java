@@ -10,12 +10,12 @@ import org.springframework.session.web.http.HttpSessionStrategy;
 
 @EnableRedisHttpSession
 public class HttpSessionConfig {
-	 
-	 @Bean
-	 public HttpSessionStrategy httpSessionStrategy(){
-		 HeaderHttpSessionStrategy headerSession = new HeaderHttpSessionStrategy();
-		 CookieHttpSessionStrategy cookieSession = new CookieHttpSessionStrategy();
-		 headerSession.setHeaderName("x-auth-token");
-		 return new SmartHttpSessionStrategy(cookieSession,headerSession);
-	 }
+
+    @Bean
+    public HttpSessionStrategy httpSessionStrategy() {
+        HeaderHttpSessionStrategy headerSession = new HeaderHttpSessionStrategy();
+        CookieHttpSessionStrategy cookieSession = new CookieHttpSessionStrategy();
+        headerSession.setHeaderName("x-auth-token");
+        return new SmartHttpSessionStrategy(cookieSession, headerSession);
+    }
 }

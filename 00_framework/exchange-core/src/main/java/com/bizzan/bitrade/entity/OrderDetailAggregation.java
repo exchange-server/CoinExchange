@@ -1,60 +1,59 @@
 package com.bizzan.bitrade.entity;
 
 import lombok.Data;
-import org.bson.types.Decimal128;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 
 @Data
 @Document(collection = "order_detail_aggregation")
-public class OrderDetailAggregation implements Serializable{
+public class OrderDetailAggregation implements Serializable {
 
     /**
      * 订单编号
      */
-    private String orderId ;
+    private String orderId;
 
     /**
      * 订单类型
      * otc 或者 exchange  order
      */
-    private OrderTypeEnum type ;
+    private OrderTypeEnum type;
 
     /**
      * 用户名
      */
-    private String username ;
+    private String username;
 
     /**
      * 会员真实姓名
      */
-    private String realName ;
+    private String realName;
 
     /**
      * 会员ID
      */
-    private Long memberId ;
+    private Long memberId;
 
     /**
      * 此聚合信息生成时间
      */
-    private long time ;
+    private long time;
 
     /**
      * 手续费
      */
-    private double fee ;
+    private double fee;
 
     /**
      * 数量
      */
-    private double amount ;
+    private double amount;
 
     /**
      * 币种单位
      */
-    private String unit ;
+    private String unit;
 
     /**
      * exchange订单专有属性

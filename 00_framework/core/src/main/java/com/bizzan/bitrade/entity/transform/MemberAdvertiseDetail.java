@@ -1,17 +1,16 @@
 package com.bizzan.bitrade.entity.transform;
 
-import lombok.Builder;
-import lombok.Data;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-
 import com.bizzan.bitrade.constant.AdvertiseControlStatus;
 import com.bizzan.bitrade.constant.AdvertiseType;
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.PriceType;
 import com.bizzan.bitrade.entity.Advertise;
 import com.bizzan.bitrade.entity.Country;
+import lombok.Builder;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 
 /**
@@ -20,7 +19,7 @@ import com.bizzan.bitrade.entity.Country;
  */
 @Builder
 @Data
-public class MemberAdvertiseDetail implements Serializable{
+public class MemberAdvertiseDetail implements Serializable {
 
     private Long id;
 
@@ -83,7 +82,7 @@ public class MemberAdvertiseDetail implements Serializable{
     /**
      * 广告状态
      */
-    private AdvertiseControlStatus status ;
+    private AdvertiseControlStatus status;
 
     private BigDecimal number;
 
@@ -96,7 +95,7 @@ public class MemberAdvertiseDetail implements Serializable{
 
     private String autoword;
 
-    public static MemberAdvertiseDetail toMemberAdvertiseDetail(Advertise advertise){
+    public static MemberAdvertiseDetail toMemberAdvertiseDetail(Advertise advertise) {
         return MemberAdvertiseDetail.builder()
                 .id(advertise.getId())
                 .advertiseType(advertise.getAdvertiseType())

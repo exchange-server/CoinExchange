@@ -2,10 +2,21 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
+import javax.persistence.Version;
 import java.math.BigDecimal;
 
 /**
@@ -15,7 +26,7 @@ import java.math.BigDecimal;
  */
 @Entity
 @Data
-@Table(uniqueConstraints ={@UniqueConstraint(columnNames={"memberId", "coin_id"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"memberId", "coin_id"})})
 public class MemberWallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -47,7 +58,7 @@ public class MemberWallet {
      */
     private String address;
 
-    
+
     @JsonIgnore
     @Version
     private int version;
@@ -58,7 +69,7 @@ public class MemberWallet {
     @Enumerated(EnumType.ORDINAL)
     @Column(columnDefinition = "int default 0 comment '钱包不是锁定'")
     private BooleanEnum isLock = BooleanEnum.IS_FALSE;
-    
+
     /**
      * EOS、XRP等币种需要填写Memo时生成
      */

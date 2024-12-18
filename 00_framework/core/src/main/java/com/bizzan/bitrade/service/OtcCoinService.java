@@ -1,16 +1,5 @@
 package com.bizzan.bitrade.service;
 
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.dao.OtcCoinDao;
 import com.bizzan.bitrade.entity.OtcCoin;
@@ -23,6 +12,16 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.sparkframework.sql.model.Model;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jammy
@@ -31,7 +30,7 @@ import com.sparkframework.sql.model.Model;
  */
 @Service
 public class OtcCoinService extends BaseService {
-    @Autowired
+    @Resource
     private OtcCoinDao otcCoinDao;
 
     /**
@@ -115,8 +114,8 @@ public class OtcCoinService extends BaseService {
         return otcCoinDao.findAll(predicate, pageable);
     }
 
-    public List<String> findAllUnits(){
+    public List<String> findAllUnits() {
         List<String> list = otcCoinDao.findAllUnits();
-        return  list ;
+        return list;
     }
 }

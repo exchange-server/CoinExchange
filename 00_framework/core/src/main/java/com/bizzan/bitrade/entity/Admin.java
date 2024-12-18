@@ -1,17 +1,26 @@
 package com.bizzan.bitrade.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Data;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -31,7 +40,7 @@ public class Admin implements Serializable {
 
     @Excel(name = "用户登录名", orderNum = "1", width = 25)
     @NotBlank(message = "用户名不能为空")
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @JsonIgnore
@@ -51,7 +60,7 @@ public class Admin implements Serializable {
     private Long roleId = 1L;
 
 
-    @NotFound(action= NotFoundAction.IGNORE)
+    @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "department_id")
     @ManyToOne(cascade = CascadeType.MERGE)
     private Department department;
@@ -80,5 +89,5 @@ public class Admin implements Serializable {
     private CommonStatus status = CommonStatus.NORMAL;
 
     @Transient
-    private String roleName ;
+    private String roleName;
 }

@@ -1,12 +1,11 @@
 package com.bizzan.bitrade.dao;
 
-import java.util.List;
-
-import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
 import com.bizzan.bitrade.dao.base.BaseDao;
 import com.bizzan.bitrade.entity.BusinessAuthApply;
 import com.bizzan.bitrade.entity.Member;
+
+import java.util.List;
 
 /**
  * @author Shaoxianjun

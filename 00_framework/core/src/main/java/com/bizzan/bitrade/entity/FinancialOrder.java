@@ -1,7 +1,10 @@
 package com.bizzan.bitrade.entity;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,19 +13,14 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-
-import lombok.Data;
-import lombok.ToString;
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
  * 币理财订单表
- * @author daishuyang
  *
+ * @author daishuyang
  */
 @Entity
 @Data
@@ -30,39 +28,39 @@ import lombok.ToString;
 @ToString
 public class FinancialOrder {
 
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Id
-	private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long id;
 
-	@JsonSerialize(using=ToStringSerializer.class)
-	private Long orderNo;
-	
-	private Long memberId;
-	
-	private String itemId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long orderNo;
 
-	private String coinName;
+    private Long memberId;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-	private Date createTime;
+    private String itemId;
 
-	private BigDecimal coinNum;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-	private Date updateTime;
+    private String coinName;
 
-	private int orderState;
-	
-	private int frozenDays;
-	
-	private Double orderUsdtRate;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-	private Date planRevenueTime;
-	
-	private BigDecimal realIncome;
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
+
+    private BigDecimal coinNum;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date updateTime;
+
+    private int orderState;
+
+    private int frozenDays;
+
+    private Double orderUsdtRate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date planRevenueTime;
+
+    private BigDecimal realIncome;
 
 }

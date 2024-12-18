@@ -18,21 +18,25 @@ import java.security.cert.X509Certificate;
  * 封装https请求头
  */
 public class SSLClient extends DefaultHttpClient {
-    public SSLClient() throws Exception{
+    public SSLClient() throws Exception {
         super();
         SSLContext ctx = SSLContext.getInstance("TLS");
         X509TrustManager tm = new X509TrustManager() {
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
             @Override
-            public void checkServerTrusted(X509Certificate[] chain,String authType) throws CertificateException {}
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
             @Override
             public X509Certificate[] getAcceptedIssuers() {
                 return null;
             }
         };
         ctx.init(null, new TrustManager[]{tm}, null);
-        SSLSocketFactory ssf = new SSLSocketFactory(ctx,SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        SSLSocketFactory ssf = new SSLSocketFactory(ctx, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
         ClientConnectionManager ccm = this.getConnectionManager();
         SchemeRegistry sr = ccm.getSchemeRegistry();
         sr.register(new Scheme("https", 443, ssf));

@@ -2,11 +2,8 @@ package com.bizzan.bitrade.config;
 
 
 import org.springframework.context.annotation.Bean;
-
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.util.StringUtils;
-
 import org.springframework.web.servlet.LocaleResolver;
 
 import javax.annotation.Nullable;
@@ -26,8 +23,8 @@ public class MyLocaleResovel implements LocaleResolver {
         if (!StringUtils.isEmpty(l)) {
             String[] split = l.split("_");
             locale = new Locale(split[0], split[1]);
-        } else if(!StringUtils.isEmpty(header)) {
-            header=header.replaceAll("\"","");
+        } else if (!StringUtils.isEmpty(header)) {
+            header = header.replaceAll("\"", "");
             String[] split = header.split("_");
             locale = new Locale(split[0], split[1]);
         }

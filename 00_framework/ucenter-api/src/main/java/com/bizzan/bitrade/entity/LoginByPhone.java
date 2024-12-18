@@ -4,8 +4,6 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * @author Jammy
  * @date 2020年01月08日
@@ -43,12 +41,12 @@ public class LoginByPhone {
     private String promotion;
 
     //超级合伙人标识 0 普通    1 超级合伙人
-    private String superPartner ;
+    private String superPartner;
     //二次校验数据标识 网易云
-    private String validate ;
+    private String validate;
     //腾讯云 防水 票据
-    private String ticket ;
+    private String ticket;
     //腾讯云 防水 随机串
-    private  String randStr ;
+    private String randStr;
 
 }

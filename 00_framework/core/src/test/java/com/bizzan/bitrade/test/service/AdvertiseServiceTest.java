@@ -7,10 +7,9 @@ import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.service.AdvertiseService;
 import com.bizzan.bitrade.service.MemberService;
 import com.bizzan.bitrade.test.BaseTest;
-
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.util.Date;
 
 /**
@@ -19,18 +18,18 @@ import java.util.Date;
  * @desc
  */
 public class AdvertiseServiceTest extends BaseTest {
-    @Autowired
+    @Resource
     private AdvertiseService advertiseService;
-    @Autowired
+    @Resource
     private MemberService memberService;
 
     @Test
-    public void test(){
+    public void test() {
         Member member = new Member();
         member.setRealName("张金伟");
         member.setUsername("哔啵哔啵");
-        Member member1=memberService.save(member);
-        Advertise advertise=new Advertise();
+        Member member1 = memberService.save(member);
+        Advertise advertise = new Advertise();
         advertise.setMember(member);
         advertise.setAdvertiseType(AdvertiseType.BUY);
         advertise.setCreateTime(new Date());

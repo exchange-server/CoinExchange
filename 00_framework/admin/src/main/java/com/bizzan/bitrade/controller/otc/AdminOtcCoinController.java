@@ -1,11 +1,5 @@
 package com.bizzan.bitrade.controller.otc;
 
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.PageModel;
@@ -18,6 +12,17 @@ import com.bizzan.bitrade.service.OtcCoinService;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.FileUtil;
 import com.bizzan.bitrade.util.MessageResult;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,13 +42,13 @@ import static org.springframework.util.Assert.notNull;
 @RequestMapping("/otc/otc-coin")
 public class AdminOtcCoinController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private OtcCoinService otcCoinService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
-    @Autowired
-    private CoinService coinService ;
+    @Resource
+    private CoinService coinService;
 
     @RequiresPermissions("otc:otc-coin:create")
     @PostMapping("create")
@@ -55,7 +60,7 @@ public class AdminOtcCoinController extends BaseAdminController {
             return result;
         }
         Coin coin = coinService.findByUnit(otcCoin.getUnit());
-        if(coin==null) {
+        if (coin == null) {
             return error(messageSource.getMessage("COIN_NOT_SUPPORTED"));
         }
         otcCoinService.save(otcCoin);
@@ -136,8 +141,8 @@ public class AdminOtcCoinController extends BaseAdminController {
     }
 
     @PostMapping("all-otc-coin-units")
-    public MessageResult getAllOtcCoinUnits(){
-        List<String> list = otcCoinService.findAllUnits() ;
-        return success(messageSource.getMessage("SUCCESS"),list);
+    public MessageResult getAllOtcCoinUnits() {
+        List<String> list = otcCoinService.findAllUnits();
+        return success(messageSource.getMessage("SUCCESS"), list);
     }
 }

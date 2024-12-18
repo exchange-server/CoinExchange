@@ -1,23 +1,5 @@
 package com.bizzan.bitrade.controller.businessAuth;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-
 import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.constant.PageModel;
@@ -36,8 +18,26 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 商家认证可用保证金类型
@@ -49,11 +49,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("business-auth")
 @Slf4j
 public class BusinessAuthController extends BaseAdminController {
-    @Autowired
+    @Resource
     private BusinessAuthDepositService businessAuthDepositService;
-    @Autowired
+    @Resource
     private CoinService coinService;
-    @Autowired
+    @Resource
     private BusinessAuthApplyService businessAuthApplyService;
 
     @RequiresPermissions("business:auth:deposit:page")

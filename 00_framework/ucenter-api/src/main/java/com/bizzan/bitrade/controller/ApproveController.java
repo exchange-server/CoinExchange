@@ -1,38 +1,78 @@
 package com.bizzan.bitrade.controller;
 
 
-import com.bizzan.bitrade.constant.*;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.constant.AuditStatus;
+import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
+import com.bizzan.bitrade.constant.CommonStatus;
+import com.bizzan.bitrade.constant.MemberLevelEnum;
+import com.bizzan.bitrade.constant.RealNameStatus;
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.entity.Alipay;
+import com.bizzan.bitrade.entity.BankInfo;
+import com.bizzan.bitrade.entity.BindAli;
+import com.bizzan.bitrade.entity.BindBank;
+import com.bizzan.bitrade.entity.BindWechat;
+import com.bizzan.bitrade.entity.BusinessAuthApply;
+import com.bizzan.bitrade.entity.BusinessAuthDeposit;
+import com.bizzan.bitrade.entity.BusinessCancelApply;
+import com.bizzan.bitrade.entity.CertifiedBusinessInfo;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberAccount;
+import com.bizzan.bitrade.entity.MemberApplication;
+import com.bizzan.bitrade.entity.MemberSecurity;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.QMemberApplication;
+import com.bizzan.bitrade.entity.WechatPay;
 import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.pagination.PageResult;
-import com.bizzan.bitrade.service.*;
-import com.bizzan.bitrade.util.*;
+import com.bizzan.bitrade.service.BusinessAuthApplyService;
+import com.bizzan.bitrade.service.BusinessAuthDepositService;
+import com.bizzan.bitrade.service.BusinessCancelApplyService;
+import com.bizzan.bitrade.service.DepositRecordService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberApplicationService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.util.BindingResultUtil;
+import com.bizzan.bitrade.util.IdcardValidator;
+import com.bizzan.bitrade.util.Md5;
+import com.bizzan.bitrade.util.MessageResult;
+import com.bizzan.bitrade.util.ValidateUtil;
 import com.querydsl.core.types.Predicate;
-
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
 import static com.bizzan.bitrade.constant.BooleanEnum.IS_TRUE;
-import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.*;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.CANCEL_AUTH;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.RETURN_FAILED;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.RETURN_SUCCESS;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.VERIFIED;
 import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
-import static org.springframework.util.Assert.*;
+import static org.springframework.util.Assert.hasText;
+import static org.springframework.util.Assert.isTrue;
+import static org.springframework.util.Assert.notNull;
 
 
 /**
@@ -48,23 +88,23 @@ public class ApproveController {
 
     private static Logger logger = LoggerFactory.getLogger(ApproveController.class);
 
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
-    @Autowired
+    @Resource
     private MemberApplicationService memberApplicationService;
-    @Autowired
+    @Resource
     private BusinessAuthDepositService businessAuthDepositService;
-    @Autowired
-    private BusinessCancelApplyService businessCancelApplyService ;
-    @Autowired
+    @Resource
+    private BusinessCancelApplyService businessCancelApplyService;
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private BusinessAuthApplyService businessAuthApplyService;
-    @Autowired
+    @Resource
     private DepositRecordService depositRecordService;
 
     /**
@@ -111,7 +151,7 @@ public class ApproveController {
                 .build();
         if (memberSecurity.getRealAuditing().equals(IS_FALSE) && memberSecurity.getRealVerified().equals(IS_FALSE)) {
             List<MemberApplication> memberApplication = memberApplicationService.findLatelyReject(member);
-            memberSecurity.setRealNameRejectReason(memberApplication == null||memberApplication.size()==0 ? null : memberApplication.get(0).getRejectReason());
+            memberSecurity.setRealNameRejectReason(memberApplication == null || memberApplication.size() == 0 ? null : memberApplication.get(0).getRejectReason());
         }
         MessageResult result = MessageResult.success("success");
         result.setData(memberSecurity);
@@ -229,7 +269,6 @@ public class ApproveController {
 
 
     /**
-     *
      * 更改登录密码
      *
      * @param request
@@ -319,7 +358,7 @@ public class ApproveController {
         }
         isTrue(member.getRealNameStatus() == RealNameStatus.NOT_CERTIFIED, msService.getMessage("REPEAT_REAL_NAME_REQUEST"));
         int count = memberApplicationService.queryByIdCard(idCard);
-        if(count>0){
+        if (count > 0) {
             return MessageResult.error(msService.getMessage("ONLY_AUTHENTICATE_ONCE"));
         }
         MemberApplication memberApplication = new MemberApplication();
@@ -536,26 +575,26 @@ public class ApproveController {
         certifiedBusinessInfo.setCertifiedBusinessStatus(member.getCertifiedBusinessStatus());
         certifiedBusinessInfo.setEmail(member.getEmail());
         certifiedBusinessInfo.setMemberLevel(member.getMemberLevel());
-        logger.info("会员状态信息:{}",certifiedBusinessInfo);
-        if(member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.FAILED)){
-            List<BusinessAuthApply> businessAuthApplyList=businessAuthApplyService.findByMemberAndCertifiedBusinessStatus(member,member.getCertifiedBusinessStatus());
-            logger.info("会员申请商家认证信息:{}",businessAuthApplyList);
-            if(businessAuthApplyList!=null&&businessAuthApplyList.size()>0){
+        logger.info("会员状态信息:{}", certifiedBusinessInfo);
+        if (member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.FAILED)) {
+            List<BusinessAuthApply> businessAuthApplyList = businessAuthApplyService.findByMemberAndCertifiedBusinessStatus(member, member.getCertifiedBusinessStatus());
+            logger.info("会员申请商家认证信息:{}", businessAuthApplyList);
+            if (businessAuthApplyList != null && businessAuthApplyList.size() > 0) {
                 certifiedBusinessInfo.setCertifiedBusinessStatus(businessAuthApplyList.get(0).getCertifiedBusinessStatus());
-                logger.info("会员申请商家认证最新信息:{}",businessAuthApplyList.get(0));
+                logger.info("会员申请商家认证最新信息:{}", businessAuthApplyList.get(0));
                 certifiedBusinessInfo.setDetail(businessAuthApplyList.get(0).getDetail());
             }
         }
 
         List<BusinessCancelApply> businessCancelApplies = businessCancelApplyService.findByMember(member);
-        if(businessCancelApplies!=null&&businessCancelApplies.size()>0){
-            if(businessCancelApplies.get(0).getStatus()==RETURN_SUCCESS) {
-                if(member.getCertifiedBusinessStatus()!=VERIFIED) {
+        if (businessCancelApplies != null && businessCancelApplies.size() > 0) {
+            if (businessCancelApplies.get(0).getStatus() == RETURN_SUCCESS) {
+                if (member.getCertifiedBusinessStatus() != VERIFIED) {
                     certifiedBusinessInfo.setCertifiedBusinessStatus(RETURN_SUCCESS);
                 }
-            }else if(businessCancelApplies.get(0).getStatus()==RETURN_FAILED){
+            } else if (businessCancelApplies.get(0).getStatus() == RETURN_FAILED) {
                 certifiedBusinessInfo.setCertifiedBusinessStatus(RETURN_FAILED);
-            }else{
+            } else {
                 certifiedBusinessInfo.setCertifiedBusinessStatus(CANCEL_AUTH);
             }
         }
@@ -579,28 +618,28 @@ public class ApproveController {
         Member member = memberService.findOne(user.getId());
         //只有未认证和认证失败的用户，可以发起认证申请
         isTrue(member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.NOT_CERTIFIED)
-                ||member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.FAILED), msService.getMessage("REPEAT_APPLICATION"));
+                || member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.FAILED), msService.getMessage("REPEAT_APPLICATION"));
         isTrue(member.getMemberLevel().equals(MemberLevelEnum.REALNAME), msService.getMessage("NO_REAL_NAME"));
         //hasText(member.getEmail(), msService.getMessage("NOT_BIND_EMAIL"));
-        List<BusinessAuthDeposit> depositList=businessAuthDepositService.findAllByStatus(CommonStatus.NORMAL);
+        List<BusinessAuthDeposit> depositList = businessAuthDepositService.findAllByStatus(CommonStatus.NORMAL);
         //如果当前有启用的保证金类型，必须选择一种保证金才可以申请商家认证
-        BusinessAuthDeposit businessAuthDeposit=null;
-        if(depositList!=null&&depositList.size()>0){
-            if(businessAuthDepositId==null){
+        BusinessAuthDeposit businessAuthDeposit = null;
+        if (depositList != null && depositList.size() > 0) {
+            if (businessAuthDepositId == null) {
                 return MessageResult.error("must select a kind of business auth deposit");
             }
-            boolean flag=false;
-            for(BusinessAuthDeposit deposit:depositList){
-                if(deposit.getId().equals(businessAuthDepositId)){
-                    businessAuthDeposit=deposit;
-                    flag=true;
+            boolean flag = false;
+            for (BusinessAuthDeposit deposit : depositList) {
+                if (deposit.getId().equals(businessAuthDepositId)) {
+                    businessAuthDeposit = deposit;
+                    flag = true;
                 }
             }
-            if(!flag){
+            if (!flag) {
                 return MessageResult.error("business auth deposit is not found");
             }
-            MemberWallet memberWallet=memberWalletService.findByCoinUnitAndMemberId(businessAuthDeposit.getCoin().getUnit(),member.getId());
-            if(memberWallet.getBalance().compareTo(businessAuthDeposit.getAmount())<0){
+            MemberWallet memberWallet = memberWalletService.findByCoinUnitAndMemberId(businessAuthDeposit.getCoin().getUnit(), member.getId());
+            if (memberWallet.getBalance().compareTo(businessAuthDeposit.getAmount()) < 0) {
                 return MessageResult.error("您的余额不足");
             }
             //冻结保证金需要的金额
@@ -608,13 +647,13 @@ public class ApproveController {
             memberWallet.setFrozenBalance(memberWallet.getFrozenBalance().add(businessAuthDeposit.getAmount()));
         }
         //申请记录
-        BusinessAuthApply businessAuthApply=new BusinessAuthApply();
+        BusinessAuthApply businessAuthApply = new BusinessAuthApply();
         businessAuthApply.setCreateTime(new Date());
         businessAuthApply.setAuthInfo(json);
         businessAuthApply.setCertifiedBusinessStatus(CertifiedBusinessStatus.AUDITING);
         businessAuthApply.setMember(member);
         //不一定会有保证金策略
-        if(businessAuthDeposit!=null){
+        if (businessAuthDeposit != null) {
             businessAuthApply.setBusinessAuthDeposit(businessAuthDeposit);
             businessAuthApply.setAmount(businessAuthDeposit.getAmount());
         }
@@ -632,12 +671,12 @@ public class ApproveController {
     }
 
     @RequestMapping("/business-auth-deposit/list")
-    public MessageResult listBusinessAuthDepositList(){
-        List<BusinessAuthDeposit> depositList=businessAuthDepositService.findAllByStatus(CommonStatus.NORMAL);
-        depositList.forEach(deposit->{
+    public MessageResult listBusinessAuthDepositList() {
+        List<BusinessAuthDeposit> depositList = businessAuthDepositService.findAllByStatus(CommonStatus.NORMAL);
+        depositList.forEach(deposit -> {
             deposit.setAdmin(null);
         });
-        MessageResult result=MessageResult.success();
+        MessageResult result = MessageResult.success();
         result.setData(depositList);
         return result;
     }
@@ -686,44 +725,45 @@ public class ApproveController {
 
     /**
      * 申请取消认证商家
+     *
      * @return
      */
     @PostMapping("/cancel/business")
     @Transactional(rollbackFor = Exception.class)
     public MessageResult cancelBusiness(@SessionAttribute(SESSION_MEMBER) AuthMember user,
-                                        @RequestParam(value = "detail",defaultValue = "")String detail) {
-        log.info("user:{}",user);
-        Member member=memberService.findOne(user.getId());
-        if(member.getCertifiedBusinessStatus()==CANCEL_AUTH){
+                                        @RequestParam(value = "detail", defaultValue = "") String detail) {
+        log.info("user:{}", user);
+        Member member = memberService.findOne(user.getId());
+        if (member.getCertifiedBusinessStatus() == CANCEL_AUTH) {
             return MessageResult.error("退保审核中，请勿重复提交......");
         }
-        if(!member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.VERIFIED)/*&&
-                !member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.RETURN_FAILED)*/){
+        if (!member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.VERIFIED)/*&&
+                !member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.RETURN_FAILED)*/) {
             return MessageResult.error("you are not verified business");
         }
 
-        List<BusinessAuthApply> businessAuthApplyList=businessAuthApplyService.findByMemberAndCertifiedBusinessStatus(member,CertifiedBusinessStatus.VERIFIED);
-        if(businessAuthApplyList==null||businessAuthApplyList.size()<1){
+        List<BusinessAuthApply> businessAuthApplyList = businessAuthApplyService.findByMemberAndCertifiedBusinessStatus(member, CertifiedBusinessStatus.VERIFIED);
+        if (businessAuthApplyList == null || businessAuthApplyList.size() < 1) {
             return MessageResult.error("you are not verified business,business auth apply not exist......");
         }
 
-        if(businessAuthApplyList.get(0).getCertifiedBusinessStatus()!=CertifiedBusinessStatus.VERIFIED){
+        if (businessAuthApplyList.get(0).getCertifiedBusinessStatus() != CertifiedBusinessStatus.VERIFIED) {
             return MessageResult.error("data exception, state inconsistency(CertifiedBusinessStatus in BusinessAuthApply and Member)");
         }
 
         member.setCertifiedBusinessStatus(CANCEL_AUTH);
-        log.info("会员状态:{}",member.getCertifiedBusinessStatus());
+        log.info("会员状态:{}", member.getCertifiedBusinessStatus());
         memberService.save(member);
-        log.info("会员状态:{}",member.getCertifiedBusinessStatus());
+        log.info("会员状态:{}", member.getCertifiedBusinessStatus());
 
         BusinessCancelApply cancelApply = new BusinessCancelApply();
         cancelApply.setDepositRecordId(businessAuthApplyList.get(0).getDepositRecordId());
         cancelApply.setMember(businessAuthApplyList.get(0).getMember());
         cancelApply.setStatus(CANCEL_AUTH);
         cancelApply.setReason(detail);
-        log.info("退保申请状态:{}",cancelApply.getStatus());
+        log.info("退保申请状态:{}", cancelApply.getStatus());
         businessCancelApplyService.save(cancelApply);
-        log.info("退保申请状态:{}",cancelApply.getStatus());
+        log.info("退保申请状态:{}", cancelApply.getStatus());
 
         return MessageResult.success();
     }

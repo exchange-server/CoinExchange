@@ -1,15 +1,15 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>bitrade-parent</artifactId>
         <groupId>com.bizzan.bitrade</groupId>
         <version>1.0</version>
     </parent>
-    
+
     <modelVersion>4.0.0</modelVersion>
     <artifactId>chat</artifactId>
     <packaging>jar</packaging>
-   
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -49,9 +49,9 @@
         </dependency>
 
         <dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-		</dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -83,7 +83,7 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/aqmd-netty-core-2.0.1.jar</systemPath>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-quartz</artifactId>
         </dependency>
@@ -124,9 +124,9 @@
                         </goals>
                     </execution>
                 </executions>
-				<configuration>
-				    <includeSystemScope>true</includeSystemScope>
-				</configuration>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
             </plugin>
         </plugins>
     </build>

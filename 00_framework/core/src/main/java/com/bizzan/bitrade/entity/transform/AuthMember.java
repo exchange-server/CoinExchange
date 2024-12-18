@@ -1,14 +1,13 @@
 package com.bizzan.bitrade.entity.transform;
 
-import lombok.Builder;
-import lombok.Data;
-
-import java.io.Serializable;
-
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.constant.MemberLevelEnum;
 import com.bizzan.bitrade.entity.Location;
 import com.bizzan.bitrade.entity.Member;
+import lombok.Builder;
+import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * @author Jammy

@@ -7,23 +7,23 @@ import java.math.BigDecimal;
 @Data
 public class TempWealthInfo {
 
-    private BigDecimal fee ;
+    private BigDecimal fee;
 
-    private BigDecimal realFee ;
+    private BigDecimal realFee;
 
-    private BigDecimal discountFee ;
+    private BigDecimal discountFee;
 
-    private BigDecimal mineAmount ;
+    private BigDecimal mineAmount;
 
-    private BigDecimal poundageAmountEth ;
+    private BigDecimal poundageAmountEth;
 
-    private String orderId ;
+    private String orderId;
 
-    private Long memberId ;
+    private Long memberId;
 
-    private String symbol ;
-    private String direction ;
-    private String type ;
-    private String transactionCoin ;
+    private String symbol;
+    private String direction;
+    private String type;
+    private String transactionCoin;
 
 }

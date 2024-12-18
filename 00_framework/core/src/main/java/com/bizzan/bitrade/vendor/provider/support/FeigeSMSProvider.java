@@ -30,6 +30,7 @@ public class FeigeSMSProvider implements SMSProvider {
     private String sign;
     private String username;
     private String password;
+
     /**
      * 发送单条短信
      *
@@ -41,31 +42,31 @@ public class FeigeSMSProvider implements SMSProvider {
     @Override
     public MessageResult sendSingleMessage(String mobile, String content) throws Exception {
 
-            CloseableHttpClient client = null;
-            CloseableHttpResponse response = null;
-            try {
-                List<BasicNameValuePair> formparams = new ArrayList<>();
-                formparams.add(new BasicNameValuePair("Account",username));
-                formparams.add(new BasicNameValuePair("Pwd",password));
-                formparams.add(new BasicNameValuePair("Content",content));
-                formparams.add(new BasicNameValuePair("Mobile",mobile));
-                formparams.add(new BasicNameValuePair("SignId","ǩ��id"));
+        CloseableHttpClient client = null;
+        CloseableHttpResponse response = null;
+        try {
+            List<BasicNameValuePair> formparams = new ArrayList<>();
+            formparams.add(new BasicNameValuePair("Account", username));
+            formparams.add(new BasicNameValuePair("Pwd", password));
+            formparams.add(new BasicNameValuePair("Content", content));
+            formparams.add(new BasicNameValuePair("Mobile", mobile));
+            formparams.add(new BasicNameValuePair("SignId", "ǩ��id"));
 
-                HttpPost httpPost = new HttpPost("http://api.feige.ee/SmsService/Send");
-                httpPost.setEntity(new UrlEncodedFormEntity(formparams,"UTF-8"));
-                client = HttpClients.createDefault();
-                response = client.execute(httpPost);
-                HttpEntity entity = response.getEntity();
-                String result = EntityUtils.toString(entity);
-                System.out.println(result);
-            } finally {
-                if (response != null) {
-                    response.close();
-                }
-                if (client != null) {
-                    client.close();
-                }
+            HttpPost httpPost = new HttpPost("http://api.feige.ee/SmsService/Send");
+            httpPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
+            client = HttpClients.createDefault();
+            response = client.execute(httpPost);
+            HttpEntity entity = response.getEntity();
+            String result = EntityUtils.toString(entity);
+            System.out.println(result);
+        } finally {
+            if (response != null) {
+                response.close();
             }
+            if (client != null) {
+                client.close();
+            }
+        }
         return null;
     }
 
@@ -133,21 +134,21 @@ public class FeigeSMSProvider implements SMSProvider {
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
         List<BasicNameValuePair> formparams = new ArrayList<>();
-        formparams.add(new BasicNameValuePair("Account",username));
-        formparams.add(new BasicNameValuePair("Pwd",password));
-        formparams.add(new BasicNameValuePair("Content",content));
-        formparams.add(new BasicNameValuePair("Mobile",phone));
-        formparams.add(new BasicNameValuePair("SignId","50328"));
-        formparams.add(new BasicNameValuePair("TemplateId","55715"));
+        formparams.add(new BasicNameValuePair("Account", username));
+        formparams.add(new BasicNameValuePair("Pwd", password));
+        formparams.add(new BasicNameValuePair("Content", content));
+        formparams.add(new BasicNameValuePair("Mobile", phone));
+        formparams.add(new BasicNameValuePair("SignId", "50328"));
+        formparams.add(new BasicNameValuePair("TemplateId", "55715"));
 
         HttpPost httpPost = new HttpPost("http://api.feige.ee/SmsService/Inter");
-        httpPost.setEntity(new UrlEncodedFormEntity(formparams,"UTF-8"));
+        httpPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
         client = HttpClients.createDefault();
         response = client.execute(httpPost);
         HttpEntity entity = response.getEntity();
         String result = EntityUtils.toString(entity);
         JSONObject jsonObject = JSONObject.parseObject(result);
-        log.info("phone:{},code:{}",phone,jsonObject);
+        log.info("phone:{},code:{}", phone, jsonObject);
         Integer code = jsonObject.getInteger("Code");
         String message = jsonObject.getString("Message");
         MessageResult messageResult = MessageResult.success();

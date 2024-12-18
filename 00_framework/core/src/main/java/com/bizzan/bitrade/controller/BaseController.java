@@ -1,11 +1,10 @@
 package com.bizzan.bitrade.controller;
 
 
+import com.bizzan.bitrade.util.MessageResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.bizzan.bitrade.util.MessageResult;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;

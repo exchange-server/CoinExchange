@@ -1,19 +1,18 @@
 package com.bizzan.bitrade.controller.common;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Component;
-
 import com.bizzan.bitrade.constant.SysConstant;
 import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.entity.Admin;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.util.MessageResult;
 
+import javax.annotation.Resource;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Shaoxianjun
@@ -22,9 +21,9 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class BaseAdminController extends BaseController {
 
-    @Autowired
-    private RedisTemplate redisTemplate ;
-    @Autowired
+    @Resource
+    private RedisTemplate redisTemplate;
+    @Resource
     private LocaleMessageSourceService msService;
 
     protected Admin getAdmin(HttpServletRequest request) {
@@ -34,11 +33,12 @@ public class BaseAdminController extends BaseController {
 
     /**
      * 判断手机验证码正确否
+     *
      * @param code 验证码
-     * @param key redis中的key 前缀+手机号
+     * @param key  redis中的key 前缀+手机号
      * @return
      */
-    protected MessageResult checkCode(String code, String key){
+    protected MessageResult checkCode(String code, String key) {
         return success(msService.getMessage("CODE_CORRECT"));
 //        ValueOperations valueOperations = redisTemplate.opsForValue();
 //        Object value = valueOperations.get(key);

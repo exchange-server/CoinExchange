@@ -3,7 +3,6 @@ package com.bizzan.bitrade.model.screen;
 import com.bizzan.bitrade.ability.ScreenAbility;
 import com.bizzan.bitrade.entity.QSign;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 

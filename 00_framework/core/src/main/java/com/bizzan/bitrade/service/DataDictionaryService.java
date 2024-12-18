@@ -1,11 +1,11 @@
 package com.bizzan.bitrade.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bizzan.bitrade.dao.DataDictionaryDao;
 import com.bizzan.bitrade.entity.DataDictionary;
 import com.bizzan.bitrade.service.Base.TopBaseService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author Jammy
@@ -15,11 +15,11 @@ import com.bizzan.bitrade.service.Base.TopBaseService;
  */
 @Service
 public class DataDictionaryService extends TopBaseService<DataDictionary, DataDictionaryDao> {
-    @Autowired
+    @Resource
     DataDictionaryDao dataDictionaryDao;
 
     @Override
-    @Autowired
+    @Resource
     public void setDao(DataDictionaryDao dao) {
         super.setDao(dao);
     }

@@ -12,8 +12,8 @@ public class AliyunConfig {
     private String ossEndpoint;
     private String ossBucketName;
 
-    public String toUrl(String key){
-        return String.format("%s://%s.%s/%s", ossSchema,ossBucketName,ossEndpoint,key);
+    public String toUrl(String key) {
+        return String.format("%s://%s.%s/%s", ossSchema, ossBucketName, ossEndpoint, key);
     }
 
     public String getOssSchema() {
@@ -41,19 +41,19 @@ public class AliyunConfig {
     }
 
     public String getAccessKeyId() {
-		return accessKeyId;
-	}
+        return accessKeyId;
+    }
 
-	public void setAccessKeyId(String accessKeyId) {
-		this.accessKeyId = accessKeyId;
-	}
+    public void setAccessKeyId(String accessKeyId) {
+        this.accessKeyId = accessKeyId;
+    }
 
-	public String getAccessKeySecret() {
-		return accessKeySecret;
-	}
+    public String getAccessKeySecret() {
+        return accessKeySecret;
+    }
 
-	public void setAccessKeySecret(String accessKeySecret) {
-		this.accessKeySecret = accessKeySecret;
-	}
+    public void setAccessKeySecret(String accessKeySecret) {
+        this.accessKeySecret = accessKeySecret;
+    }
 
 }

@@ -1,12 +1,11 @@
 package com.bizzan.bitrade.dao;
 
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
 import com.bizzan.bitrade.constant.OrderStatus;
 import com.bizzan.bitrade.dao.base.BaseDao;
 import com.bizzan.bitrade.entity.Order;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -83,19 +82,21 @@ public interface OrderDao extends BaseDao<Order> {
     List<Order> findAllExpiredOrder(@Param("date") Date date);
 
     @Query("select a from Order a where (a.memberId=:myId or a.customerId=:myId) and (a.status=:unPay or a.status=:paid or a.status=:appeal)")
-    List<Order> fingAllProcessingOrder( @Param("myId") Long myId,@Param("unPay") OrderStatus unPay,@Param("paid") OrderStatus paid,@Param("appeal") OrderStatus appeal);
+    List<Order> fingAllProcessingOrder(@Param("myId") Long myId, @Param("unPay") OrderStatus unPay, @Param("paid") OrderStatus paid, @Param("appeal") OrderStatus appeal);
 
     @Modifying
     @Query("update Order a set a.status=:status where a.status=2 and a.orderSn=:orderSn")
-    int updateAppealOrder( @Param("status") OrderStatus status, @Param("orderSn") String orderSn);
+    int updateAppealOrder(@Param("status") OrderStatus status, @Param("orderSn") String orderSn);
 
-    int countByCreateTimeBetween(Date startTime,Date endTime);
-    int countByStatusAndCreateTimeBetween(OrderStatus status,Date startTime,Date endTime);
+    int countByCreateTimeBetween(Date startTime, Date endTime);
+
+    int countByStatusAndCreateTimeBetween(OrderStatus status, Date startTime, Date endTime);
+
     int countByStatus(OrderStatus status);
 
-    @Query(value = "select a.unit unit,date_format(b.release_time,'%Y-%m-%d'), sum(b.number) amount ,sum(b.commission) fee ,sum(money) from otc_order b ,otc_coin a where a.id = b.coin_id and b.status = 3 and date_format(b.release_time,'%Y-%m-%d') = :date group by a.unit",nativeQuery = true)
-    List<Object[]> getOtcTurnoverAmount(@Param("date")String date);
+    @Query(value = "select a.unit unit,date_format(b.release_time,'%Y-%m-%d'), sum(b.number) amount ,sum(b.commission) fee ,sum(money) from otc_order b ,otc_coin a where a.id = b.coin_id and b.status = 3 and date_format(b.release_time,'%Y-%m-%d') = :date group by a.unit", nativeQuery = true)
+    List<Object[]> getOtcTurnoverAmount(@Param("date") String date);
 
     @Query(value = "select sum(b.commission) as fee,sum(b.money) as money from Order b  where  b.status = 3 and b.memberId = :memberId")
-    Map<String,Object> getBusinessStatistics(@Param("memberId")Long memberId);
+    Map<String, Object> getBusinessStatistics(@Param("memberId") Long memberId);
 }

@@ -9,13 +9,13 @@ import lombok.ToString;
 
 @Data
 @ToString(callSuper = true)
-public class ChatMessageRecord extends BaseMessage{
+public class ChatMessageRecord extends BaseMessage {
 
-    private String content ;
+    private String content;
 
-    private long sendTime ;
+    private long sendTime;
 
-    private String sendTimeStr ;
+    private String sendTimeStr;
 
 
 }

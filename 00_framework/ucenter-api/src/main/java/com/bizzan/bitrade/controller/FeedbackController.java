@@ -1,15 +1,5 @@
 package com.bizzan.bitrade.controller;
 
-import lombok.extern.slf4j.Slf4j;
-
-import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-
 import com.bizzan.bitrade.entity.Feedback;
 import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.entity.transform.AuthMember;
@@ -17,6 +7,16 @@ import com.bizzan.bitrade.service.FeedbackService;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.service.MemberService;
 import com.bizzan.bitrade.util.MessageResult;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.Resource;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 
 /**
  * @author Jammy
@@ -25,11 +25,11 @@ import com.bizzan.bitrade.util.MessageResult;
 @RestController
 @Slf4j
 public class FeedbackController {
-    @Autowired
+    @Resource
     private FeedbackService feedbackService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     /**

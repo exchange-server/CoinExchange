@@ -2,16 +2,24 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.RewardRecordType;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
  * 奖励记录
+ *
  * @author Jammy
  * @date 2020年03月08日
  */
@@ -24,7 +32,7 @@ public class RewardRecord {
     @JoinColumn(name = "coin_id", nullable = false)
     @ManyToOne
     private Coin coin;
-    private String  remark;
+    private String remark;
     @Enumerated(EnumType.ORDINAL)
     private RewardRecordType type;
     @Column(columnDefinition = "decimal(18,8) comment '数目'")

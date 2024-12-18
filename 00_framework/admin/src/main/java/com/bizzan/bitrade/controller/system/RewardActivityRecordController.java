@@ -10,12 +10,18 @@ import com.bizzan.bitrade.entity.RewardActivitySetting;
 import com.bizzan.bitrade.service.RewardActivitySettingService;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -23,7 +29,7 @@ import javax.validation.Valid;
 @RequestMapping("/system/reward-activity-record")
 public class RewardActivityRecordController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private RewardActivitySettingService rewardActivitySettingService;
 
     @RequiresPermissions("system:reward-activity-record:merge")

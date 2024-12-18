@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableEurekaClient
 public class ExchangeApiApplication {
 
-    public static void main(String[] args){
-        SpringApplication.run(ExchangeApiApplication.class,args);
+    public static void main(String[] args) {
+        SpringApplication.run(ExchangeApiApplication.class, args);
     }
 }

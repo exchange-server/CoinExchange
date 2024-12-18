@@ -1,18 +1,7 @@
 package com.bizzan.bitrade.controller;
 
-import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.CommonStatus;
-import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.entity.Coin;
 import com.bizzan.bitrade.entity.LoginInfo;
 import com.bizzan.bitrade.entity.Member;
@@ -24,6 +13,17 @@ import com.bizzan.bitrade.service.MemberWalletService;
 import com.bizzan.bitrade.service.SignService;
 import com.bizzan.bitrade.util.MessageResult;
 
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
+
 /**
  * @author Jammy
  * @Description:
@@ -32,16 +32,16 @@ import com.bizzan.bitrade.util.MessageResult;
 @RestController
 @RequestMapping("member")
 public class MemberController extends BaseController {
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private SignService signService;
-    @Autowired
+    @Resource
     private MemberWalletService walletService;
 
     @Value("${person.promote.prefix:}")
     private String promotePrefix;
-    
+
     //签到
     @PostMapping("sign-in")
     public MessageResult signIn(@SessionAttribute(SESSION_MEMBER) AuthMember user) {
@@ -67,9 +67,10 @@ public class MemberController extends BaseController {
 
         return success();
     }
-    
+
     /**
      * 获取用户信息
+     *
      * @param user
      * @return
      */
@@ -93,8 +94,8 @@ public class MemberController extends BaseController {
 
     @PostMapping("promotion-rank")
     public MessageResult getPromotionRank() {
-    	
-    	return null;
+
+        return null;
     }
 
 }

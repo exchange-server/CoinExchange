@@ -20,11 +20,11 @@ public enum AdminModule {
     SYSTEM("SYSTEM"),
     PROMOTION("PROMOTION"),
     INDEX("INDEX"),
-	ACTIVITY("ACTIVITY"),
-	CTC("CTC"),
-	REDENVELOPE("REDENVELOPE"),
+    ACTIVITY("ACTIVITY"),
+    CTC("CTC"),
+    REDENVELOPE("REDENVELOPE"),
     CONTRACTOPTION("CONTRACTOPTION");
-	
+
     @Setter
     private String title;
 }

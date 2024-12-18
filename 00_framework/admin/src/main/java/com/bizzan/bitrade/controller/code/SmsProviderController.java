@@ -1,9 +1,17 @@
 package com.bizzan.bitrade.controller.code;
 
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.entity.Admin;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.util.GeneratorUtil;
+import com.bizzan.bitrade.util.MessageResult;
+import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.Assert;
@@ -12,17 +20,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
-import com.bizzan.bitrade.constant.SysConstant;
-import com.bizzan.bitrade.entity.Admin;
-import com.bizzan.bitrade.service.LocaleMessageSourceService;
-import com.bizzan.bitrade.util.GeneratorUtil;
-import com.bizzan.bitrade.util.MessageResult;
-import com.bizzan.bitrade.vendor.provider.SMSProvider;
+import java.util.concurrent.TimeUnit;
 
 import static com.bizzan.bitrade.util.MessageResult.error;
 import static com.bizzan.bitrade.util.MessageResult.success;
-
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @Slf4j
@@ -31,13 +32,13 @@ public class SmsProviderController {
 
     private Logger logger = LoggerFactory.getLogger(SmsProviderController.class);
 
-    @Autowired
+    @Resource
     private SMSProvider smsProvider;
 
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
 
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     /**

@@ -24,7 +24,7 @@ public class LoginByEmail {
     @Length(min = 3, max = 20, message = "{LoginByEmail.username.length}")
     private String username;
 
-    @NotBlank(message =  "{LoginByEmail.country.null}")
+    @NotBlank(message = "{LoginByEmail.country.null}")
     private String country;
 
     private String promotion;
@@ -33,6 +33,6 @@ public class LoginByEmail {
     private String code;
 
     //超级合伙人标识 0 普通  1 超级合伙人
-    private String superPartner ;
+    private String superPartner;
 
 }

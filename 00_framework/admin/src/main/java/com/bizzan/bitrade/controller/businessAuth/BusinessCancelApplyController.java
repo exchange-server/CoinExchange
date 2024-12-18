@@ -1,30 +1,5 @@
 package com.bizzan.bitrade.controller.businessAuth;
 
-import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.CANCEL_AUTH;
-import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.NOT_CERTIFIED;
-import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.RETURN_FAILED;
-import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.RETURN_SUCCESS;
-import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.VERIFIED;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
 import com.bizzan.bitrade.constant.DepositStatusEnum;
@@ -48,22 +23,48 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.PredicateUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.CANCEL_AUTH;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.NOT_CERTIFIED;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.RETURN_FAILED;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.RETURN_SUCCESS;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.VERIFIED;
 
 @RestController
 @RequestMapping("business/cancel-apply")
 public class BusinessCancelApplyController extends BaseController {
     private static Logger logger = LoggerFactory.getLogger(BusinessCancelApplyController.class);
-    @Autowired
+    @Resource
     private BusinessCancelApplyService businessCancelApplyService;
-    @Autowired
+    @Resource
     private DepositRecordService depositRecordService;
-    @Autowired
+    @Resource
     private BusinessAuthApplyService businessAuthApplyService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     @PostMapping("page-query")

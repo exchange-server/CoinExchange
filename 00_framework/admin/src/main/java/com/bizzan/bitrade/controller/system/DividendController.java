@@ -6,31 +6,49 @@ import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.constant.RewardRecordType;
 import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Admin;
+import com.bizzan.bitrade.entity.Coin;
+import com.bizzan.bitrade.entity.DividendStartRecord;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.QDividendStartRecord;
+import com.bizzan.bitrade.entity.RewardRecord;
 import com.bizzan.bitrade.es.ESUtils;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.CoinService;
+import com.bizzan.bitrade.service.DividendStartRecordService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.OrderDetailAggregationService;
+import com.bizzan.bitrade.service.RewardRecordService;
 import com.bizzan.bitrade.util.BigDecimalUtils;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.Predicate;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-
-import static com.bizzan.bitrade.util.BigDecimalUtils.*;
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.bizzan.bitrade.util.BigDecimalUtils.add;
+import static com.bizzan.bitrade.util.BigDecimalUtils.divDown;
+import static com.bizzan.bitrade.util.BigDecimalUtils.mulDown;
 
 /**
  * 分红
@@ -42,21 +60,21 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/system/dividend")
 public class DividendController extends BaseAdminController {
-    @Autowired
+    @Resource
     private OrderDetailAggregationService orderDetailAggregationService;
-    @Autowired
+    @Resource
     private DividendStartRecordService dividendStartRecordService;
-    @Autowired
+    @Resource
     private CoinService coinService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private RewardRecordService rewardRecordService;
-    @Autowired
+    @Resource
     private ESUtils esUtils;
 
     /**
@@ -115,7 +133,6 @@ public class DividendController extends BaseAdminController {
         }*/
 
 
-
         if (dividendStartRecordService.matchRecord(start.getTime(), end.getTime(), unit).size() > 0) {
             return error("time Repeat");
         }
@@ -164,10 +181,11 @@ public class DividendController extends BaseAdminController {
                     memberTransaction.setSymbol(unit);
                     memberTransaction.setMemberId(x.getMemberId());
                     memberTransaction.setType(TransactionType.DIVIDEND);
-                    memberTransaction.setAmount(va);memberTransaction.setRealFee("0");
+                    memberTransaction.setAmount(va);
+                    memberTransaction.setRealFee("0");
                     memberTransaction.setDiscountFee("0");
                     memberTransaction.setCreateTime(new Date());
-                    memberTransaction= memberTransactionService.save(memberTransaction);
+                    memberTransaction = memberTransactionService.save(memberTransaction);
                     RewardRecord rewardRecord1 = new RewardRecord();
                     rewardRecord1.setAmount(va);
                     rewardRecord1.setCoin(coin1);

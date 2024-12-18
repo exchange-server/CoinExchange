@@ -10,9 +10,10 @@ import com.bizzan.bitrade.service.SysPermissionService;
 import com.bizzan.bitrade.util.MessageResult;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +27,7 @@ import javax.validation.Valid;
 @RequestMapping("/system/permission")
 public class PermissionController extends BaseController {
 
-    @Autowired
+    @Resource
     private SysPermissionService sysPermissionService;
 
     @RequiresPermissions("system:permission:merge")

@@ -1,22 +1,21 @@
 package com.bizzan.bitrade.service;
 
 import com.bizzan.bitrade.dao.LockedOrderDetailDao;
-import com.bizzan.bitrade.dao.MiningOrderDetailDao;
 import com.bizzan.bitrade.entity.LockedOrderDetail;
-import com.bizzan.bitrade.entity.MiningOrderDetail;
 import com.bizzan.bitrade.pagination.Criteria;
 import com.bizzan.bitrade.pagination.Restrictions;
 import com.querydsl.core.types.Predicate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+
 @Service
 public class LockedOrderDetailService {
-    @Autowired
+    @Resource
     private LockedOrderDetailDao lockedOrderDetailDao;
 
     public LockedOrderDetail findOne(Long id) {
@@ -31,7 +30,7 @@ public class LockedOrderDetailService {
         return lockedOrderDetailDao.saveAndFlush(lockedOrderDetail);
     }
 
-    public Page<LockedOrderDetail> findAll(Predicate predicate, Pageable pageable){
+    public Page<LockedOrderDetail> findAll(Predicate predicate, Pageable pageable) {
         return lockedOrderDetailDao.findAll(predicate, pageable);
     }
 

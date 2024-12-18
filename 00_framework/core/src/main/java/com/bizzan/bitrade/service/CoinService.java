@@ -15,8 +15,6 @@ import com.bizzan.bitrade.service.Base.BaseService;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +22,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
-import static com.bizzan.bitrade.constant.BooleanEnum.IS_TRUE;
-
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
+import static com.bizzan.bitrade.constant.BooleanEnum.IS_TRUE;
 
 /**
  * @author Jammy
@@ -37,9 +36,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CoinService extends BaseService {
-    @Autowired
+    @Resource
     private CoinDao coinDao;
-    @Autowired
+    @Resource
     private OtcCoinDao otcCoinDao;
 
     /**

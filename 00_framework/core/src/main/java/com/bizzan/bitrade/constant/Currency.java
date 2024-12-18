@@ -2,7 +2,6 @@ package com.bizzan.bitrade.constant;
 
 import com.bizzan.bitrade.core.BaseEnum;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +25,7 @@ public enum Currency implements BaseEnum {
 
     @Override
     @JsonValue
-    public int getOrdinal(){
+    public int getOrdinal() {
         return this.ordinal();
     }
 }

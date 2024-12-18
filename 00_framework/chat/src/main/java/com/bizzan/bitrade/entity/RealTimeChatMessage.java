@@ -8,7 +8,7 @@ import lombok.ToString;
  */
 @Data
 @ToString(callSuper = true)
-public class RealTimeChatMessage extends BaseMessage{
+public class RealTimeChatMessage extends BaseMessage {
     //消息内容
     private String content;
     //消息发送方头像

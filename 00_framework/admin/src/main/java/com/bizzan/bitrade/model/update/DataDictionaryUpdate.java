@@ -1,10 +1,9 @@
 package com.bizzan.bitrade.model.update;
 
-import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
-
 import com.bizzan.bitrade.ability.UpdateAbility;
 import com.bizzan.bitrade.entity.DataDictionary;
+import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * @author Shaoxianjun

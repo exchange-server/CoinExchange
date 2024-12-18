@@ -1,12 +1,9 @@
 package com.bizzan.bitrade.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
-
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.dao.base.BaseDao;
 import com.bizzan.bitrade.entity.OtcCoin;
-import com.bizzan.bitrade.service.OtcCoinService;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 

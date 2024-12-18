@@ -1,15 +1,5 @@
 package com.bizzan.bitrade.config;
 
-import com.cdeer.apns.http2.core.manager.ApnsServiceManager;
-import com.cdeer.apns.http2.core.service.ApnsService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
 // @Configuration
 public class ApnsConfig {
 /*

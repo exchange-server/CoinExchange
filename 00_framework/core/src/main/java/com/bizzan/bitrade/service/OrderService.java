@@ -4,11 +4,9 @@ package com.bizzan.bitrade.service;
 import com.bizzan.bitrade.constant.AdvertiseType;
 import com.bizzan.bitrade.constant.OrderStatus;
 import com.bizzan.bitrade.constant.PageModel;
-import com.bizzan.bitrade.constant.TransactionTypeEnum;
 import com.bizzan.bitrade.dao.OrderDao;
 import com.bizzan.bitrade.entity.MemberWallet;
 import com.bizzan.bitrade.entity.Order;
-import com.bizzan.bitrade.entity.QAppeal;
 import com.bizzan.bitrade.entity.QOrder;
 import com.bizzan.bitrade.exception.InformationExpiredException;
 import com.bizzan.bitrade.pagination.Criteria;
@@ -23,25 +21,27 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SQLQuery;
 import org.hibernate.transform.Transformers;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-
-import static com.bizzan.bitrade.util.BigDecimalUtils.add;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.bizzan.bitrade.util.BigDecimalUtils.add;
 
 /**
  * @author Jammy
@@ -49,21 +49,21 @@ import java.util.Map;
  */
 @Service
 public class OrderService extends BaseService {
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     @PersistenceContext
     private EntityManager em;
 
-    @Autowired
+    @Resource
     private OrderDao orderDao;
 
 
-    @Autowired
+    @Resource
     private IdWorkByTwitter idWorkByTwitter;
-    @Autowired
+    @Resource
     private AdvertiseService advertiseService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
 
     @Transactional(rollbackFor = Exception.class)
@@ -228,11 +228,12 @@ public class OrderService extends BaseService {
     public Order findOneByOrderId(String orderId) {
         return orderDao.getOrderByOrderSn(orderId);
     }
+
     public Page<Order> findAll(com.querydsl.core.types.Predicate predicate, Pageable pageable) {
         return orderDao.findAll(predicate, pageable);
     }
 
-    public Page<OtcOrderVO> outExcel(List<Predicate> predicates , PageModel pageModel){
+    public Page<OtcOrderVO> outExcel(List<Predicate> predicates, PageModel pageModel) {
         List<OrderSpecifier> orderSpecifiers = pageModel.getOrderSpecifiers();
         JPAQuery<OtcOrderVO> query = queryFactory.select(
                 Projections.fields(OtcOrderVO.class,
@@ -253,12 +254,12 @@ public class OrderService extends BaseService {
                         QOrder.order.status.as("status"))
         ).from(QOrder.order).where(predicates.toArray(new BooleanExpression[predicates.size()]));
         query.orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]));
-        List<OtcOrderVO> list = query.offset((pageModel.getPageNo()-1)*pageModel.getPageSize()).limit(pageModel.getPageSize()).fetch();
-        long total = query.fetchCount() ;
-        return new PageImpl<>(list,pageModel.getPageable(),total);
+        List<OtcOrderVO> list = query.offset((pageModel.getPageNo() - 1) * pageModel.getPageSize()).limit(pageModel.getPageSize()).fetch();
+        long total = query.fetchCount();
+        return new PageImpl<>(list, pageModel.getPageable(), total);
     }
 
-    public List<Object[]> getOtcOrderStatistics(String date){
+    public List<Object[]> getOtcOrderStatistics(String date) {
         return orderDao.getOtcTurnoverAmount(date);
     }
 

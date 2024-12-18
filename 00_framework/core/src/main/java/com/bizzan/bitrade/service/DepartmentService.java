@@ -7,14 +7,13 @@ import com.bizzan.bitrade.entity.Department;
 import com.bizzan.bitrade.service.Base.BaseService;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.Predicate;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
@@ -25,16 +24,16 @@ import java.util.List;
  */
 @Service
 public class DepartmentService extends BaseService {
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     @PersistenceContext
     private EntityManager em;
 
-    @Autowired
+    @Resource
     private DepartmentDao departmentDao;
 
-    @Autowired
+    @Resource
     private AdminDao adminDao;
 
 

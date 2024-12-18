@@ -1,13 +1,5 @@
 package com.bizzan.bitrade.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-
 import com.bizzan.bitrade.constant.SysConstant;
 import com.bizzan.bitrade.entity.Country;
 import com.bizzan.bitrade.entity.Member;
@@ -15,18 +7,34 @@ import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.service.CountryService;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.service.MemberService;
-import com.bizzan.bitrade.util.*;
+import com.bizzan.bitrade.util.BigDecimalUtils;
+import com.bizzan.bitrade.util.DateUtil;
+import com.bizzan.bitrade.util.GeneratorUtil;
+import com.bizzan.bitrade.util.MessageResult;
+import com.bizzan.bitrade.util.ValidateUtil;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 import static com.bizzan.bitrade.util.MessageResult.error;
 import static com.bizzan.bitrade.util.MessageResult.success;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jammy
@@ -37,15 +45,15 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/mobile")
 public class SmsController {
 
-    @Autowired
+    @Resource
     private SMSProvider smsProvider;
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
-    @Autowired
+    @Resource
     private MemberService memberService;
     @Resource
     private LocaleMessageSourceService localeMessageSourceService;
-    @Autowired
+    @Resource
     private CountryService countryService;
 
     /**
@@ -250,7 +258,7 @@ public class SmsController {
         Member member = memberService.findOne(user.getId());
         Assert.hasText(member.getMobilePhone(), localeMessageSourceService.getMessage("NOT_BIND_PHONE"));
         MessageResult result;
-        log.info("===提币验证码发送===mobile："+member.getMobilePhone());
+        log.info("===提币验证码发送===mobile：" + member.getMobilePhone());
         String randomCode = String.valueOf(GeneratorUtil.getRandomNumber(100000, 999999));
         if ("86".equals(member.getCountry().getAreaCode())) {
             result = smsProvider.sendVerifyMessage(member.getMobilePhone(), randomCode);
@@ -268,13 +276,13 @@ public class SmsController {
             return error(localeMessageSourceService.getMessage("SEND_SMS_FAILED"));
         }
     }
-    
+
     @RequestMapping(value = "/ctc/code", method = RequestMethod.POST)
     public MessageResult ctcCode(@SessionAttribute(SESSION_MEMBER) AuthMember user) throws Exception {
         Member member = memberService.findOne(user.getId());
         Assert.hasText(member.getMobilePhone(), localeMessageSourceService.getMessage("NOT_BIND_PHONE"));
         MessageResult result;
-        log.info("===C2C验证码发送===mobile："+member.getMobilePhone());
+        log.info("===C2C验证码发送===mobile：" + member.getMobilePhone());
         String randomCode = String.valueOf(GeneratorUtil.getRandomNumber(100000, 999999));
         if ("86".equals(member.getCountry().getAreaCode())) {
             result = smsProvider.sendVerifyMessage(member.getMobilePhone(), randomCode);
@@ -347,6 +355,7 @@ public class SmsController {
 
     /**
      * 绑定API发送验证码
+     *
      * @param user
      * @return
      * @throws Exception
@@ -356,7 +365,7 @@ public class SmsController {
         Member member = memberService.findOne(user.getId());
         Assert.hasText(member.getMobilePhone(), localeMessageSourceService.getMessage("NOT_BIND_PHONE"));
         MessageResult result;
-        log.info("===API密钥验证码发送===mobile："+member.getMobilePhone());
+        log.info("===API密钥验证码发送===mobile：" + member.getMobilePhone());
         String randomCode = String.valueOf(GeneratorUtil.getRandomNumber(100000, 999999));
         if ("86".equals(member.getCountry().getAreaCode())) {
             result = smsProvider.sendVerifyMessage(member.getMobilePhone(), randomCode);

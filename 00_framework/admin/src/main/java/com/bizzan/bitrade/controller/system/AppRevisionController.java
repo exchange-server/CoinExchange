@@ -1,19 +1,24 @@
 package com.bizzan.bitrade.controller.system;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
 import com.bizzan.bitrade.entity.AppRevision;
 import com.bizzan.bitrade.model.create.AppRevisionCreate;
-import com.bizzan.bitrade.model.screen.AppRevisionScreen;
 import com.bizzan.bitrade.model.update.AppRevisionUpdate;
 import com.bizzan.bitrade.service.AppRevisionService;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.MessageResult;
+
+import javax.annotation.Resource;
+
+import org.springframework.util.Assert;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -26,7 +31,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("system/app-revision")
 public class AppRevisionController extends BaseAdminController {
-    @Autowired
+    @Resource
     private AppRevisionService service;
 
     //新增

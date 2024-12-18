@@ -18,9 +18,9 @@ public class SysConstant {
      * 验证码
      */
     public static final String PHONE_WITHDRAW_MONEY_CODE_PREFIX = "PHONE_WITHDRAW_MONEY_CODE_PREFIX_";
-    
+
     public static final String PHONE_CTC_TRADE_CODE_PREFIX = "PHONE_CTC_TRADE_CODE_PREFIX_";
-    
+
     public static final String PHONE_REG_CODE_PREFIX = "PHONE_REG_CODE_";
     public static final String EMAIL_REG_CODE_PREFIX = "EMAIL_REG_CODE_";
 
@@ -31,17 +31,17 @@ public class SysConstant {
     public static final String PHONE_UPDATE_PASSWORD_PREFIX = "PHONE_UPDATE_PASSWORD_";
 
     public static final String PHONE_ADD_ADDRESS_PREFIX = "PHONE_ADD_ADDRESS_";
-    
+
     public static final String PHONE_RECEIVE_ENVELOPE_PREFIX = "PHONE_RECEIVE_ENVELOPE_PREFIX"; // 领取红包
 
     public static final String PHONE_ATTEND_ACTIVITY_PREFIX = "PHONE_ADD_ADDRESS_";
-    
+
     public static final String EMAIL_BIND_CODE_PREFIX = "EMAIL_BIND_CODE_";
 
-	public static final String EMAIL_UNTIE_CODE_PREFIX = "EMAIL_UNTIE_CODE_";
-	
-	public static final String EMAIL_UPDATE_CODE_PREFIX = "EMAIL_UPDATE_CODE_";
-	
+    public static final String EMAIL_UNTIE_CODE_PREFIX = "EMAIL_UNTIE_CODE_";
+
+    public static final String EMAIL_UPDATE_CODE_PREFIX = "EMAIL_UPDATE_CODE_";
+
     public static final String ADD_ADDRESS_CODE_PREFIX = "ADD_ADDRESS_CODE_";
     public static final String RESET_PASSWORD_CODE_PREFIX = "RESET_PASSWORD_CODE_";
     public static final String PHONE_CHANGE_CODE_PREFIX = "PHONE_CHANGE_CODE_";
@@ -54,66 +54,68 @@ public class SysConstant {
 
     public static final String API_BIND_CODE_PREFIX = "API_BIND_CODE_PREFIX_";
 
-    /** 防攻击验证 */
+    /**
+     * 防攻击验证
+     */
     public static final String ANTI_ATTACK_ = "ANTI_ATTACK_";
     /**
      * 防止注册机器人
      */
-    public static final String ANTI_ROBOT_REGISTER ="ANTI_ROBOT_REGISTER_";
+    public static final String ANTI_ROBOT_REGISTER = "ANTI_ROBOT_REGISTER_";
     // 安全与发展基金协会
-    public static final String SAFETY_AND_DEVELOPMENT_FUND_ASSOCIATION="SAFETY_AND_DEVELOPMENT_FUND_ASSOCIATION";
+    public static final String SAFETY_AND_DEVELOPMENT_FUND_ASSOCIATION = "SAFETY_AND_DEVELOPMENT_FUND_ASSOCIATION";
     //昨日挖币总数
-    public static final String YESTERDAY_MINE_AMOUNT_FOR_BHB="YESTERDAY_MINE_AMOUNT_FOR_BHB";
+    public static final String YESTERDAY_MINE_AMOUNT_FOR_BHB = "YESTERDAY_MINE_AMOUNT_FOR_BHB";
     //昨日持币分红
-    public static final String YESTERDAY_CASH_DIVIDENDS_AMOUNT_FOR_ETH="YESTERDAY_CASH_DIVIDENDS_AMOUNT_FOR_ETH";
+    public static final String YESTERDAY_CASH_DIVIDENDS_AMOUNT_FOR_ETH = "YESTERDAY_CASH_DIVIDENDS_AMOUNT_FOR_ETH";
     //安全基金 昨日挖币总数 昨日持币分红 过期时间 存为 8个小时 28800s
-    public static final int SAFETH_AND_MINE_AND_DIVIDENDS_EXPIRE_TIME= 28800;
+    public static final int SAFETH_AND_MINE_AND_DIVIDENDS_EXPIRE_TIME = 28800;
     /**
      * 60亿BHB累计(过期时间为15分钟)
      */
-    public static final String BHB_AMOUNT="BHB_AMOUNT";
-    public static final int BHB_AMOUNT_EXPIRE_TIME=900;
+    public static final String BHB_AMOUNT = "BHB_AMOUNT";
+    public static final int BHB_AMOUNT_EXPIRE_TIME = 900;
 
 
     /**
      * 公告页缓存
      */
     public static final String NOTICE_DETAIL = "notice_detail_";
-    public static final int NOTICE_DETAIL_EXPIRE_TIME=300;
+    public static final int NOTICE_DETAIL_EXPIRE_TIME = 300;
 
     /**
      * 帮助页缓存(首页)
      */
     public static final String SYS_HELP = "SYS_HELP";
-    public static final int SYS_HELP_EXPIRE_TIME=300;
+    public static final int SYS_HELP_EXPIRE_TIME = 300;
 
 
     /**
      * 帮助页缓存(类别页)
      */
     public static final String SYS_HELP_CATE = "SYS_HELP_CATE_";
-    public static final int SYS_HELP_CATE_EXPIRE_TIME=300;
+    public static final int SYS_HELP_CATE_EXPIRE_TIME = 300;
 
     /**
      * 帮助页缓存(详情页)
      */
     public static final String SYS_HELP_DETAIL = "SYS_HELP_DETAIL_";
-    public static final int SYS_HELP_DETAIL_EXPIRE_TIME=300;
+    public static final int SYS_HELP_DETAIL_EXPIRE_TIME = 300;
 
     /**
      * 帮助页缓存(该分类置顶文章)
      */
     public static final String SYS_HELP_TOP = "SYS_HELP_TOP_";
-    public static final int SYS_HELP_TOP_EXPIRE_TIME=300;
+    public static final int SYS_HELP_TOP_EXPIRE_TIME = 300;
 
 
     //字典表数据缓存
-    public static final String DATA_DICTIONARY_BOUND_KEY= "data_dictionary_bound_key_";
-    public static final int DATA_DICTIONARY_BOUND_EXPIRE_TIME= 604800;
+    public static final String DATA_DICTIONARY_BOUND_KEY = "data_dictionary_bound_key_";
+    public static final int DATA_DICTIONARY_BOUND_EXPIRE_TIME = 604800;
 
     //盘口数据
-    public static final String EXCHANGE_INIT_PLATE_SYMBOL_KEY="EXCHANGE_INIT_PLATE_SYMBOL_KEY_";
-    public static final int EXCHANGE_INIT_PLATE_SYMBOL_EXPIRE_TIME= 18000;
+    public static final String EXCHANGE_INIT_PLATE_SYMBOL_KEY = "EXCHANGE_INIT_PLATE_SYMBOL_KEY_";
+    public static final int EXCHANGE_INIT_PLATE_SYMBOL_EXPIRE_TIME = 18000;
 
 
     /**
@@ -134,9 +136,9 @@ public class SysConstant {
     /**
      * 用户币币交易订单时间限制
      */
-    public static final String USER_ADD_EXCHANGE_ORDER_TIME_LIMIT= "USER_ADD_EXCHANGE_ORDER_TIME_LIMIT_";
-    public static final int USER_ADD_EXCHANGE_ORDER_TIME_LIMIT_EXPIRE_TIME= 20;
-    
+    public static final String USER_ADD_EXCHANGE_ORDER_TIME_LIMIT = "USER_ADD_EXCHANGE_ORDER_TIME_LIMIT_";
+    public static final int USER_ADD_EXCHANGE_ORDER_TIME_LIMIT_EXPIRE_TIME = 20;
+
     /**
      * 邀请人数排行榜
      */

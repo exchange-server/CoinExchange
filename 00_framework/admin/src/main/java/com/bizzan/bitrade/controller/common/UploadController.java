@@ -11,14 +11,15 @@ import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.util.GeneratorUtil;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.UploadFileUtil;
-
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 import org.springframework.util.Base64Utils;
@@ -39,16 +40,15 @@ import java.util.Date;
 @Controller
 @RequestMapping("/common/upload")
 public class UploadController extends BaseController {
-    @Autowired
-    private LocaleMessageSourceService sourceService;
-
     private static Log log = LogFactory.getLog(UploadController.class);
+    @Resource
+    private LocaleMessageSourceService sourceService;
     private Logger logger = LoggerFactory.getLogger(UploadController.class);
     private String savePath = "data/upload/{:cate}/{yyyy}{mm}{dd}/{time}{rand:6}";
     private String allowedFormat = ".jpg,.gif,.png";
     private long maxAllowedSize = 1024 * 10000;
 
-    @Autowired
+    @Resource
     private AliyunConfig aliyunConfig;
 
     @RequestMapping(value = "/oss/image", method = RequestMethod.POST)

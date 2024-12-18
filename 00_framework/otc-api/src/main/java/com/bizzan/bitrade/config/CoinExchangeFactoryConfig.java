@@ -1,12 +1,11 @@
 package com.bizzan.bitrade.config;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.bizzan.bitrade.coin.CoinExchangeFactory;
 import com.bizzan.bitrade.entity.OtcCoin;
 import com.bizzan.bitrade.service.OtcCoinService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
 import java.util.List;

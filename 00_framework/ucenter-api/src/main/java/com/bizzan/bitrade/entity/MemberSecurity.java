@@ -2,7 +2,6 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 

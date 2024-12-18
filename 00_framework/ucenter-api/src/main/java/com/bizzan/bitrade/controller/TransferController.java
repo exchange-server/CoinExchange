@@ -4,18 +4,31 @@ import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.constant.TransactionType;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Coin;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.TransferAddress;
+import com.bizzan.bitrade.entity.TransferAddressInfo;
+import com.bizzan.bitrade.entity.TransferRecord;
 import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.exception.InformationExpiredException;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.CoinService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.TransferAddressService;
+import com.bizzan.bitrade.service.TransferRecordService;
 import com.bizzan.bitrade.util.BigDecimalUtils;
 import com.bizzan.bitrade.util.DESUtil;
 import com.bizzan.bitrade.util.Md5;
 import com.bizzan.bitrade.util.MessageResult;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +46,9 @@ import java.util.stream.Collectors;
 
 import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 import static com.bizzan.bitrade.util.BigDecimalUtils.compare;
-import static org.springframework.util.Assert.*;
+import static org.springframework.util.Assert.hasText;
+import static org.springframework.util.Assert.isTrue;
+import static org.springframework.util.Assert.notNull;
 
 /**
  * @author Jammy
@@ -43,19 +58,19 @@ import static org.springframework.util.Assert.*;
 @Slf4j
 @RequestMapping(value = "/transfer", method = RequestMethod.POST)
 public class TransferController {
-    @Autowired
+    @Resource
     private LocaleMessageSourceService sourceService;
-    @Autowired
+    @Resource
     private TransferAddressService transferAddressService;
-    @Autowired
+    @Resource
     private CoinService coinService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private TransferRecordService transferRecordService;
-    @Autowired
+    @Resource
     private RestTemplate restTemplate;
-    @Autowired
+    @Resource
     private ESUtils esUtils;
     @Value("${transfer.url:}")
     private String url;
@@ -63,9 +78,9 @@ public class TransferController {
     private String key;
     @Value("${transfer.smac:}")
     private String smac;
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-    @Autowired
+    @Resource
     private MemberService memberService;
 
     /**
@@ -145,9 +160,9 @@ public class TransferController {
         memberTransaction.setCreateTime(transferRecord1.getCreateTime());
         memberTransaction.setType(TransactionType.TRANSFER_ACCOUNTS);
         memberTransaction.setFee(transferRecord.getFee());
-        memberTransaction.setRealFee(transferRecord.getFee()+"");
+        memberTransaction.setRealFee(transferRecord.getFee() + "");
         memberTransaction.setDiscountFee("0");
-        memberTransaction=  memberTransactionService.save(memberTransaction);
+        memberTransaction = memberTransactionService.save(memberTransaction);
         if (transferRecord1 == null) {
             throw new InformationExpiredException("Information Expired");
         } else {

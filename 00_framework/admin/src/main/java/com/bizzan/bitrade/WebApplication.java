@@ -9,7 +9,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  * @create 2020年12月07日
  */
 @SpringBootApplication
-@EnableAspectJAutoProxy(exposeProxy=true)
+@EnableAspectJAutoProxy(exposeProxy = true)
 public class WebApplication {
     public static void main(String[] args) {
         SpringApplication.run(WebApplication.class, args);

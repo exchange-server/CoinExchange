@@ -1,7 +1,6 @@
 package com.bizzan.bitrade.controller.screen;
 
 import com.bizzan.bitrade.constant.LegalWalletState;
-
 import lombok.Data;
 
 /**

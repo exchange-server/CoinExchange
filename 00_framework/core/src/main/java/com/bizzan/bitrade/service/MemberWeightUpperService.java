@@ -6,12 +6,9 @@ import com.bizzan.bitrade.entity.MemberWeightUpper;
 import com.bizzan.bitrade.pagination.Criteria;
 import com.bizzan.bitrade.pagination.Restrictions;
 import com.bizzan.bitrade.service.Base.BaseService;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.Visitor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +18,9 @@ import java.util.List;
 @Service
 public class MemberWeightUpperService extends BaseService {
 
-    @Autowired
+    @Resource
     private MemberWeightUpperDao memberWeightUpperDao;
-    @Autowired
+    @Resource
     private MemberService memberService;
 
     public MemberWeightUpper findMemberWeightUpperByMemberId(Long memberId) {
@@ -35,7 +32,7 @@ public class MemberWeightUpperService extends BaseService {
     public List<MemberWeightUpper> findAllByUpperIds(String uppers) {
         String[] idss = uppers.split(",");
         List<Long> ids = new ArrayList<>();
-        for(String id:idss){
+        for (String id : idss) {
             ids.add(Long.parseLong(id));
         }
         return memberWeightUpperDao.findAllByUpperIds(ids);
@@ -43,12 +40,12 @@ public class MemberWeightUpperService extends BaseService {
 
     public MemberWeightUpper saveMemberWeightUpper(Member member) {
         MemberWeightUpper memberWeightUpper = this.findMemberWeightUpperByMemberId(member.getId());
-        if(memberWeightUpper!=null){
+        if (memberWeightUpper != null) {
             return memberWeightUpper;
         }
         memberWeightUpper = new MemberWeightUpper();
         //找上级 如果有上级
-        if(member.getInviterId()!=null){
+        if (member.getInviterId() != null) {
             Member inviter = memberService.findOne(member.getInviterId());
             //有上级
             MemberWeightUpper upper = this.saveMemberWeightUpper(inviter);
@@ -56,17 +53,17 @@ public class MemberWeightUpperService extends BaseService {
             memberWeightUpper.setRate(0);
             memberWeightUpper.setMemberId(member.getId());
             String uppers = upper.getUpper();
-            if(uppers==null || "".equals(uppers.trim())){
+            if (uppers == null || "".equals(uppers.trim())) {
                 uppers = upper.getMemberId().toString();
-            }else {
-                uppers = uppers+","+upper.getMemberId();
+            } else {
+                uppers = uppers + "," + upper.getMemberId();
             }
             memberWeightUpper.setUpper(uppers);
-        }else {
+        } else {
             //最上级
-            if("1".equals(member.getSuperPartner())){
+            if ("1".equals(member.getSuperPartner())) {
                 memberWeightUpper.setRate(100);
-            }else {
+            } else {
                 memberWeightUpper.setRate(0);
             }
             memberWeightUpper.setFirstMemberId(member.getId());

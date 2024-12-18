@@ -6,7 +6,12 @@ import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.ExchangeOrder;
+import com.bizzan.bitrade.entity.ExchangeOrderDetail;
+import com.bizzan.bitrade.entity.ExchangeOrderDirection;
+import com.bizzan.bitrade.entity.ExchangeOrderStatus;
+import com.bizzan.bitrade.entity.ExchangeOrderType;
+import com.bizzan.bitrade.entity.QExchangeOrder;
 import com.bizzan.bitrade.model.screen.ExchangeOrderScreen;
 import com.bizzan.bitrade.model.screen.ExchangeTradeScreen;
 import com.bizzan.bitrade.service.ExchangeOrderService;
@@ -16,14 +21,19 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,11 +48,11 @@ import java.util.List;
 @RestController
 @RequestMapping("exchange/exchange-order")
 public class ExchangeOrderController extends BaseAdminController {
-    @Autowired
+    @Resource
     private KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
+    @Resource
     private ExchangeOrderService exchangeOrderService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
     @RequiresPermissions("exchange:exchange-order:all")
@@ -111,48 +121,48 @@ public class ExchangeOrderController extends BaseAdminController {
         if (screen.getStatus() != null) {
             booleanExpressions.add(qExchangeOrder.status.eq(screen.getStatus()));
         }
-        if (screen.getMinPrice()!=null) {
+        if (screen.getMinPrice() != null) {
             booleanExpressions.add(qExchangeOrder.price.goe(screen.getMinPrice()));
         }
-        if (screen.getMaxPrice()!=null) {
+        if (screen.getMaxPrice() != null) {
             booleanExpressions.add(qExchangeOrder.price.loe(screen.getMaxPrice()));
         }
-        if (screen.getMinTradeAmount()!=null) {
+        if (screen.getMinTradeAmount() != null) {
             booleanExpressions.add(qExchangeOrder.tradedAmount.goe(screen.getMinTradeAmount()));
         }
-        if (screen.getMaxTradeAmount()!=null) {
+        if (screen.getMaxTradeAmount() != null) {
             booleanExpressions.add(qExchangeOrder.tradedAmount.loe(screen.getMaxTradeAmount()));
         }
-        if (screen.getMinTurnOver()!=null) {
+        if (screen.getMinTurnOver() != null) {
             booleanExpressions.add(qExchangeOrder.turnover.goe(screen.getMinTurnOver()));
         }
-        if (screen.getMaxTurnOver()!=null) {
+        if (screen.getMaxTurnOver() != null) {
             booleanExpressions.add(qExchangeOrder.turnover.loe(screen.getMaxTurnOver()));
         }
-        if (screen.getRobotOrder()!=null&&screen.getRobotOrder() == 1){
+        if (screen.getRobotOrder() != null && screen.getRobotOrder() == 1) {
             //不看机器人（不包含机器人）
             booleanExpressions.add(qExchangeOrder.memberId.notIn(1, 2, 10001));
 //            booleanExpressions.add(qExchangeOrder.memberId.notIn(69296 , 52350));
         }
-        if (screen.getRobotOrder()!=null&&screen.getRobotOrder() == 0){
+        if (screen.getRobotOrder() != null && screen.getRobotOrder() == 0) {
             //查看机器人
             booleanExpressions.add(qExchangeOrder.memberId.in(1, 2, 10001));
 //            booleanExpressions.add(qExchangeOrder.memberId.in(69296 , 52350));
 
         }
-        if(screen.getCompleted()!=null)
-            /**
-             * 委托订单
-             */ {
-            if(screen.getCompleted()== BooleanEnum.IS_FALSE){
+        if (screen.getCompleted() != null)
+        /**
+         * 委托订单
+         */ {
+            if (screen.getCompleted() == BooleanEnum.IS_FALSE) {
                 booleanExpressions.add(qExchangeOrder.completedTime.isNull().and(qExchangeOrder.canceledTime.isNull())
                         .and(qExchangeOrder.status.eq(ExchangeOrderStatus.TRADING)));
-            }else{
+            } else {
                 /**
                  * 历史订单
                  */
                 booleanExpressions.add(qExchangeOrder.completedTime.isNotNull().or(qExchangeOrder.canceledTime.isNotNull())
-                .or(qExchangeOrder.status.ne(ExchangeOrderStatus.TRADING)));
+                        .or(qExchangeOrder.status.ne(ExchangeOrderStatus.TRADING)));
             }
         }
         return PredicateUtils.getPredicate(booleanExpressions);
@@ -160,12 +170,12 @@ public class ExchangeOrderController extends BaseAdminController {
 
     @RequiresPermissions("exchange:exchange-order:entrust-details")
     @PostMapping("entrust-details")
-    public MessageResult entrustDetails(ExchangeTradeScreen screen,PageModel pageModel){
+    public MessageResult entrustDetails(ExchangeTradeScreen screen, PageModel pageModel) {
        /* ExchangeOrder
         StringBuilder headSql = new StringBuilder("select orderId as IF(a.direction=0,buyOrderId,sellOrderId)");
 
         StringBuilder headCount = new StringBuilder("select count(*) ");*/
-        return  null ;
+        return null;
     }
 
 
@@ -217,7 +227,7 @@ public class ExchangeOrderController extends BaseAdminController {
             return MessageResult.error(500, "order not in trading");
         }
         // 发送消息至Exchange系统
-        kafkaTemplate.send("exchange-order-cancel",JSON.toJSONString(order));
+        kafkaTemplate.send("exchange-order-cancel", JSON.toJSONString(order));
         return MessageResult.success(messageSource.getMessage("SUCCESS"));
     }
 }

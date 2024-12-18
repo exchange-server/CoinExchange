@@ -1,28 +1,29 @@
 package com.bizzan.bitrade;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.bizzan.bitrade.dao.AdvertiseDao;
 import com.bizzan.bitrade.event.MemberEvent;
 import com.bizzan.bitrade.service.AdvertiseService;
 import com.bizzan.bitrade.service.OtcCoinService;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import javax.annotation.Resource;
+
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class ApiApplicationTests {
-    @Autowired
+    @Resource
     private OtcCoinService otcCoinService;
-    @Autowired
+    @Resource
     private AdvertiseService advertiseService;
-    @Autowired
+    @Resource
     private AdvertiseDao advertiseDao;
-    //@Autowired
+    //@Resource
     //private JavaMailSender javaMailSender;
-    @Autowired
+    @Resource
     private MemberEvent memberEvent;
 
     @Test

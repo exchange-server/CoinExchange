@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class AccountScreen {
 
-    private String account ;
+    private String account;
 }

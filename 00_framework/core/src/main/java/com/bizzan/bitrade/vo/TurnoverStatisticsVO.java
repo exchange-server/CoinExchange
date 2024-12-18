@@ -11,12 +11,12 @@ import java.util.Date;
 @ToString
 public class TurnoverStatisticsVO {
 
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date date ;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date date;
 
     private String unit;
 
-    private BigDecimal amount   = BigDecimal.ZERO;
+    private BigDecimal amount = BigDecimal.ZERO;
 
-    private BigDecimal money   = BigDecimal.ZERO;
+    private BigDecimal money = BigDecimal.ZERO;
 }

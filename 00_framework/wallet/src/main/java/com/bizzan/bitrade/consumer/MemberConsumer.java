@@ -6,77 +6,89 @@ import com.bizzan.bitrade.constant.ActivityRewardType;
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.RewardRecordType;
 import com.bizzan.bitrade.constant.TransactionType;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Coin;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.RewardActivitySetting;
+import com.bizzan.bitrade.entity.RewardRecord;
 import com.bizzan.bitrade.es.ESUtils;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.CoinService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.RewardActivitySettingService;
+import com.bizzan.bitrade.service.RewardRecordService;
 import com.bizzan.bitrade.util.BigDecimalUtils;
 import com.bizzan.bitrade.util.GeneratorUtil;
 import com.bizzan.bitrade.util.MessageResult;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Component
 public class MemberConsumer {
     private Logger logger = LoggerFactory.getLogger(MemberConsumer.class);
-    @Autowired
+    @Resource
     private RestTemplate restTemplate;
-    @Autowired
+    @Resource
     private CoinService coinService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private RewardActivitySettingService rewardActivitySettingService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private RewardRecordService rewardRecordService;
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-    @Autowired
-    private ESUtils esUtils ;
+    @Resource
+    private ESUtils esUtils;
 
     /**
      * 重置用户钱包地址
+     *
      * @param record
      */
     @KafkaListener(topics = {"reset-member-address"})
-    public void resetAddress(ConsumerRecord<String,String> record){
+    public void resetAddress(ConsumerRecord<String, String> record) {
         String content = record.value();
         JSONObject json = JSON.parseObject(content);
         Coin coin = coinService.findByUnit(record.key());
-        Assert.notNull(coin,"coin null");
-        if(coin.getEnableRpc()==BooleanEnum.IS_TRUE){
-            MemberWallet memberWallet = memberWalletService.findByCoinUnitAndMemberId(record.key(),json.getLong("uid"));
-            Assert.notNull(memberWallet,"wallet null");
-            String account = "U" + json.getLong("uid")+ GeneratorUtil.getNonceString(4);
+        Assert.notNull(coin, "coin null");
+        if (coin.getEnableRpc() == BooleanEnum.IS_TRUE) {
+            MemberWallet memberWallet = memberWalletService.findByCoinUnitAndMemberId(record.key(), json.getLong("uid"));
+            Assert.notNull(memberWallet, "wallet null");
+            String account = "U" + json.getLong("uid") + GeneratorUtil.getNonceString(4);
             //远程RPC服务URL,后缀为币种单位
             String serviceName = "SERVICE-RPC-" + coin.getUnit();
-            try{
+            try {
                 String url = "http://" + serviceName + "/rpc/address/{account}";
                 ResponseEntity<MessageResult> result = restTemplate.getForEntity(url, MessageResult.class, account);
                 logger.info("remote call:service={},result={}", serviceName, result);
                 if (result.getStatusCode().value() == 200) {
                     MessageResult mr = result.getBody();
                     if (mr.getCode() == 0) {
-                        String address =  mr.getData().toString();
+                        String address = mr.getData().toString();
                         memberWallet.setAddress(address);
                     }
                 }
-            }
-            catch (Exception e){
-                logger.error("call {} failed,error={}",serviceName,e.getMessage());
+            } catch (Exception e) {
+                logger.error("call {} failed,error={}", serviceName, e.getMessage());
             }
             memberWalletService.save(memberWallet);
         }
@@ -85,6 +97,7 @@ public class MemberConsumer {
 
     /**
      * 客户注册消息
+     *
      * @param content
      */
     @KafkaListener(topics = {"member-register"})
@@ -94,20 +107,20 @@ public class MemberConsumer {
             return;
         }
         JSONObject json = JSON.parseObject(content);
-        if(json == null) {
-            return ;
+        if (json == null) {
+            return;
         }
         //获取所有支持的币种
-        List<Coin> coins =  coinService.findAll();
-        for(Coin coin:coins) {
-            logger.info("memberId:{},unit:{}",json.getLong("uid"),coin.getUnit());
+        List<Coin> coins = coinService.findAll();
+        for (Coin coin : coins) {
+            logger.info("memberId:{},unit:{}", json.getLong("uid"), coin.getUnit());
             MemberWallet wallet = new MemberWallet();
             wallet.setCoin(coin);
             wallet.setMemberId(json.getLong("uid"));
             wallet.setBalance(new BigDecimal(0));
             wallet.setFrozenBalance(new BigDecimal(0));
             wallet.setAddress("");
-            
+
 /** 此处获取地址注释掉，所有币种地址由用户主动获取才生成  **/
 //            if(coin.getEnableRpc() == BooleanEnum.IS_TRUE) {
 //                String account = "U" + json.getLong("uid");
@@ -140,12 +153,14 @@ public class MemberConsumer {
         }
         //注册活动奖励
         RewardActivitySetting rewardActivitySetting = rewardActivitySettingService.findByType(ActivityRewardType.REGISTER);
-        if (rewardActivitySetting!=null){
-            MemberWallet memberWallet=memberWalletService.findByCoinAndMemberId(rewardActivitySetting.getCoin(),json.getLong("uid"));
-            if (memberWallet==null){return;}
+        if (rewardActivitySetting != null) {
+            MemberWallet memberWallet = memberWalletService.findByCoinAndMemberId(rewardActivitySetting.getCoin(), json.getLong("uid"));
+            if (memberWallet == null) {
+                return;
+            }
             // 奖励币
-            BigDecimal amount3=JSONObject.parseObject(rewardActivitySetting.getInfo()).getBigDecimal("amount");
-            memberWallet.setBalance(BigDecimalUtils.add(memberWallet.getBalance(),amount3));
+            BigDecimal amount3 = JSONObject.parseObject(rewardActivitySetting.getInfo()).getBigDecimal("amount");
+            memberWallet.setBalance(BigDecimalUtils.add(memberWallet.getBalance(), amount3));
             memberWalletService.save(memberWallet);
             // 保存奖励记录
             Member member = memberService.findOne(json.getLong("uid"));

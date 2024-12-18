@@ -11,13 +11,13 @@ package com.bizzan.bitrade.config;
 
 // 	@Value("${quiz.quizMemberId}")
 // 	private Long quizMemberId;
-	
+
 // 	@Value("${quiz.premiumMemberId}")
 // 	private Long premiumMemberId;
-	
+
 // 	@Value("${quiz.decimalismMemberId}")
 // 	private Long decimalismMemberId;
-	
+
 // 	@Value("${quiz.handlingMemberId}")
 // 	private Long handlingMemberId;
 

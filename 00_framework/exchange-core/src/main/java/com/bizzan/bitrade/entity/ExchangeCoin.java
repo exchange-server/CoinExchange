@@ -1,13 +1,16 @@
 package com.bizzan.bitrade.entity;
 
 
+import com.bizzan.bitrade.constant.BooleanEnum;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-
-import com.bizzan.bitrade.constant.BooleanEnum;
-
 import java.math.BigDecimal;
 
 @Entity
@@ -23,7 +26,7 @@ public class ExchangeCoin {
     private String baseSymbol;
     //状态，1：启用，2：禁止
     private int enable;
-    
+
     //交易手续费
     @Column(columnDefinition = "decimal(8,4) comment '交易手续费'")
     private BigDecimal fee;
@@ -35,17 +38,17 @@ public class ExchangeCoin {
     private int baseCoinScale;
     @Column(columnDefinition = "decimal(18,8) default 0 comment '卖单最低价格'")
     private BigDecimal minSellPrice;
-    
+
     @Column(columnDefinition = "decimal(18,8) default 0 comment '最高买单价'")
     private BigDecimal maxBuyPrice;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(columnDefinition = "int(11) default 1 comment '是否启用市价卖'")
-    private BooleanEnum  enableMarketSell = BooleanEnum.IS_TRUE;
+    private BooleanEnum enableMarketSell = BooleanEnum.IS_TRUE;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(columnDefinition = "int(11) default 1 comment '是否启用市价买'")
-    private BooleanEnum  enableMarketBuy = BooleanEnum.IS_TRUE;
+    private BooleanEnum enableMarketBuy = BooleanEnum.IS_TRUE;
 
     /**
      * 最大交易时间
@@ -66,7 +69,7 @@ public class ExchangeCoin {
      */
     @Column(columnDefinition = "int(11) default 0 comment '机器人类型'")
     private int robotType;
-    
+
     /**
      * 标签位，用于推荐，排序等,默认为0，1表示推荐，
      */
@@ -86,53 +89,53 @@ public class ExchangeCoin {
      * 最小下单量，0表示不限制
      */
     @Column(columnDefinition = "decimal(18,8) default 0 comment '最小下单量'")
-    private BigDecimal minVolume =BigDecimal.ZERO;
+    private BigDecimal minVolume = BigDecimal.ZERO;
     /**
      * 最大下单量，0表示不限制
      */
     @Column(columnDefinition = "decimal(18,8) default 0 comment '最大下单量'")
-    private BigDecimal maxVolume =BigDecimal.ZERO;
-    
+    private BigDecimal maxVolume = BigDecimal.ZERO;
+
     /**
      * 发行活动类型 1：无活动，2：抢购发行，3：分摊发行
      */
     @Column(columnDefinition = "int(11) default 1  comment '发行活动类型 1:无活动,2:抢购发行,3:分摊发行'")
     private ExchangeCoinPublishType publishType = ExchangeCoinPublishType.NONE;
-    
+
     /**
      * 活动开始时间(抢购发行与分摊发行都需要设置)
      */
     @Column(columnDefinition = "varchar(30) default '2000-01-01 01:00:00'  comment '开始时间'")
     private String startTime;//开始时间
-    
+
     /**
      * 活动结束时间(抢购发行与分摊发行都需要设置)
      */
     @Column(columnDefinition = "varchar(30) default '2000-01-01 01:00:00'  comment '结束时间'")
     private String endTime;//开始时间
-    
+
     /**
      * 活动清盘时间(抢购发行与分摊发行都需要设置)
      */
     @Column(columnDefinition = "varchar(30) default '2000-01-01 01:00:00'  comment '清盘时间'")
     private String clearTime;//清盘时间
-    
+
     /**
      * 分摊发行价格(抢购发行与分摊发行都需要设置)
      */
     @Column(columnDefinition = "decimal(18,8) default 0 comment ' 分摊发行价格'")
     private BigDecimal publishPrice;
-    
+
     /**
      * 活动发行数量(抢购发行与分摊发行都需要设置)
      */
     @Column(columnDefinition = "decimal(18,8) default 0 comment ' 活动发行数量'")
     private BigDecimal publishAmount;
-    
+
     //前台可见状态，1：可见，2：不可见
     @Column(columnDefinition = "int(11) default 1 comment ' 前台可见状态'")
     private int visible;
-    
+
     //是否可交易，1：可交易，2：不可交易
     @Column(columnDefinition = "int(11) default 1 comment ' 是否可交易'")
     private int exchangeable;
@@ -145,19 +148,19 @@ public class ExchangeCoin {
      */
     @Transient
     private Long currentTime;
-    
+
     /**
      * 交易引擎状态（0：不可用，1：可用
      */
     @Transient
     private int engineStatus = 0;
-    
+
     /**
      * 行情引擎状态（0：不可用，1：可用
      */
     @Transient
     private int marketEngineStatus = 0;
-    
+
     /**
      * 交易机器人状态（0：非运行中，1：运行中）
      */
@@ -166,9 +169,9 @@ public class ExchangeCoin {
 
     @Enumerated(EnumType.ORDINAL)
     @Column(columnDefinition = "int(11) default 1 comment '是否允许卖'")
-    private BooleanEnum  enableSell = BooleanEnum.IS_TRUE;
+    private BooleanEnum enableSell = BooleanEnum.IS_TRUE;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(columnDefinition = "int(11) default 1 comment '是否允许买'")
-    private BooleanEnum  enableBuy = BooleanEnum.IS_TRUE;
+    private BooleanEnum enableBuy = BooleanEnum.IS_TRUE;
 }

@@ -2,7 +2,6 @@ package com.bizzan.bitrade.constant;
 
 import com.bizzan.bitrade.core.BaseEnum;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +22,7 @@ public enum ActivityRewardType implements BaseEnum {
      */
     TRANSACTION("交易奖励"),
     /**
-    /**
+     * /**
      * 充值奖励
      */
     RECHARGE("充值奖励");

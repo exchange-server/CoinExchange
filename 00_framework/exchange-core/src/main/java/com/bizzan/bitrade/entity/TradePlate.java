@@ -20,11 +20,12 @@ public class TradePlate {
     //方向
     private ExchangeOrderDirection direction;
     private String symbol;
-    public TradePlate(){
+
+    public TradePlate() {
 
     }
 
-    public TradePlate(String symbol,ExchangeOrderDirection direction) {
+    public TradePlate(String symbol, ExchangeOrderDirection direction) {
         this.direction = direction;
         this.symbol = symbol;
         items = new LinkedList<>();
@@ -55,7 +56,7 @@ public class TradePlate {
                     }
                 }
             }
-            if(index < maxDepth) {
+            if (index < maxDepth) {
                 TradePlateItem newItem = new TradePlateItem();
                 newItem.setAmount(exchangeOrder.getAmount().subtract(exchangeOrder.getTradedAmount()));
                 newItem.setPrice(exchangeOrder.getPrice());
@@ -65,7 +66,7 @@ public class TradePlate {
         return true;
     }
 
-    public void remove(ExchangeOrder order,BigDecimal amount) {
+    public void remove(ExchangeOrder order, BigDecimal amount) {
         synchronized (items) {
             //log.info("items>>init_size={},orderPrice={}",items.size(),order.getPrice());
             for (int index = 0; index < items.size(); index++) {
@@ -79,58 +80,57 @@ public class TradePlate {
                     return;
                 }
             }
-            log.info("items>>return_size={}",items.size());
+            log.info("items>>return_size={}", items.size());
         }
     }
 
-    public void remove(ExchangeOrder order){
-        remove(order,order.getAmount().subtract(order.getTradedAmount()));
+    public void remove(ExchangeOrder order) {
+        remove(order, order.getAmount().subtract(order.getTradedAmount()));
     }
 
-    public void setItems(LinkedList<TradePlateItem> items){
+    public void setItems(LinkedList<TradePlateItem> items) {
         this.items = items;
     }
 
-    public BigDecimal getHighestPrice(){
-        if(items.size() == 0) {
+    public BigDecimal getHighestPrice() {
+        if (items.size() == 0) {
             return BigDecimal.ZERO;
         }
-        if(direction == ExchangeOrderDirection.BUY){
+        if (direction == ExchangeOrderDirection.BUY) {
             return items.getFirst().getPrice();
-        }
-        else{
+        } else {
             return items.getLast().getPrice();
         }
     }
 
-    public int getDepth(){
+    public int getDepth() {
         return items.size();
     }
 
 
-    public BigDecimal getLowestPrice(){
-        if(items.size() == 0) {
+    public BigDecimal getLowestPrice() {
+        if (items.size() == 0) {
             return BigDecimal.ZERO;
         }
-        if(direction == ExchangeOrderDirection.BUY){
+        if (direction == ExchangeOrderDirection.BUY) {
             return items.getLast().getPrice();
-        }
-        else{
+        } else {
             return items.getFirst().getPrice();
         }
     }
 
     /**
      * 获取委托量最大的档位
+     *
      * @return
      */
-    public BigDecimal getMaxAmount(){
-        if(items.size() == 0) {
+    public BigDecimal getMaxAmount() {
+        if (items.size() == 0) {
             return BigDecimal.ZERO;
         }
         BigDecimal amount = BigDecimal.ZERO;
-        for(TradePlateItem item:items){
-            if(item.getAmount().compareTo(amount)>0){
+        for (TradePlateItem item : items) {
+            if (item.getAmount().compareTo(amount) > 0) {
                 amount = item.getAmount();
             }
         }
@@ -139,42 +139,43 @@ public class TradePlate {
 
     /**
      * 获取委托量最小的档位
+     *
      * @return
      */
-    public BigDecimal getMinAmount(){
-        if(items.size() == 0) {
+    public BigDecimal getMinAmount() {
+        if (items.size() == 0) {
             return BigDecimal.ZERO;
         }
         BigDecimal amount = items.getFirst().getAmount();
-        for(TradePlateItem item:items){
-            if(item.getAmount().compareTo(amount) < 0){
+        for (TradePlateItem item : items) {
+            if (item.getAmount().compareTo(amount) < 0) {
                 amount = item.getAmount();
             }
         }
         return amount;
     }
 
-    public JSONObject toJSON(){
+    public JSONObject toJSON() {
         JSONObject json = new JSONObject();
-        json.put("direction",direction);
-        json.put("maxAmount",getMaxAmount());
-        json.put("minAmount",getMinAmount());
-        json.put("highestPrice",getHighestPrice());
-        json.put("lowestPrice",getLowestPrice());
-        json.put("symbol",getSymbol());
-        json.put("items",items);
+        json.put("direction", direction);
+        json.put("maxAmount", getMaxAmount());
+        json.put("minAmount", getMinAmount());
+        json.put("highestPrice", getHighestPrice());
+        json.put("lowestPrice", getLowestPrice());
+        json.put("symbol", getSymbol());
+        json.put("items", items);
         return json;
     }
 
-    public JSONObject toJSON(int limit){
+    public JSONObject toJSON(int limit) {
         JSONObject json = new JSONObject();
-        json.put("direction",direction);
-        json.put("maxAmount",getMaxAmount());
-        json.put("minAmount",getMinAmount());
-        json.put("highestPrice",getHighestPrice());
-        json.put("lowestPrice",getLowestPrice());
-        json.put("symbol",getSymbol());
-        json.put("items",items.size() > limit ? items.subList(0,limit) : items);
+        json.put("direction", direction);
+        json.put("maxAmount", getMaxAmount());
+        json.put("minAmount", getMinAmount());
+        json.put("highestPrice", getHighestPrice());
+        json.put("lowestPrice", getLowestPrice());
+        json.put("symbol", getSymbol());
+        json.put("items", items.size() > limit ? items.subList(0, limit) : items);
         return json;
     }
 }

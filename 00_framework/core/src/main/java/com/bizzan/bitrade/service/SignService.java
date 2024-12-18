@@ -1,12 +1,12 @@
 package com.bizzan.bitrade.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bizzan.bitrade.constant.SignStatus;
 import com.bizzan.bitrade.dao.SignDao;
 import com.bizzan.bitrade.entity.Sign;
 import com.bizzan.bitrade.service.Base.TopBaseService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author Jammy
@@ -18,7 +18,7 @@ public class SignService extends TopBaseService<Sign, SignDao> {
 
 
     @Override
-    @Autowired
+    @Resource
     public void setDao(SignDao dao) {
         super.setDao(dao);
     }

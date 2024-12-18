@@ -7,19 +7,19 @@ import java.math.BigDecimal;
 @Data
 public class BusinessStatisticsVO {
 
-    private Long advertisementNum ;
+    private Long advertisementNum;
 
-    private BigDecimal money ;
+    private BigDecimal money;
 
-    private BigDecimal amount ;
+    private BigDecimal amount;
 
     /**
      * 申诉次数
      */
-    private Long complainantNum  ;
+    private Long complainantNum;
 
     /**
      * 被申诉次数
      */
-    private Long defendantNum ;
+    private Long defendantNum;
 }

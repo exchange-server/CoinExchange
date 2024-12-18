@@ -4,7 +4,6 @@ import com.bizzan.bitrade.ability.ScreenAbility;
 import com.bizzan.bitrade.constant.AdvertiseControlStatus;
 import com.bizzan.bitrade.entity.QAdvertise;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.Data;
 
 import java.util.ArrayList;

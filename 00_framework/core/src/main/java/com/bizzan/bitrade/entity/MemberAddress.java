@@ -2,12 +2,19 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.util.Date;
 
 /**
@@ -34,7 +41,7 @@ public class MemberAddress {
     private Coin coin;
     private String address;
     @Enumerated(EnumType.ORDINAL)
-    private CommonStatus status=CommonStatus.NORMAL;
+    private CommonStatus status = CommonStatus.NORMAL;
     private Long memberId;
     private String remark;
 

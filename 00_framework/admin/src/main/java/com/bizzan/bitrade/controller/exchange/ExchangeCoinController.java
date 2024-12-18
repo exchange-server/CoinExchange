@@ -1,41 +1,6 @@
 package com.bizzan.bitrade.controller.exchange;
 
-import static org.springframework.util.Assert.notNull;
-
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.apache.shiro.util.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-import org.springframework.web.client.RestTemplate;
-
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
@@ -49,9 +14,7 @@ import com.bizzan.bitrade.entity.ExchangeCoin;
 import com.bizzan.bitrade.entity.ExchangeOrder;
 import com.bizzan.bitrade.entity.ExchangeOrderStatus;
 import com.bizzan.bitrade.entity.QExchangeCoin;
-import com.bizzan.bitrade.entity.QExchangeOrder;
 import com.bizzan.bitrade.model.screen.ExchangeCoinScreen;
-import com.bizzan.bitrade.model.screen.ExchangeOrderScreen;
 import com.bizzan.bitrade.service.CoinService;
 import com.bizzan.bitrade.service.ExchangeCoinService;
 import com.bizzan.bitrade.service.ExchangeOrderService;
@@ -62,6 +25,40 @@ import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.sparkframework.security.Encrypt;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.springframework.util.Assert.notNull;
 
 /**
  * @author Shaoxianjun
@@ -77,22 +74,22 @@ public class ExchangeCoinController extends BaseAdminController {
     @Value("${spark.system.md5.key}")
     private String md5Key;
 
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
-    @Autowired
+    @Resource
     private ExchangeCoinService exchangeCoinService;
 
-    @Autowired
+    @Resource
     private ExchangeOrderService exchangeOrderService;
 
-    @Autowired
+    @Resource
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    @Autowired
+    @Resource
     private RestTemplate restTemplate;
 
-    @Autowired
+    @Resource
     private CoinService coinService;
 
     @RequiresPermissions("exchange:exchange-coin:merge")
@@ -103,15 +100,15 @@ public class ExchangeCoinController extends BaseAdminController {
         logger.info("Add exchange coin: " + JSON.toJSONString(exchangeCoin));
 
         ExchangeCoin findResult = exchangeCoinService.findBySymbol(exchangeCoin.getSymbol());
-        if(findResult != null) {
+        if (findResult != null) {
             return error("[" + exchangeCoin.getSymbol() + "]交易对已存在！");
         }
         Coin c1 = coinService.findByUnit(exchangeCoin.getBaseSymbol());
-        if(c1 == null) {
+        if (c1 == null) {
             return error("[" + exchangeCoin.getBaseSymbol() + "] 结算币种不存在！");
         }
         Coin c2 = coinService.findByUnit(exchangeCoin.getCoinSymbol());
-        if(c2 == null) {
+        if (c2 == null) {
             return error("[" + exchangeCoin.getCoinSymbol() + "] 交易币种不存在！");
         }
         exchangeCoin = exchangeCoinService.save(exchangeCoin);
@@ -137,12 +134,12 @@ public class ExchangeCoinController extends BaseAdminController {
         String serviceName = "SERVICE-EXCHANGE-TRADE";
         String exchangeUrl = "http://" + serviceName + "/monitor/engines";
         ResponseEntity<HashMap> result = restTemplate.getForEntity(exchangeUrl, HashMap.class);
-        Map<String, Integer> engineSymbols = (HashMap<String, Integer>)result.getBody();
+        Map<String, Integer> engineSymbols = (HashMap<String, Integer>) result.getBody();
 
-        for(ExchangeCoin item : all.getContent()) {
-            if(engineSymbols != null && engineSymbols.containsKey(item.getSymbol())) {
+        for (ExchangeCoin item : all.getContent()) {
+            if (engineSymbols != null && engineSymbols.containsKey(item.getSymbol())) {
                 item.setEngineStatus(engineSymbols.get(item.getSymbol())); // 1: 运行中  2:暂停中
-            }else {
+            } else {
                 item.setEngineStatus(0); // 0:不可用
             }
             item.setCurrentTime(Calendar.getInstance().getTimeInMillis());
@@ -151,25 +148,26 @@ public class ExchangeCoinController extends BaseAdminController {
         String marketServiceName = "bitrade-market";
         String marketUrl = "http://" + marketServiceName + "/market/engines";
         ResponseEntity<HashMap> marketResult = restTemplate.getForEntity(marketUrl, HashMap.class);
-        Map<String, Integer> marketEngineSymbols = (HashMap<String, Integer>)marketResult.getBody();
+        Map<String, Integer> marketEngineSymbols = (HashMap<String, Integer>) marketResult.getBody();
 
-        for(ExchangeCoin item : all.getContent()) {
+        for (ExchangeCoin item : all.getContent()) {
             // 行情引擎
-            if(marketEngineSymbols != null && marketEngineSymbols.containsKey(item.getSymbol())) {
+            if (marketEngineSymbols != null && marketEngineSymbols.containsKey(item.getSymbol())) {
                 item.setMarketEngineStatus(marketEngineSymbols.get(item.getSymbol()));
-            }else {
+            } else {
                 item.setMarketEngineStatus(0);
             }
 
             // 机器人
-            if(this.isRobotExists(item)) {
+            if (this.isRobotExists(item)) {
                 item.setExEngineStatus(1);
-            }else {
+            } else {
                 item.setExEngineStatus(0);
             }
         }
         return success(all);
     }
+
     private Predicate getPredicate(ExchangeCoinScreen screen) {
         ArrayList<BooleanExpression> booleanExpressions = new ArrayList<>();
         QExchangeCoin qExchangeCoin = QExchangeCoin.exchangeCoin;
@@ -182,8 +180,10 @@ public class ExchangeCoinController extends BaseAdminController {
 
         return PredicateUtils.getPredicate(booleanExpressions);
     }
+
     /**
      * 查看交易对详情
+     *
      * @param symbol
      * @return
      */
@@ -204,19 +204,19 @@ public class ExchangeCoinController extends BaseAdminController {
             @RequestParam(value = "ids") String[] ids) {
         // 检查是否有未成交订单
         String coins = "";
-        for(String id: ids) {
+        for (String id : ids) {
             ExchangeCoin temCoin = exchangeCoinService.findOne(id);
             notNull(temCoin, "ID=" + id + "交易对不存在");
             List<ExchangeOrder> orders = exchangeOrderService.findAllTradingOrderBySymbol(temCoin.getSymbol());
-            if(orders.size() > 0) {
+            if (orders.size() > 0) {
                 return error(temCoin.getSymbol() + "交易对尚有" + orders.size() + "笔委托未成交，请撤销后再删除！");
             }
-            if(temCoin.getEnable() == 1 || temCoin.getExchangeable() == 1) {
+            if (temCoin.getEnable() == 1 || temCoin.getExchangeable() == 1) {
                 return error("请先关闭" + temCoin.getSymbol() + "交易引擎,并设置交易对状态为不可交易和下架状态");
             }
             coins += temCoin.getSymbol() + ",";
         }
-        logger.info("Delete exchange coin: " + coins.substring(0, coins.length()-1));
+        logger.info("Delete exchange coin: " + coins.substring(0, coins.length() - 1));
         exchangeCoinService.deletes(ids);
         return success(messageSource.getMessage("SUCCESS"));
     }
@@ -246,10 +246,10 @@ public class ExchangeCoinController extends BaseAdminController {
         if (fee != null) {
             exchangeCoin.setFee(fee);//修改手续费
         }
-        if(minTurnover != null) {
+        if (minTurnover != null) {
             exchangeCoin.setMinTurnover(minTurnover);
         }
-        if(maxBuyPrice != null) {
+        if (maxBuyPrice != null) {
             exchangeCoin.setMaxBuyPrice(maxBuyPrice);
         }
         if (sort != null) {
@@ -258,23 +258,23 @@ public class ExchangeCoinController extends BaseAdminController {
         if (enable != null && enable > 0 && enable < 3) {
             exchangeCoin.setEnable(enable);//设置启用 禁用
         }
-        if(visible != null && visible > 0 && visible <3) {
+        if (visible != null && visible > 0 && visible < 3) {
             exchangeCoin.setVisible(visible);
         }
-        if(exchangeable != null && exchangeable > 0 && exchangeable < 3) {
+        if (exchangeable != null && exchangeable > 0 && exchangeable < 3) {
             exchangeCoin.setExchangeable(exchangeable);
         }
-        if(enableMarketBuy != null && enableMarketBuy >= 0 && enableMarketBuy <2) {
-            exchangeCoin.setEnableMarketBuy(enableMarketBuy==1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
+        if (enableMarketBuy != null && enableMarketBuy >= 0 && enableMarketBuy < 2) {
+            exchangeCoin.setEnableMarketBuy(enableMarketBuy == 1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
         }
-        if(enableMarketSell != null && enableMarketSell >= 0 && enableMarketSell <2) {
-            exchangeCoin.setEnableMarketSell(enableMarketSell==1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
+        if (enableMarketSell != null && enableMarketSell >= 0 && enableMarketSell < 2) {
+            exchangeCoin.setEnableMarketSell(enableMarketSell == 1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
         }
-        if(enableBuy != null && enableBuy >= 0 && enableBuy <2) {
-            exchangeCoin.setEnableBuy(enableBuy==1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
+        if (enableBuy != null && enableBuy >= 0 && enableBuy < 2) {
+            exchangeCoin.setEnableBuy(enableBuy == 1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
         }
-        if(enableSell != null && enableSell >= 0 && enableSell <2) {
-            exchangeCoin.setEnableSell(enableSell ==1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
+        if (enableSell != null && enableSell >= 0 && enableSell < 2) {
+            exchangeCoin.setEnableSell(enableSell == 1 ? BooleanEnum.IS_TRUE : BooleanEnum.IS_FALSE);
         }
         logger.info("Modify exchange coin: " + symbol);
         exchangeCoinService.save(exchangeCoin);
@@ -283,6 +283,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 启动交易引擎（若不存在，则创建）
+     *
      * @param symbol
      * @param password
      * @param admin
@@ -300,19 +301,19 @@ public class ExchangeCoinController extends BaseAdminController {
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
 
-        if(exchangeCoin.getEnable() != 1) {
+        if (exchangeCoin.getEnable() != 1) {
             return MessageResult.error(500, "请先设置交易对为启用(上架)状态");
         }
 
         String serviceName = "SERVICE-EXCHANGE-TRADE";
-        String url = "http://" + serviceName + "/monitor/start-trader?symbol="+symbol;
+        String url = "http://" + serviceName + "/monitor/start-trader?symbol=" + symbol;
         ResponseEntity<MessageResult> resultStr = restTemplate.getForEntity(url, MessageResult.class);
-        MessageResult result = (MessageResult)resultStr.getBody();
+        MessageResult result = (MessageResult) resultStr.getBody();
 
-        if(result.getCode() == 0) {
+        if (result.getCode() == 0) {
             logger.info("Start exchange engine successful: " + symbol);
             return success(messageSource.getMessage("SUCCESS"));
-        }else {
+        } else {
             logger.info("Start exchange engine failed: " + symbol);
             return error(result.getMessage());
         }
@@ -320,6 +321,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 停止交易引擎（若不存在，则创建）
+     *
      * @param symbol
      * @param password
      * @param admin
@@ -337,19 +339,19 @@ public class ExchangeCoinController extends BaseAdminController {
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
 
-        if(exchangeCoin.getExchangeable() != 2) {
+        if (exchangeCoin.getExchangeable() != 2) {
             return MessageResult.error(500, "请先设置交易对为不可交易");
         }
 
         String serviceName = "SERVICE-EXCHANGE-TRADE";
-        String url = "http://" + serviceName + "/monitor/stop-trader?symbol="+symbol;
+        String url = "http://" + serviceName + "/monitor/stop-trader?symbol=" + symbol;
         ResponseEntity<MessageResult> resultStr = restTemplate.getForEntity(url, MessageResult.class);
-        MessageResult result = (MessageResult)resultStr.getBody();
+        MessageResult result = (MessageResult) resultStr.getBody();
 
-        if(result.getCode() == 0) {
+        if (result.getCode() == 0) {
             logger.info("Stop exchange engine successful: " + symbol);
             return success(messageSource.getMessage("SUCCESS"));
-        }else {
+        } else {
             logger.info("Stop exchange engine failed: " + symbol);
             return error(result.getMessage());
         }
@@ -357,6 +359,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 重置引擎
+     *
      * @param symbol
      * @param password
      * @param admin
@@ -374,19 +377,19 @@ public class ExchangeCoinController extends BaseAdminController {
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
 
-        if(exchangeCoin.getExchangeable() != 1) {
+        if (exchangeCoin.getExchangeable() != 1) {
             return MessageResult.error(500, "请先设置交易对为可交易状态");
         }
 
         String serviceName = "SERVICE-EXCHANGE-TRADE";
-        String url = "http://" + serviceName + "/monitor/reset-trader?symbol="+symbol;
+        String url = "http://" + serviceName + "/monitor/reset-trader?symbol=" + symbol;
         ResponseEntity<MessageResult> resultStr = restTemplate.getForEntity(url, MessageResult.class);
-        MessageResult result = (MessageResult)resultStr.getBody();
+        MessageResult result = (MessageResult) resultStr.getBody();
 
-        if(result.getCode() == 0) {
+        if (result.getCode() == 0) {
             logger.info("Reset exchange engine successful: " + symbol);
             return success(messageSource.getMessage("SUCCESS"));
-        }else {
+        } else {
             logger.info("Reset exchange engine failed: " + symbol);
             return error(result.getMessage());
         }
@@ -424,6 +427,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 取消某交易对所有订单
+     *
      * @param symbol
      * @param password
      * @param admin
@@ -440,31 +444,32 @@ public class ExchangeCoinController extends BaseAdminController {
         Assert.isTrue(password.equals(admin.getPassword()), messageSource.getMessage("WRONG_PASSWORD"));
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
-        if(exchangeCoin.getExchangeable() != 2) {
+        if (exchangeCoin.getExchangeable() != 2) {
             return MessageResult.error(500, "请先设置交易对为不可交易");
         }
         List<ExchangeOrder> orders = exchangeOrderService.findAllTradingOrderBySymbol(symbol);
         List<ExchangeOrder> cancelOrders = new ArrayList<ExchangeOrder>();
-        for(ExchangeOrder order : orders) {
+        for (ExchangeOrder order : orders) {
             if (order.getStatus() != ExchangeOrderStatus.TRADING) {
                 continue;
             }
-            if(isExchangeOrderExist(order)){
+            if (isExchangeOrderExist(order)) {
                 logger.info("Cancel exchange order: (" + symbol + ") " + JSON.toJSONString(orders));
 
-                kafkaTemplate.send("exchange-order-cancel",JSON.toJSONString(order));
+                kafkaTemplate.send("exchange-order-cancel", JSON.toJSONString(order));
                 cancelOrders.add(order);
-            }else {
+            } else {
                 //强制取消
                 exchangeOrderService.forceCancelOrder(order);
             }
         }
 
-        return success("未成交委托数：" + orders.size() + ", 共成功撤销："+cancelOrders.size(), cancelOrders);
+        return success("未成交委托数：" + orders.size() + ", 共成功撤销：" + cancelOrders.size(), cancelOrders);
     }
 
     /**
      * 查看交易对交易盘面详情（卖盘、买盘等）
+     *
      * @param symbol
      * @return
      */
@@ -477,9 +482,9 @@ public class ExchangeCoinController extends BaseAdminController {
         notNull(exchangeCoin, "validate symbol!");
 
         String serviceName = "SERVICE-EXCHANGE-TRADE";
-        String url = "http://" + serviceName + "/monitor/overview?symbol="+symbol;
+        String url = "http://" + serviceName + "/monitor/overview?symbol=" + symbol;
         ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
-        JSONObject result = (JSONObject)resultStr.getBody();
+        JSONObject result = (JSONObject) resultStr.getBody();
 
         logger.info("Overview exchange coin: " + symbol);
         return success(messageSource.getMessage("SUCCESS"), result);
@@ -487,6 +492,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 查看交易对机器人参数
+     *
      * @param symbol
      * @return
      */
@@ -497,44 +503,44 @@ public class ExchangeCoinController extends BaseAdminController {
 
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
-        if(exchangeCoin.getRobotType() == 0) {
+        if (exchangeCoin.getRobotType() == 0) {
             String serviceName = "ROBOT-TRADE-NORMAL";
             String contextPath = "/ernormal";
             String url = "http://" + serviceName + "/ernormal/getRobotParams?coinName=" + symbol;
             try {
                 ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
                 logger.info("Get robot config: " + resultStr.toString());
-                JSONObject result = (JSONObject)resultStr.getBody();
-                if(result.getIntValue("code") == 0) {
+                JSONObject result = (JSONObject) resultStr.getBody();
+                if (result.getIntValue("code") == 0) {
                     return success(messageSource.getMessage("SUCCESS"), result.getJSONObject("data"));
-                }else {
+                } else {
                     return error("获取机器人参数失败（该交易对无机器人或机器人意外停止）！");
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return error("获取机器人参数失败（该交易对无机器人或机器人意外停止）！");
             }
-        }else if(exchangeCoin.getRobotType() == 1) { // 独立出来，后面修改控盘机器人方便一些，其实代码现在是一样的
+        } else if (exchangeCoin.getRobotType() == 1) { // 独立出来，后面修改控盘机器人方便一些，其实代码现在是一样的
             String serviceName = "ROBOT-TRADE-NORMAL";
             String contextPath = "/ernormal";
             String url = "http://" + serviceName + "/ernormal/getRobotParams?coinName=" + symbol;
             try {
                 ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
                 logger.info("Get robot config: " + resultStr.toString());
-                JSONObject result = (JSONObject)resultStr.getBody();
-                if(result.getIntValue("code") == 0) {
+                JSONObject result = (JSONObject) resultStr.getBody();
+                if (result.getIntValue("code") == 0) {
                     return success(messageSource.getMessage("SUCCESS"), result.getJSONObject("data"));
-                }else {
+                } else {
                     return error("获取机器人参数失败（该交易对无机器人或机器人意外停止）！");
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return error("获取机器人参数失败（该交易对无机器人或机器人意外停止）！");
             }
-        }else if(exchangeCoin.getRobotType() == 2) {
+        } else if (exchangeCoin.getRobotType() == 2) {
             // 控盘机器人
             return null;
-        }else {
+        } else {
             return null;
         }
 
@@ -542,51 +548,53 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 检测是否存在交易机器人
+     *
      * @param coin
      * @return
      */
     private boolean isRobotExists(ExchangeCoin coin) {
-        if(coin.getRobotType() == 0) {
+        if (coin.getRobotType() == 0) {
             String serviceName = "ROBOT-TRADE-NORMAL";
             String url = "http://" + serviceName + "/ernormal/getRobotParams?coinName=" + coin.getSymbol();
             try {
                 ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
                 logger.info("Get robot config: " + resultStr.toString());
-                JSONObject result = (JSONObject)resultStr.getBody();
-                if(result.getIntValue("code") == 0) {
+                JSONObject result = (JSONObject) resultStr.getBody();
+                if (result.getIntValue("code") == 0) {
                     return true;
-                }else {
+                } else {
                     return false;
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
-        }else if(coin.getRobotType() == 1){ // 独立出来，后面修改控盘机器人方便一些，其实代码现在是一样的
+        } else if (coin.getRobotType() == 1) { // 独立出来，后面修改控盘机器人方便一些，其实代码现在是一样的
             String serviceName = "ROBOT-TRADE-NORMAL"; // 控盘机器人也通过此处进行控制
             String url = "http://" + serviceName + "/ernormal/getRobotParams?coinName=" + coin.getSymbol();
             try {
                 ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
                 logger.info("Get robot config: " + resultStr.toString());
-                JSONObject result = (JSONObject)resultStr.getBody();
-                if(result.getIntValue("code") == 0) {
+                JSONObject result = (JSONObject) resultStr.getBody();
+                if (result.getIntValue("code") == 0) {
                     return true;
-                }else {
+                } else {
                     return false;
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
-        }else if(coin.getRobotType() == 2) {
+        } else if (coin.getRobotType() == 2) {
             return false;
-        }else {
+        } else {
             return false;
         }
     }
 
     /**
      * 新建/修改交易机器人参数（一般机器人）
+     *
      * @param symbol
      * @param startAmount
      * @param randRange0
@@ -629,12 +637,12 @@ public class ExchangeCoinController extends BaseAdminController {
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
         // 一般机器人和控盘机器人
-        if(exchangeCoin.getRobotType() == 0 || exchangeCoin.getRobotType() == 1) {
+        if (exchangeCoin.getRobotType() == 0 || exchangeCoin.getRobotType() == 1) {
             RobotParams params = new RobotParams();
             params.setCoinName(symbol);
-            if(isHalt.intValue() == 0) {
+            if (isHalt.intValue() == 0) {
                 params.setHalt(false);
-            }else {
+            } else {
                 params.setHalt(true);
             }
             params.setStartAmount(startAmount);
@@ -660,15 +668,15 @@ public class ExchangeCoinController extends BaseAdminController {
             try {
                 ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
                 logger.info("Get robot config: " + resultStr.toString());
-                JSONObject result = (JSONObject)resultStr.getBody();
-                if(result.getIntValue("code") == 0) {
+                JSONObject result = (JSONObject) resultStr.getBody();
+                if (result.getIntValue("code") == 0) {
                     params.setStrategyType(result.getJSONObject("data").getInteger("strategyType"));
                     params.setFlowPair(result.getJSONObject("data").getString("flowPair"));
                     params.setFlowPercent(result.getJSONObject("data").getBigDecimal("flowPercent"));
-                }else {
+                } else {
                     return error("获取机器人参数失败（该交易对无机器人或机器人意外停止）！");
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return error("获取机器人参数失败（该交易对无机器人或机器人意外停止）！");
             }
@@ -679,16 +687,16 @@ public class ExchangeCoinController extends BaseAdminController {
             try {
                 ResponseEntity<JSONObject> resultStr = restTemplate.postForEntity(url, params, JSONObject.class);
                 logger.info("Set robot config: " + resultStr.toString());
-                JSONObject result = (JSONObject)resultStr.getBody();
-                if(result.getIntValue("code") == 0) {
+                JSONObject result = (JSONObject) resultStr.getBody();
+                if (result.getIntValue("code") == 0) {
                     return success(messageSource.getMessage("SUCCESS"), result);
-                }else {
+                } else {
                     return error("修改机器人参数失败（该交易对无机器人或机器人意外停止）！");
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 return error("修改机器人参数失败（该交易对无机器人或机器人意外停止）！");
             }
-        }else {
+        } else {
             return error("修改机器人参数失败：该交易对不是一般机器人！");
         }
     }
@@ -717,12 +725,12 @@ public class ExchangeCoinController extends BaseAdminController {
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
         // 一般机器人和控盘机器人
-        if(exchangeCoin.getRobotType() == 0 || exchangeCoin.getRobotType() == 1) {
+        if (exchangeCoin.getRobotType() == 0 || exchangeCoin.getRobotType() == 1) {
             RobotParams params = new RobotParams();
             params.setCoinName(symbol);
-            if(isHalt.intValue() == 0) {
+            if (isHalt.intValue() == 0) {
                 params.setHalt(false);
-            }else {
+            } else {
                 params.setHalt(true);
             }
             params.setStartAmount(startAmount);
@@ -746,34 +754,33 @@ public class ExchangeCoinController extends BaseAdminController {
 
             String serviceName = "ROBOT-TRADE-NORMAL";
             String url = "http://" + serviceName + "/ernormal/createRobot";
-            if(exchangeCoin.getRobotType() == 1) {
+            if (exchangeCoin.getRobotType() == 1) {
                 url = "http://" + serviceName + "/ernormal/createCustomRobot";
             }
             try {
                 ResponseEntity<JSONObject> resultStr = restTemplate.postForEntity(url, params, JSONObject.class);
                 logger.info("create robot config: " + resultStr.toString());
-                JSONObject result = (JSONObject)resultStr.getBody();
-                if(result.getIntValue("code") == 0) {
+                JSONObject result = (JSONObject) resultStr.getBody();
+                if (result.getIntValue("code") == 0) {
                     return success(messageSource.getMessage("SUCCESS"), result);
-                }else {
+                } else {
                     return error("创建失败：" + result.getString("message"));
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 return error("创建机器人失败（该交易对无机器人或机器人意外停止）！");
             }
-        }else {
+        } else {
             return error("创建机器人失败：该交易对不是一般机器人！");
         }
     }
 
-    public boolean isExchangeOrderExist(ExchangeOrder order){
+    public boolean isExchangeOrderExist(ExchangeOrder order) {
         try {
             String serviceName = "SERVICE-EXCHANGE-TRADE";
             String url = "http://" + serviceName + "/monitor/order?symbol=" + order.getSymbol() + "&orderId=" + order.getOrderId() + "&direction=" + order.getDirection() + "&type=" + order.getType();
             ResponseEntity<ExchangeOrder> result = restTemplate.getForEntity(url, ExchangeOrder.class);
             return result != null;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -781,6 +788,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 保存机器人行情趋势线
+     *
      * @param symbol
      * @param kdate
      * @param kline
@@ -797,26 +805,26 @@ public class ExchangeCoinController extends BaseAdminController {
         // 检查币种
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
-        if(exchangeCoin.getRobotType() != 1) {
+        if (exchangeCoin.getRobotType() != 1) {
             return error("该交易对不是控盘机器人");
         }
-        if(kdate.equals("") || kdate.length() < 10) {
+        if (kdate.equals("") || kdate.length() < 10) {
             return error("日期传入错误！");
         }
         kdate = kdate.substring(0, 10); // 前台传的形式是：2020-12-01T16:00:00.000Z
 
         // 保存
         String serviceName = "ROBOT-TRADE-NORMAL";
-        String url = "http://" + serviceName + "/ernormal/setRobotStrategy?coinName="+symbol + "&strategy=2&flowPair="+"BTC/USDT"+"&flowPercent=1";
+        String url = "http://" + serviceName + "/ernormal/setRobotStrategy?coinName=" + symbol + "&strategy=2&flowPair=" + "BTC/USDT" + "&flowPercent=1";
         try {
             ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
-            JSONObject result = (JSONObject)resultStr.getBody();
-            if(result.getIntValue("code") == 0) {
+            JSONObject result = (JSONObject) resultStr.getBody();
+            if (result.getIntValue("code") == 0) {
                 // do nothing
-            }else {
+            } else {
                 return error("请先创建机器人");
             }
-        }catch(Exception e) {
+        } catch (Exception e) {
             return error("保存失败");
         }
 
@@ -832,20 +840,19 @@ public class ExchangeCoinController extends BaseAdminController {
         try {
             ResponseEntity<JSONObject> resultStr = restTemplate.postForEntity(url, params, JSONObject.class);
             logger.info("save robot kline: " + resultStr.toString());
-            JSONObject result = (JSONObject)resultStr.getBody();
-            if(result.getIntValue("code") == 0) {
+            JSONObject result = (JSONObject) resultStr.getBody();
+            if (result.getIntValue("code") == 0) {
                 return success(messageSource.getMessage("SUCCESS"), result);
-            }else {
+            } else {
                 return error("创建失败：" + result.getString("message"));
             }
-        }catch(Exception e) {
+        } catch (Exception e) {
             return error("创建机器人失败（该交易对无机器人或机器人意外停止）！");
         }
     }
 
 
     /**
-     *
      * @param symbol
      * @param pair
      * @param flowPercent
@@ -860,32 +867,33 @@ public class ExchangeCoinController extends BaseAdminController {
         // 检查币种
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
-        if(exchangeCoin.getRobotType() != 1) {
+        if (exchangeCoin.getRobotType() != 1) {
             return error("该交易对不是控盘机器人");
         }
-        if(StringUtils.isEmpty(pair)) {
+        if (StringUtils.isEmpty(pair)) {
             return error("请选择跟随交易对");
         }
 
         // 保存String coinName, Integer strategy, String flowPair, BigDecimal flowPercent
         String serviceName = "ROBOT-TRADE-NORMAL";
-        String url = "http://" + serviceName + "/ernormal/setRobotStrategy?coinName="+symbol + "&strategy=1&flowPair="+pair+"&flowPercent="+flowPercent;
+        String url = "http://" + serviceName + "/ernormal/setRobotStrategy?coinName=" + symbol + "&strategy=1&flowPair=" + pair + "&flowPercent=" + flowPercent;
         try {
             ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
-            JSONObject result = (JSONObject)resultStr.getBody();
-            if(result.getIntValue("code") == 0) {
+            JSONObject result = (JSONObject) resultStr.getBody();
+            if (result.getIntValue("code") == 0) {
                 return success(messageSource.getMessage("SUCCESS"), result.getJSONArray("data"));
-            }else {
+            } else {
                 logger.info("获取机器人K线参数失败");
                 return error("获取机器人K线参数失败（该交易对无机器人或机器人意外停止）！");
             }
-        }catch(Exception e) {
+        } catch (Exception e) {
             return error("保存失败");
         }
     }
 
     /**
      * 获取所有控盘交易对列表
+     *
      * @return
      */
     @RequiresPermissions("exchange:exchange-coin:custom-coin-list")
@@ -898,6 +906,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 获取控盘机器人K线趋势参数列表（日期-数组）
+     *
      * @param symbol
      * @param kdate
      * @return
@@ -908,7 +917,7 @@ public class ExchangeCoinController extends BaseAdminController {
     public MessageResult RobotKlineDataList(@RequestParam("symbol") String symbol, @RequestParam("kdate") String kdate) {
         ExchangeCoin exchangeCoin = exchangeCoinService.findOne(symbol);
         notNull(exchangeCoin, "validate symbol!");
-        if(exchangeCoin.getRobotType() != 1) {
+        if (exchangeCoin.getRobotType() != 1) {
             return error("该交易对不是控盘机器人");
         }
 
@@ -916,7 +925,7 @@ public class ExchangeCoinController extends BaseAdminController {
 
         String currentDate = kdate;
         // 默认获取当前日期及以后的日期
-        if(currentDate.equals("") || currentDate == null) {
+        if (currentDate.equals("") || currentDate == null) {
             Date date = new Date();
             SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
             currentDate = sf.format(date);
@@ -928,14 +937,14 @@ public class ExchangeCoinController extends BaseAdminController {
         try {
             ResponseEntity<JSONObject> resultStr = restTemplate.getForEntity(url, JSONObject.class);
             logger.info("Get robot kline data: " + resultStr.toString());
-            JSONObject result = (JSONObject)resultStr.getBody();
-            if(result.getIntValue("code") == 0) {
+            JSONObject result = (JSONObject) resultStr.getBody();
+            if (result.getIntValue("code") == 0) {
                 return success(messageSource.getMessage("SUCCESS"), result.getJSONArray("data"));
-            }else {
+            } else {
                 logger.info("获取机器人K线参数失败");
                 return error("获取机器人K线参数失败（该交易对无机器人或机器人意外停止）！");
             }
-        }catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return error("获取机器人K线参数失败（该交易对无机器人或机器人意外停止）！");
         }
@@ -943,8 +952,8 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * 此处修改需要修改机器人交易工程RobotParams
-     * @author shaox
      *
+     * @author shaox
      */
     class RobotParams {
         private String coinName = ""; // 如btcusdt
@@ -977,15 +986,26 @@ public class ExchangeCoinController extends BaseAdminController {
             this.flowPercent = flowPercent;
         }
 
-        public String getFlowPair() { return flowPair; }
-        public void setFlowPair(String flowPair) { this.flowPair = flowPair; }
+        public String getFlowPair() {
+            return flowPair;
+        }
 
-        public int getStrategyType() { return strategyType; }
-        public void setStrategyType(int strategyType) { this.strategyType = strategyType; }
+        public void setFlowPair(String flowPair) {
+            this.flowPair = flowPair;
+        }
+
+        public int getStrategyType() {
+            return strategyType;
+        }
+
+        public void setStrategyType(int strategyType) {
+            this.strategyType = strategyType;
+        }
 
         public int getRobotType() {
             return robotType;
         }
+
         public void setRobotType(int robotType) {
             this.robotType = robotType;
         }
@@ -993,96 +1013,127 @@ public class ExchangeCoinController extends BaseAdminController {
         public double getStartAmount() {
             return startAmount;
         }
+
         public void setStartAmount(double startAmount) {
             this.startAmount = startAmount;
         }
+
         public double getRandRange0() {
             return randRange0;
         }
+
         public void setRandRange0(double randRange0) {
             this.randRange0 = randRange0;
         }
+
         public double getRandRange1() {
             return randRange1;
         }
+
         public void setRandRange1(double randRange1) {
             this.randRange1 = randRange1;
         }
+
         public double getRandRange2() {
             return randRange2;
         }
+
         public void setRandRange2(double randRange2) {
             this.randRange2 = randRange2;
         }
+
         public double getRandRange3() {
             return randRange3;
         }
+
         public void setRandRange3(double randRange3) {
             this.randRange3 = randRange3;
         }
+
         public double getRandRange4() {
             return randRange4;
         }
+
         public void setRandRange4(double randRange4) {
             this.randRange4 = randRange4;
         }
+
         public double getRandRange5() {
             return randRange5;
         }
+
         public void setRandRange5(double randRange5) {
             this.randRange5 = randRange5;
         }
+
         public double getRandRange6() {
             return randRange6;
         }
+
         public void setRandRange6(double randRange6) {
             this.randRange6 = randRange6;
         }
+
         public int getScale() {
             return scale;
         }
+
         public void setScale(int scale) {
             this.scale = scale;
         }
+
         public int getAmountScale() {
             return amountScale;
         }
+
         public void setAmountScale(int amountScale) {
             this.amountScale = amountScale;
         }
+
         public BigDecimal getMaxSubPrice() {
             return maxSubPrice;
         }
+
         public void setMaxSubPrice(BigDecimal maxSubPrice) {
             this.maxSubPrice = maxSubPrice;
         }
+
         public int getInitOrderCount() {
             return initOrderCount;
         }
+
         public void setInitOrderCount(int initOrderCount) {
             this.initOrderCount = initOrderCount;
         }
+
         public BigDecimal getPriceStepRate() {
             return priceStepRate;
         }
+
         public void setPriceStepRate(BigDecimal priceStepRate) {
             this.priceStepRate = priceStepRate;
         }
+
         public int getRunTime() {
             return runTime;
         }
+
         public void setRunTime(int runTime) {
             this.runTime = runTime;
         }
+
         public String getCoinName() {
             return coinName;
         }
+
         public void setCoinName(String coinName) {
             this.coinName = coinName;
         }
+
         public boolean isHalt() {
             return isHalt;
         }
+
         public void setHalt(boolean isHalt) {
             this.isHalt = isHalt;
         }
@@ -1090,10 +1141,10 @@ public class ExchangeCoinController extends BaseAdminController {
 
     /**
      * K线数据
-     * @author shaox
      *
+     * @author shaox
      */
-    class CustomRobotKline{
+    class CustomRobotKline {
         private String coinName = ""; // 交易对名称，如：xxxusdt
         private String kdate = ""; // K线日期，如：2020/02/02
         private String kline = ""; // K线数组JSON字符串
@@ -1102,24 +1153,31 @@ public class ExchangeCoinController extends BaseAdminController {
         public int getPricePencent() {
             return pricePencent;
         }
+
         public void setPricePencent(int pricePencent) {
             this.pricePencent = pricePencent;
         }
+
         public String getCoinName() {
             return coinName;
         }
+
         public void setCoinName(String coinName) {
             this.coinName = coinName;
         }
+
         public String getKdate() {
             return kdate;
         }
+
         public void setKdate(String kdate) {
             this.kdate = kdate;
         }
+
         public String getKline() {
             return kline;
         }
+
         public void setKline(String kline) {
             this.kline = kline;
         }

@@ -2,7 +2,6 @@ package com.bizzan.bitrade.controller.sdk;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.controller.sdk.utils.HttpClient4Utils;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -35,6 +34,29 @@ public class NECaptchaVerifier {
     }
 
     /**
+     * 生成签名信息
+     *
+     * @param secretKey 验证码私钥
+     * @param params    接口请求参数名和参数值map，不包括signature参数名
+     * @return
+     */
+    public static String sign(String secretKey, Map<String, String> params) {
+        String[] keys = params.keySet().toArray(new String[0]);
+        Arrays.sort(keys);
+        StringBuffer sb = new StringBuffer();
+        for (String key : keys) {
+            sb.append(key).append(params.get(key));
+        }
+        sb.append(secretKey);
+        try {
+            return DigestUtils.md5Hex(sb.toString().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();// 一般编码都支持的。。
+        }
+        return null;
+    }
+
+    /**
      * 二次验证
      *
      * @param validate 验证码组件提交上来的NECaptchaValidate值
@@ -62,29 +84,6 @@ public class NECaptchaVerifier {
         String resp = HttpClient4Utils.sendPost(VERIFY_API, params);
         System.out.println("resp = " + resp);
         return verifyRet(resp);
-    }
-
-    /**
-     * 生成签名信息
-     *
-     * @param secretKey 验证码私钥
-     * @param params    接口请求参数名和参数值map，不包括signature参数名
-     * @return
-     */
-    public static String sign(String secretKey, Map<String, String> params) {
-        String[] keys = params.keySet().toArray(new String[0]);
-        Arrays.sort(keys);
-        StringBuffer sb = new StringBuffer();
-        for (String key : keys) {
-            sb.append(key).append(params.get(key));
-        }
-        sb.append(secretKey);
-        try {
-            return DigestUtils.md5Hex(sb.toString().getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();// 一般编码都支持的。。
-        }
-        return null;
     }
 
     /**

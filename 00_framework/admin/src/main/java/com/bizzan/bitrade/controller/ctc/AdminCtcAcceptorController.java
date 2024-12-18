@@ -1,13 +1,21 @@
 package com.bizzan.bitrade.controller.ctc;
 
-import static org.springframework.util.Assert.notNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.bizzan.bitrade.annotation.AccessLog;
+import com.bizzan.bitrade.constant.AdminModule;
+import com.bizzan.bitrade.constant.PageModel;
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.controller.BaseController;
+import com.bizzan.bitrade.entity.Admin;
+import com.bizzan.bitrade.entity.CtcAcceptor;
+import com.bizzan.bitrade.service.CtcAcceptorService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.util.MessageResult;
+import com.sparkframework.security.Encrypt;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.util.Assert;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -18,19 +26,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
-import com.bizzan.bitrade.annotation.AccessLog;
-import com.bizzan.bitrade.constant.AdminModule;
-import com.bizzan.bitrade.constant.PageModel;
-import com.bizzan.bitrade.constant.SysConstant;
-import com.bizzan.bitrade.controller.BaseController;
-import com.bizzan.bitrade.entity.Admin;
-import com.bizzan.bitrade.entity.CtcAcceptor;
-import com.bizzan.bitrade.entity.CtcOrder;
-import com.bizzan.bitrade.service.CtcAcceptorService;
-import com.bizzan.bitrade.service.LocaleMessageSourceService;
-import com.bizzan.bitrade.util.DateUtil;
-import com.bizzan.bitrade.util.MessageResult;
-import com.sparkframework.security.Encrypt;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.springframework.util.Assert.notNull;
+
 /**
  * @author Shaoxianjun
  * @description otc承兑商
@@ -38,27 +38,28 @@ import com.sparkframework.security.Encrypt;
  */
 @RestController
 @RequestMapping("/ctc/acceptor")
-public class AdminCtcAcceptorController  extends BaseController {
-	@Autowired
-	private CtcAcceptorService acceptorService;
-	
-	@Value("${spark.system.md5.key}")
-    private String md5Key;
-	
+public class AdminCtcAcceptorController extends BaseController {
+    @Resource
+    private CtcAcceptorService acceptorService;
 
-    @Autowired
+    @Value("${spark.system.md5.key}")
+    private String md5Key;
+
+
+    @Resource
     private LocaleMessageSourceService messageSource;
-    
-	/**
-	 * 分页查询
-	 * @param pageModel
-	 * @return
-	 */
-	@RequiresPermissions("ctc:acceptor:page-query")
+
+    /**
+     * 分页查询
+     *
+     * @param pageModel
+     * @return
+     */
+    @RequiresPermissions("ctc:acceptor:page-query")
     @PostMapping("page-query")
     @AccessLog(module = AdminModule.CTC, operation = "分页查看CTC承兑商列表AdminCtcAcceptorController")
     public MessageResult orderList(PageModel pageModel) {
-		if (pageModel.getProperty() == null) {
+        if (pageModel.getProperty() == null) {
             List<String> list = new ArrayList<>();
             list.add("status");
             List<Sort.Direction> directions = new ArrayList<>();
@@ -69,30 +70,31 @@ public class AdminCtcAcceptorController  extends BaseController {
         Page<CtcAcceptor> all = acceptorService.findAll(null, pageModel.getPageable());
         return success(all);
     }
-	
-	/**
-	 * 切换状态
-	 * @param id
-	 * @param status
-	 * @return
-	 */
-	@RequiresPermissions("ctc:acceptor:switch")
+
+    /**
+     * 切换状态
+     *
+     * @param id
+     * @param status
+     * @return
+     */
+    @RequiresPermissions("ctc:acceptor:switch")
     @AccessLog(module = AdminModule.CTC, operation = "标记已付款并完成CTC订单")
-	@PostMapping("switch")
-	@Transactional(rollbackFor = Exception.class)
+    @PostMapping("switch")
+    @Transactional(rollbackFor = Exception.class)
     public MessageResult payOrder(@RequestParam("id") Long id,
-    		@RequestParam(value = "password") String password,
-            @SessionAttribute(SysConstant.SESSION_ADMIN) Admin admin) {
-		
-		password = Encrypt.MD5(password + md5Key);
+                                  @RequestParam(value = "password") String password,
+                                  @SessionAttribute(SysConstant.SESSION_ADMIN) Admin admin) {
+
+        password = Encrypt.MD5(password + md5Key);
         Assert.isTrue(password.equals(admin.getPassword()), messageSource.getMessage("WRONG_PASSWORD"));
-        
+
         CtcAcceptor acceptor = acceptorService.findOne(id);
         notNull(acceptor, "validate order.id!");
-        if(acceptor.getStatus() == 1) {
-        	acceptor.setStatus(0);
-        }else {
-        	acceptor.setStatus(1);
+        if (acceptor.getStatus() == 1) {
+            acceptor.setStatus(0);
+        } else {
+            acceptor.setStatus(1);
         }
         acceptorService.save(acceptor);
         return success();

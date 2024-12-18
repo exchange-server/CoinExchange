@@ -5,7 +5,11 @@ import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.constant.WithdrawStatus;
 import com.bizzan.bitrade.dao.WithdrawRecordDao;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.QMember;
+import com.bizzan.bitrade.entity.QWithdrawRecord;
+import com.bizzan.bitrade.entity.WithdrawRecord;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.pagination.Criteria;
 import com.bizzan.bitrade.pagination.PageListMapResult;
@@ -13,14 +17,16 @@ import com.bizzan.bitrade.pagination.PageResult;
 import com.bizzan.bitrade.pagination.Restrictions;
 import com.bizzan.bitrade.service.Base.BaseService;
 import com.bizzan.bitrade.vo.WithdrawRecordVO;
-import com.querydsl.core.types.*;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -28,12 +34,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
-import static com.bizzan.bitrade.constant.WithdrawStatus.*;
+import static com.bizzan.bitrade.constant.WithdrawStatus.FAIL;
+import static com.bizzan.bitrade.constant.WithdrawStatus.PROCESSING;
 import static com.bizzan.bitrade.entity.QWithdrawRecord.withdrawRecord;
 import static org.springframework.util.Assert.isTrue;
 import static org.springframework.util.Assert.notNull;
@@ -45,15 +53,15 @@ import static org.springframework.util.Assert.notNull;
 @Service
 @Slf4j
 public class WithdrawRecordService extends BaseService {
-    private Logger logger = LoggerFactory.getLogger(WithdrawRecordService.class);
-    @Autowired
-    private WithdrawRecordDao withdrawApplyDao;
-    @Autowired
-    private MemberWalletService walletService;
-    @Autowired
-    private MemberTransactionService transactionService;
-    @Autowired
+    @Resource
     ESUtils esUtils;
+    private Logger logger = LoggerFactory.getLogger(WithdrawRecordService.class);
+    @Resource
+    private WithdrawRecordDao withdrawApplyDao;
+    @Resource
+    private MemberWalletService walletService;
+    @Resource
+    private MemberTransactionService transactionService;
 
     public WithdrawRecord save(WithdrawRecord withdrawApply) {
         return withdrawApplyDao.save(withdrawApply);
@@ -167,7 +175,7 @@ public class WithdrawRecordService extends BaseService {
                 transaction.setType(TransactionType.WITHDRAW);
                 transaction.setFee(record.getFee());
                 transaction.setDiscountFee("0");
-                transaction.setRealFee(record.getFee()+"");
+                transaction.setRealFee(record.getFee() + "");
                 transaction.setCreateTime(new Date());
                 transaction = transactionService.save(transaction);
 
@@ -251,7 +259,7 @@ public class WithdrawRecordService extends BaseService {
 
     }
 
-    public long countAuditing(){
+    public long countAuditing() {
         return withdrawApplyDao.countAllByStatus(WithdrawStatus.PROCESSING);
     }
 }

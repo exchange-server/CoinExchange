@@ -2,9 +2,7 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.AdvertiseType;
 import com.bizzan.bitrade.constant.OrderStatus;
-import com.bizzan.bitrade.entity.Order;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -40,9 +38,9 @@ public class ScanOrder {
                 .amount(order.getNumber())
                 .money(order.getMoney())
                 .status(order.getStatus())
-                .commission(id.equals(order.getMemberId())?order.getCommission():BigDecimal.ZERO)
+                .commission(id.equals(order.getMemberId()) ? order.getCommission() : BigDecimal.ZERO)
                 .name(order.getCustomerId().equals(id) ? order.getMemberName() : order.getCustomerName())
-                .memberId(order.getCustomerId().equals(id) ? order.getMemberId():order.getCustomerId())
+                .memberId(order.getCustomerId().equals(id) ? order.getMemberId() : order.getCustomerId())
                 .type(judgeType(order.getAdvertiseType(), order, id))
                 .build();
     }
@@ -54,7 +52,7 @@ public class ScanOrder {
             return AdvertiseType.SELL;
         } else if (type.equals(AdvertiseType.SELL) && id.equals(order.getCustomerId())) {
             return AdvertiseType.BUY;
-        } else  {
+        } else {
             return AdvertiseType.SELL;
         }
     }

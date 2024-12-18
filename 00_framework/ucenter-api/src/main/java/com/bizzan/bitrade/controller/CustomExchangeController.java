@@ -2,8 +2,6 @@ package com.bizzan.bitrade.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.constant.TransactionType;
-import com.bizzan.bitrade.entity.CtcOrder;
-import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.entity.MemberTransaction;
 import com.bizzan.bitrade.entity.MemberWallet;
 import com.bizzan.bitrade.entity.transform.AuthMember;
@@ -11,9 +9,9 @@ import com.bizzan.bitrade.service.MemberTransactionService;
 import com.bizzan.bitrade.service.MemberWalletService;
 import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.util.MessageResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
+
+import javax.annotation.Resource;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,9 +49,9 @@ public class CustomExchangeController extends BaseController {
     //@Value("${cexchange.rate.totalsupply:}")
     private BigDecimal totalSupply;
 
-    @Autowired
+    @Resource
     private MemberWalletService walletService;
-    @Autowired
+    @Resource
     private MemberTransactionService transactionService;
 
     @RequestMapping("get-exchange-rate")
@@ -81,7 +79,7 @@ public class CustomExchangeController extends BaseController {
         needAmount = amount.multiply(price);
         // 检查余额是否足够
         MemberWallet needMW = walletService.findByCoinUnitAndMemberId(baseUnit, member.getId());
-        if(needMW.getBalance().compareTo(needAmount) < 0) {
+        if (needMW.getBalance().compareTo(needAmount) < 0) {
             return error("Balance is not enough");
         }
         // 执行兑换
@@ -102,7 +100,7 @@ public class CustomExchangeController extends BaseController {
         memberTransaction.setCreateTime(DateUtil.getCurrentDate());
         memberTransaction.setRealFee("0");
         memberTransaction.setDiscountFee("0");
-        memberTransaction= transactionService.save(memberTransaction);
+        memberTransaction = transactionService.save(memberTransaction);
 
         // 增加资金变更记录（减少记录）
         MemberTransaction memberTransactionOut = new MemberTransaction();
@@ -114,7 +112,7 @@ public class CustomExchangeController extends BaseController {
         memberTransactionOut.setCreateTime(DateUtil.getCurrentDate());
         memberTransactionOut.setRealFee("0");
         memberTransactionOut.setDiscountFee("0");
-        memberTransactionOut= transactionService.save(memberTransactionOut);
+        memberTransactionOut = transactionService.save(memberTransactionOut);
 
         return success("Exchange successful");
     }

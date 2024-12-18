@@ -1,11 +1,11 @@
 package com.bizzan.bitrade.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bizzan.bitrade.dao.SmsDao;
 import com.bizzan.bitrade.dto.SmsDTO;
 import com.bizzan.bitrade.service.Base.BaseService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @Description:
@@ -14,18 +14,19 @@ import com.bizzan.bitrade.service.Base.BaseService;
  * @Modified:
  */
 @Service
-public class SmsService extends BaseService{
-    
-    @Autowired
+public class SmsService extends BaseService {
+
+    @Resource
     private SmsDao smsDao;
 
     /**
      * 获取有效的短信配置
+     *
      * @return
      */
-    public SmsDTO getByStatus(){
+    public SmsDTO getByStatus() {
         return smsDao.findBySmsStatus();
     }
-    
-    
+
+
 }

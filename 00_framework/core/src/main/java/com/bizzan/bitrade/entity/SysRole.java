@@ -2,14 +2,21 @@ package com.bizzan.bitrade.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.hibernate.annotations.Fetch;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 系统角色
@@ -38,11 +45,11 @@ public class SysRole {
      */
     private String description;
 
-    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.PERSIST)//该fetch保证能通过id查到role，否则会报延迟加载异常
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)//该fetch保证能通过id查到role，否则会报延迟加载异常
     @JoinTable(name = "admin_role_permission",
-            uniqueConstraints = {@UniqueConstraint(columnNames={"role_id", "rule_id"})},
-            joinColumns = {@JoinColumn(name = "role_id",referencedColumnName = "id")},
-            inverseJoinColumns = {@JoinColumn(name = "rule_id",referencedColumnName = "id")})
+            uniqueConstraints = {@UniqueConstraint(columnNames = {"role_id", "rule_id"})},
+            joinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "rule_id", referencedColumnName = "id")})
     @JsonIgnore
     private List<SysPermission> permissions;
 
@@ -51,12 +58,13 @@ public class SysRole {
         this.role = role;
     }
 
-    public SysRole(Long id, String role,String description) {
+    public SysRole(Long id, String role, String description) {
         this.id = id;
         this.role = role;
-        this.description = description ;
+        this.description = description;
     }
 
-    public SysRole(){}
+    public SysRole() {
+    }
 
 }

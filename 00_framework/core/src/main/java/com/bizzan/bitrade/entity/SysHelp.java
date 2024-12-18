@@ -1,16 +1,21 @@
 package com.bizzan.bitrade.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.constant.SysHelpClassification;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -50,19 +55,19 @@ public class SysHelp {
     /**
      * 类型不为二维码时有效，为新手入门，充值指南，交易指南等的具体内容
      */
-    @Column(columnDefinition="TEXT")
-    @Basic(fetch=FetchType.LAZY)
+    @Column(columnDefinition = "TEXT")
+    @Basic(fetch = FetchType.LAZY)
     private String content = "";
 
     private String author = "admin";
 
-    private int sort = 0 ;
+    private int sort = 0;
 
     /**
      * 是否置顶（0，置顶  1，不置顶（默认））
      */
     private String isTop;
-    
+
     /**
      * 文章语言
      */

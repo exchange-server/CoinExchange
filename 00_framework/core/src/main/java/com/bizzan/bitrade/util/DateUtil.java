@@ -1,5 +1,8 @@
 package com.bizzan.bitrade.util;
 
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.springframework.util.Assert;
+
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -7,9 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.springframework.util.Assert;
 
 public class DateUtil {
     public static final DateFormat YYYY_MM_DD_MM_HH_SS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -34,11 +34,11 @@ public class DateUtil {
         return YYYY_MM_DD.format(date);
     }
 
-	public static String dateToStringLengthIs17(Date date) {
-		return YYYYMMDDMMHHSSSSS.format(date);
-	}
+    public static String dateToStringLengthIs17(Date date) {
+        return YYYYMMDDMMHHSSSSS.format(date);
+    }
 
-    public static String dateTo3S(Date date){
+    public static String dateTo3S(Date date) {
         return YYYY_MM_DD_MM_HH_SS_SSS.format(date);
     }
 
@@ -92,7 +92,7 @@ public class DateUtil {
     }
 
 
-    public static Date getStringToDate3S(String dateString){
+    public static Date getStringToDate3S(String dateString) {
         try {
             return YYYYMMDDMMHHSSSSS.parse(dateString);
         } catch (ParseException e) {
@@ -101,7 +101,7 @@ public class DateUtil {
         return null;
     }
 
-    public static Date getStringToDate2S(String dateString){
+    public static Date getStringToDate2S(String dateString) {
         try {
             return YYYYMMDDMMHHSSSS.parse(dateString);
         } catch (ParseException e) {
@@ -293,7 +293,7 @@ public class DateUtil {
             case 7:
                 return "周六";
             default:
-            return "";
+                return "";
         }
     }
 
@@ -343,19 +343,19 @@ public class DateUtil {
         return result;
     }
 
-    public static int getDatePart(Date date,int part) {
+    public static int getDatePart(Date date, int part) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         return calendar.get(part);
     }
 
-    public static Date getDate(Date date , int day){
+    public static Date getDate(Date date, int day) {
 
-        synchronized (YYYY_MM_DD){
-            Calendar calendar = Calendar.getInstance() ;
+        synchronized (YYYY_MM_DD) {
+            Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
-            calendar.add(Calendar.DAY_OF_MONTH,-day);
-            date = calendar.getTime() ;
+            calendar.add(Calendar.DAY_OF_MONTH, -day);
+            date = calendar.getTime();
             try {
                 return YYYY_MM_DD.parse(YYYY_MM_DD.format(date));
             } catch (ParseException e) {
@@ -364,19 +364,19 @@ public class DateUtil {
             return null;
         }
     }
-    
+
     public static String getDateRandom() {
-    	return DateFormatUtils.format(new Date(), "yyyyMMddHHmmss")+(int)((Math.random()*9+1)*10000);
+        return DateFormatUtils.format(new Date(), "yyyyMMddHHmmss") + (int) ((Math.random() * 9 + 1) * 10000);
     }
-    
-    public static Date getDateNoTime(Date curDate,int amount) {
-    	Calendar cal = Calendar.getInstance();
-		cal.setTime(curDate);
-		cal.add(Calendar.DAY_OF_MONTH, amount);
-    	cal.set(Calendar.HOUR_OF_DAY, 0);
-    	cal.set(Calendar.MINUTE, 0);
-    	cal.set(Calendar.SECOND, 0);
-    	cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
+
+    public static Date getDateNoTime(Date curDate, int amount) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(curDate);
+        cal.add(Calendar.DAY_OF_MONTH, amount);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 }

@@ -12,13 +12,12 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -28,7 +27,7 @@ import java.util.List;
 @Service
 public class AdminAccessLogService extends BaseService {
 
-    @Autowired
+    @Resource
     private AdminAccessLogDao adminAccessLogDao;
 
     public AdminAccessLog saveLog(AdminAccessLog adminAccessLog) {
@@ -58,8 +57,8 @@ public class AdminAccessLogService extends BaseService {
         return new PageResult<>(list, jpaQuery.fetchCount());//添加总条数
     }
 
-    public Page<AdminAccessLog> page(List<BooleanExpression> predicates, PageModel pageModel){
-        JPAQuery<AdminAccessLog>  query = queryFactory.select(
+    public Page<AdminAccessLog> page(List<BooleanExpression> predicates, PageModel pageModel) {
+        JPAQuery<AdminAccessLog> query = queryFactory.select(
                 Projections.fields(AdminAccessLog.class,
                         QAdminAccessLog.adminAccessLog.id.as("id"),
                         QAdminAccessLog.adminAccessLog.accessIp.as("accessIp"),
@@ -70,12 +69,12 @@ public class AdminAccessLogService extends BaseService {
                         QAdminAccessLog.adminAccessLog.module.as("module"),
                         QAdminAccessLog.adminAccessLog.operation.as("operation"),
                         QAdmin.admin.username.as("adminName"))
-        ).from(QAdminAccessLog.adminAccessLog,QAdmin.admin).where(predicates.toArray(new BooleanExpression[predicates.size()])) ;
-        List<OrderSpecifier> orderSpecifiers = pageModel.getOrderSpecifiers() ;
+        ).from(QAdminAccessLog.adminAccessLog, QAdmin.admin).where(predicates.toArray(new BooleanExpression[predicates.size()]));
+        List<OrderSpecifier> orderSpecifiers = pageModel.getOrderSpecifiers();
         query.orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]));
-        long total = query.fetchCount() ;
-        query.offset(pageModel.getPageSize()*(pageModel.getPageNo()-1)).limit(pageModel.getPageSize());
-        List<AdminAccessLog> list = query.fetch() ;
-        return new PageImpl<AdminAccessLog>(list,pageModel.getPageable(),total);
+        long total = query.fetchCount();
+        query.offset(pageModel.getPageSize() * (pageModel.getPageNo() - 1)).limit(pageModel.getPageSize());
+        List<AdminAccessLog> list = query.fetch();
+        return new PageImpl<AdminAccessLog>(list, pageModel.getPageable(), total);
     }
 }

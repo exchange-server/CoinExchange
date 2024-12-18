@@ -2,12 +2,16 @@ package com.bizzan.bitrade.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.util.Date;
 
 /**
- * @description: MemberApiKey
  * @author QQ:247818019 E-mail:247818019@qq.com
+ * @description: MemberApiKey
  * @create: 2019/05/07 10:36
  */
 @Entity
@@ -16,27 +20,28 @@ public class MemberApiKey {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private Long id ;
+    private Long id;
 
-    private Long memberId ;
+    private Long memberId;
 
-    private String apiKey ;
+    private String apiKey;
 
-    private String secretKey ;
+    private String secretKey;
     /**
      * 绑定ip 多个以逗号分割
      */
-    private String bindIp ;
+    private String bindIp;
 
-    private String apiName ;
+    private String apiName;
 
-    private String remark ;
+    private String remark;
 
     private Date expireTime;
 
     private Date createTime;
     @Transient
-    private String code ;
+    private String code;
+
     public MemberApiKey() {
     }
 

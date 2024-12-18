@@ -1,50 +1,8 @@
 package com.bizzan.bitrade.controller.system;
 
-import static org.springframework.util.Assert.notNull;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-import org.springframework.web.client.RestTemplate;
-
 import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
-import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.constant.SysConstant;
 import com.bizzan.bitrade.constant.TransactionType;
@@ -64,10 +22,52 @@ import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.service.MemberService;
 import com.bizzan.bitrade.service.MemberTransactionService;
 import com.bizzan.bitrade.service.MemberWalletService;
-import com.bizzan.bitrade.util.*;
+import com.bizzan.bitrade.util.BindingResultUtil;
+import com.bizzan.bitrade.util.FileUtil;
+import com.bizzan.bitrade.util.JDBCUtils;
+import com.bizzan.bitrade.util.MessageResult;
+import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import static org.springframework.util.Assert.notNull;
 
 /**
  * @author Shaoxianjun
@@ -79,41 +79,56 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CoinController extends BaseAdminController {
 
+    @Resource
+    JDBCUtils jdbcUtils;
     private Logger logger = LoggerFactory.getLogger(BaseAdminController.class);
-
-    @Autowired
+    @Resource
     private HotTransferRecordService hotTransferRecordService;
-
-    @Autowired
+    @Resource
     private CoinService coinService;
-
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-
-    @Autowired
+    @Resource
     private RestTemplate restTemplate;
-
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
-    @Autowired
+    @Resource
     private MemberWalletService walletService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-
-    @Autowired
+    @Resource
     private KafkaTemplate kafkaTemplate;
-
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
-
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-
-    @Autowired
+    @Resource
     private ESUtils esUtils;
 
-    @Autowired
-    JDBCUtils jdbcUtils;
+    public static String getSend(String url, Map<String, String> paramsMap) {
+        HttpClient client = new HttpClient();
+        client.setConnectionTimeout(10000);
+        client.setTimeout(50000);
+        try {
+            GetMethod method = new GetMethod(url);
+            if (paramsMap != null) {
+                NameValuePair[] namePairs = new NameValuePair[paramsMap.size()];
+                int i = 0;
+                for (Map.Entry<String, String> param : paramsMap.entrySet()) {
+                    NameValuePair pair = new NameValuePair(param.getKey(),
+                            param.getValue());
+                    namePairs[i++] = pair;
+                }
+                HttpMethodParams param = method.getParams();
+                param.setContentCharset("utf-8");
+            }
+            client.executeMethod(method);
+            return method.getResponseBodyAsString();
+        } catch (Exception e) {
+            log.error("getSend error!", e);
+        }
+        return "";
+    }
 
     @RequiresPermissions("system:coin:create")
     @PostMapping("create")
@@ -123,7 +138,7 @@ public class CoinController extends BaseAdminController {
         if (result != null) {
             return result;
         }
-        if("decp".equalsIgnoreCase(coin.getName().trim()) || "dcep".equalsIgnoreCase(coin.getName().trim())){
+        if ("decp".equalsIgnoreCase(coin.getName().trim()) || "dcep".equalsIgnoreCase(coin.getName().trim())) {
             return error(messageSource.getMessage("COIN_NAME_EXIST"));
         }
 
@@ -171,7 +186,7 @@ public class CoinController extends BaseAdminController {
 //            return checkCode;
 //        }
         notNull(coin.getName(), "validate coin.name!");
-        if("decp".equalsIgnoreCase(coin.getName().trim()) || "dcep".equalsIgnoreCase(coin.getName().trim())){
+        if ("decp".equalsIgnoreCase(coin.getName().trim()) || "dcep".equalsIgnoreCase(coin.getName().trim())) {
             return error(messageSource.getMessage("COIN_NAME_EXIST"));
         }
 //        MessageResult result = BindingResultUtil.validate(bindingResult);
@@ -210,15 +225,15 @@ public class CoinController extends BaseAdminController {
             if (coin.getEnableRpc().getOrdinal() == 1) {
                 coin.setAllBalance(memberWalletService.getAllBalance(coin.getName()));
                 log.info(coin.getAllBalance() + "==============");
-                if(coin.getAccountType() == 1) {
-                	coin.setHotAllBalance(memberWalletService.getAllBalance(coin.getName()));
-                	coin.setBlockHeight(0L);
-                }else {
-                	String url = "http://SERVICE-RPC-" + coin.getUnit() + "/rpc/balance";
-                	coin.setHotAllBalance(getRPCWalletBalance(url, coin.getUnit()));
-                	
-                	String url2 = "http://SERVICE-RPC-" + coin.getUnit() + "/rpc/height";
-                	coin.setBlockHeight(getRPCBlockHeight(url2, coin.getUnit()));
+                if (coin.getAccountType() == 1) {
+                    coin.setHotAllBalance(memberWalletService.getAllBalance(coin.getName()));
+                    coin.setBlockHeight(0L);
+                } else {
+                    String url = "http://SERVICE-RPC-" + coin.getUnit() + "/rpc/balance";
+                    coin.setHotAllBalance(getRPCWalletBalance(url, coin.getUnit()));
+
+                    String url2 = "http://SERVICE-RPC-" + coin.getUnit() + "/rpc/height";
+                    coin.setBlockHeight(getRPCBlockHeight(url2, coin.getUnit()));
                 }
             }
         }
@@ -243,31 +258,6 @@ public class CoinController extends BaseAdminController {
             log.error("error={}", e);
             return new BigDecimal("0");
         }
-    }
-
-    public static String getSend(String url, Map<String, String> paramsMap) {
-        HttpClient client = new HttpClient();
-        client.setConnectionTimeout(10000);
-        client.setTimeout(50000);
-        try {
-            GetMethod method = new GetMethod(url);
-            if (paramsMap != null) {
-                NameValuePair[] namePairs = new NameValuePair[paramsMap.size()];
-                int i = 0;
-                for (Map.Entry<String, String> param : paramsMap.entrySet()) {
-                    NameValuePair pair = new NameValuePair(param.getKey(),
-                            param.getValue());
-                    namePairs[i++] = pair;
-                }
-                HttpMethodParams param = method.getParams();
-                param.setContentCharset("utf-8");
-            }
-            client.executeMethod(method);
-            return method.getResponseBodyAsString();
-        } catch (Exception e) {
-            log.error("getSend error!", e);
-        }
-        return "";
     }
 
     private BigDecimal getRPCWalletBalance(String url, String unit) {
@@ -295,27 +285,28 @@ public class CoinController extends BaseAdminController {
     }
 
     private Long getRPCBlockHeight(String url, String unit) {
-    	try {
-	    	ResponseEntity<MessageResult> result = restTemplate.getForEntity(url, MessageResult.class);
-	        log.info("getRPCBlockHeight: result={}", result);
-	        if (result.getStatusCode().value() == 200) {
-	            MessageResult mr = result.getBody();
-	            if (mr.getCode() == 0) {
-	                String height = mr.getData().toString();
-	                Long longHeight = Long.valueOf(height);
-	                return longHeight;
-	            }
-	        }
+        try {
+            ResponseEntity<MessageResult> result = restTemplate.getForEntity(url, MessageResult.class);
+            log.info("getRPCBlockHeight: result={}", result);
+            if (result.getStatusCode().value() == 200) {
+                MessageResult mr = result.getBody();
+                if (mr.getCode() == 0) {
+                    String height = mr.getData().toString();
+                    Long longHeight = Long.valueOf(height);
+                    return longHeight;
+                }
+            }
 
-	    } catch (IllegalStateException e) {
-	        log.error("error={}", e);
-	        return Long.valueOf(0);
-	    } catch (Exception e) {
-	        log.error("error={}", e);
-	        return Long.valueOf(0);
-	    }
-	    return Long.valueOf(0);
+        } catch (IllegalStateException e) {
+            log.error("error={}", e);
+            return Long.valueOf(0);
+        } catch (Exception e) {
+            log.error("error={}", e);
+            return Long.valueOf(0);
+        }
+        return Long.valueOf(0);
     }
+
     @RequiresPermissions("system:coin:out-excel")
     @GetMapping("outExcel")
     @AccessLog(module = AdminModule.SYSTEM, operation = "导出后台货币Coin Excel")

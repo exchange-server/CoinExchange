@@ -1,13 +1,11 @@
 package com.bizzan.bitrade.dao;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bizzan.bitrade.dao.base.BaseDao;
 import com.bizzan.bitrade.entity.Admin;
 import com.bizzan.bitrade.entity.Department;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;

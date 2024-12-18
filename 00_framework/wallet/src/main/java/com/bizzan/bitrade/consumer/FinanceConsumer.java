@@ -13,30 +13,32 @@ import com.bizzan.bitrade.service.MemberService;
 import com.bizzan.bitrade.service.MemberWalletService;
 import com.bizzan.bitrade.service.WithdrawRecordService;
 import com.bizzan.bitrade.util.MessageResult;
-
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 
 @Component
 public class FinanceConsumer {
     private Logger logger = LoggerFactory.getLogger(FinanceConsumer.class);
-    @Autowired
+    @Resource
     private CoinService coinService;
-    @Autowired
+    @Resource
     private MemberWalletService walletService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    
-    @Autowired
+
+    @Resource
     private RestTemplate restTemplate;
-    @Autowired
+    @Resource
     private WithdrawRecordService withdrawRecordService;
 
     /**
@@ -58,22 +60,22 @@ public class FinanceConsumer {
         String txid = json.getString("txid");
         String address = json.getString("address");
         Coin coin = coinService.findOne(record.key());
-        
+
         logger.info("coin={}", coin);
-        
-        if(coin.getAccountType() == 1) {
-        	Long memoId = json.getLong("userId"); // 备注Memo
-        	Long userId = memoId - 345678; // 注意，此处与前端memo必须保持一致
-        	Member m = memberService.findOne(userId);
-        	if(m != null && walletService.findDepositByTxid(txid) == null) {
-        		MessageResult mr = walletService.recharge2(userId, coin, address, amount, txid);
-	            logger.info("wallet recharge result:{}", mr);
-        	}
-        }else {
-	        if (coin != null && walletService.findDeposit(address, txid) == null) {
-	            MessageResult mr = walletService.recharge(coin, address, amount, txid);
-	            logger.info("wallet recharge result:{}", mr);
-	        }
+
+        if (coin.getAccountType() == 1) {
+            Long memoId = json.getLong("userId"); // 备注Memo
+            Long userId = memoId - 345678; // 注意，此处与前端memo必须保持一致
+            Member m = memberService.findOne(userId);
+            if (m != null && walletService.findDepositByTxid(txid) == null) {
+                MessageResult mr = walletService.recharge2(userId, coin, address, amount, txid);
+                logger.info("wallet recharge result:{}", mr);
+            }
+        } else {
+            if (coin != null && walletService.findDeposit(address, txid) == null) {
+                MessageResult mr = walletService.recharge(coin, address, amount, txid);
+                logger.info("wallet recharge result:{}", mr);
+            }
         }
     }
 
@@ -95,7 +97,7 @@ public class FinanceConsumer {
             String url = "http://" + serviceName + "/rpc/withdraw?address={1}&amount={2}&fee={3}";
 
             Coin coin = coinService.findByUnit(record.key());
-            logger.info("coin = {}",coin.toString());
+            logger.info("coin = {}", coin.toString());
             if (coin != null && coin.getCanAutoWithdraw() == BooleanEnum.IS_TRUE) {
                 BigDecimal minerFee = coin.getMinerFee();
                 MessageResult result = restTemplate.getForObject(url,
@@ -125,27 +127,28 @@ public class FinanceConsumer {
 
     /**
      * 异步打钱后返回状态
+     *
      * @param record
      */
     @KafkaListener(topics = {"withdraw-notify"})
-    public void withdrawNotify(ConsumerRecord<String, String> record){
+    public void withdrawNotify(ConsumerRecord<String, String> record) {
         logger.info("topic={},accessKey={},value={}", record.topic(), record.key(), record.value());
         if (StringUtils.isEmpty(record.value())) {
             return;
         }
         JSONObject json = JSON.parseObject(record.value());
         Long withdrawId = json.getLong("withdrawId");
-        WithdrawRecord withdrawRecord=withdrawRecordService.findOne(withdrawId);
-        if(withdrawRecord==null){
+        WithdrawRecord withdrawRecord = withdrawRecordService.findOne(withdrawId);
+        if (withdrawRecord == null) {
             return;
         }
-        String txid=json.getString("txid");
-        int status=json.getInteger("status");
+        String txid = json.getString("txid");
+        int status = json.getInteger("status");
         //转账失败，状态变回等待放币
-        if(status==0){
+        if (status == 0) {
             withdrawRecord.setStatus(WithdrawStatus.WAITING);
             withdrawRecordService.save(withdrawRecord);
-        }else if(status==1){
+        } else if (status == 1) {
             withdrawRecordService.withdrawSuccess(withdrawId, txid);
         }
     }

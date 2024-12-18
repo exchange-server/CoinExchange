@@ -1,14 +1,14 @@
 package com.bizzan.bitrade.entity;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.bizzan.bitrade.core.BaseEnum;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
-public enum MessageTypeEnum implements BaseEnum{
+public enum MessageTypeEnum implements BaseEnum {
 
     /**
      * 提醒对方刷新订单页面
@@ -24,7 +24,7 @@ public enum MessageTypeEnum implements BaseEnum{
 
     @Override
     @JsonValue
-    public int getOrdinal(){
+    public int getOrdinal() {
         return this.ordinal();
     }
 }

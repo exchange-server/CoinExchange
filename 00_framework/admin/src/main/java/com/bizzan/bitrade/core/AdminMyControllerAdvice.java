@@ -1,13 +1,12 @@
 package com.bizzan.bitrade.core;
 
+import com.bizzan.bitrade.util.MessageResult;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.bizzan.bitrade.util.MessageResult;
 
 /**
  * @author Shaoxianjun
@@ -30,7 +29,7 @@ public class AdminMyControllerAdvice {
     }
 
     @ResponseBody
-    @ExceptionHandler({AuthenticationException.class,UnauthenticatedException.class})
+    @ExceptionHandler({AuthenticationException.class, UnauthenticatedException.class})
     public MessageResult handleAuthenticationError(AuthorizationException ex) {
         ex.printStackTrace();
         MessageResult result = MessageResult.error(4000, "please login");

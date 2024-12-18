@@ -5,9 +5,6 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.Date;
@@ -17,18 +14,18 @@ import java.util.Date;
 @ToString
 public class MemberLog {
 
-    @JsonFormat(timezone = "GMX+8",pattern = "yyyy-MM-dd")
-    private Date date ;
+    @JsonFormat(timezone = "GMX+8", pattern = "yyyy-MM-dd")
+    private Date date;
 
-    private int year ;
+    private int year;
 
     @Max(value = 12)
     @Min(value = 1)
-    private int month ;
+    private int month;
 
     @Max(value = 31)
     @Min(value = 1)
-    private int day ;
+    private int day;
 
     /**
      * 当天的注册人数

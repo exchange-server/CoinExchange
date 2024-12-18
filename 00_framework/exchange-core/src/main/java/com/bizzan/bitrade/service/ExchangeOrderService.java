@@ -9,16 +9,24 @@ import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.dao.ExchangeOrderDetailRepository;
 import com.bizzan.bitrade.dao.ExchangeOrderRepository;
 import com.bizzan.bitrade.dao.OrderDetailAggregationRepository;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.ExchangeCoin;
+import com.bizzan.bitrade.entity.ExchangeOrder;
+import com.bizzan.bitrade.entity.ExchangeOrderDetail;
+import com.bizzan.bitrade.entity.ExchangeOrderDirection;
+import com.bizzan.bitrade.entity.ExchangeOrderStatus;
+import com.bizzan.bitrade.entity.ExchangeOrderType;
+import com.bizzan.bitrade.entity.ExchangeTrade;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.OrderDetailAggregation;
+import com.bizzan.bitrade.entity.OrderTypeEnum;
+import com.bizzan.bitrade.entity.QExchangeOrder;
+import com.bizzan.bitrade.entity.RewardPromotionSetting;
+import com.bizzan.bitrade.entity.RewardRecord;
 import com.bizzan.bitrade.pagination.Criteria;
 import com.bizzan.bitrade.pagination.PageResult;
 import com.bizzan.bitrade.pagination.Restrictions;
-import com.bizzan.bitrade.service.LocaleMessageSourceService;
-import com.bizzan.bitrade.service.MemberService;
-import com.bizzan.bitrade.service.MemberTransactionService;
-import com.bizzan.bitrade.service.MemberWalletService;
-import com.bizzan.bitrade.service.RewardPromotionSettingService;
-import com.bizzan.bitrade.service.RewardRecordService;
 import com.bizzan.bitrade.service.Base.BaseService;
 import com.bizzan.bitrade.util.BigDecimalUtils;
 import com.bizzan.bitrade.util.DateUtil;
@@ -28,10 +36,11 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.sparkframework.sql.DB;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,33 +58,34 @@ import java.util.List;
 @Service
 public class ExchangeOrderService extends BaseService {
 
-    @Autowired
+    @Resource
     private ExchangeOrderRepository exchangeOrderRepository;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private ExchangeOrderDetailRepository exchangeOrderDetailRepository;
-    @Autowired
+    @Resource
     private ExchangeCoinService exchangeCoinService;
-    @Autowired
+    @Resource
     private OrderDetailAggregationRepository orderDetailAggregationRepository;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private MemberTransactionService transactionService;
-    @Autowired
+    @Resource
     private RewardPromotionSettingService rewardPromotionSettingService;
-    @Autowired
+    @Resource
     private RewardRecordService rewardRecordService;
-    @Autowired
+    @Resource
     private ExchangeOrderDetailService exchangeOrderDetailService;
     @Value("${channel.enable:false}")
     private Boolean channelEnable;
     @Value("${channel.exchange-rate:0.00}")
     private BigDecimal channelExchangeRate;
 
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
+
     public Page<ExchangeOrder> findAll(Predicate predicate, Pageable pageable) {
         return exchangeOrderRepository.findAll(predicate, pageable);
     }
@@ -97,8 +107,8 @@ public class ExchangeOrderService extends BaseService {
         log.info("add order:{}", order);
         if (order.getDirection() == ExchangeOrderDirection.BUY) {
             MemberWallet wallet = memberWalletService.findByCoinUnitAndMemberId(order.getBaseSymbol(), memberId);
-            if(wallet.getIsLock().equals(BooleanEnum.IS_TRUE)){
-                return MessageResult.error(500,msService.getMessage("WALLET_LOCKED"));
+            if (wallet.getIsLock().equals(BooleanEnum.IS_TRUE)) {
+                return MessageResult.error(500, msService.getMessage("WALLET_LOCKED"));
             }
             BigDecimal turnover;
             if (order.getType() == ExchangeOrderType.MARKET_PRICE) {
@@ -117,8 +127,8 @@ public class ExchangeOrderService extends BaseService {
             }
         } else if (order.getDirection() == ExchangeOrderDirection.SELL) {
             MemberWallet wallet = memberWalletService.findByCoinUnitAndMemberId(order.getCoinSymbol(), memberId);
-            if(wallet.getIsLock().equals(BooleanEnum.IS_TRUE)){
-                return MessageResult.error(500,msService.getMessage("WALLET_LOCKED"));
+            if (wallet.getIsLock().equals(BooleanEnum.IS_TRUE)) {
+                return MessageResult.error(500, msService.getMessage("WALLET_LOCKED"));
             }
             if (wallet.getBalance().compareTo(order.getAmount()) < 0) {
                 return MessageResult.error(500, msService.getMessage("INSUFFICIENT_COIN") + order.getCoinSymbol());
@@ -152,27 +162,30 @@ public class ExchangeOrderService extends BaseService {
         specification.add(Restrictions.ne("status", ExchangeOrderStatus.TRADING, false));
         return exchangeOrderRepository.findAll(specification, pageRequest);
     }
-    
+
     /**
      * 查询固定时间前的可删除订单
+     *
      * @param beforeTime
      * @return
      */
-    public List<ExchangeOrder> queryHistoryDelete(long beforeTime){
-    	return exchangeOrderRepository.queryHistoryDeleteList(beforeTime);
+    public List<ExchangeOrder> queryHistoryDelete(long beforeTime) {
+        return exchangeOrderRepository.queryHistoryDeleteList(beforeTime);
     }
-    
+
     /**
      * 删除可删除订单
+     *
      * @param beforeTime
      * @return
      */
     public int deleteHistory(long beforeTime) {
-    	return exchangeOrderRepository.deleteHistory(beforeTime);
+        return exchangeOrderRepository.deleteHistory(beforeTime);
     }
-    
+
     /**
      * 个人中心历史委托
+     *
      * @param uid
      * @param symbol
      * @param type
@@ -187,17 +200,17 @@ public class ExchangeOrderService extends BaseService {
         Sort orders = new Sort(new Sort.Order(Sort.Direction.DESC, "time"));
         PageRequest pageRequest = new PageRequest(pageNo - 1, pageSize, orders);
         Criteria<ExchangeOrder> specification = new Criteria<ExchangeOrder>();
-        if(StringUtils.isNotEmpty(symbol)){
+        if (StringUtils.isNotEmpty(symbol)) {
             specification.add(Restrictions.eq("symbol", symbol, true));
         }
-        if(type!=null&&StringUtils.isNotEmpty(type.toString())){
+        if (type != null && StringUtils.isNotEmpty(type.toString())) {
             specification.add(Restrictions.eq("type", type, true));
         }
-        if(direction!=null&&StringUtils.isNotEmpty(direction.toString())){
+        if (direction != null && StringUtils.isNotEmpty(direction.toString())) {
             specification.add(Restrictions.eq("direction", direction, true));
         }
         specification.add(Restrictions.eq("memberId", uid, true));
-        if (StringUtils.isNotEmpty(startTime)&&StringUtils.isNotEmpty(endTime)) {
+        if (StringUtils.isNotEmpty(startTime) && StringUtils.isNotEmpty(endTime)) {
             specification.add(Restrictions.gte("time", Long.valueOf(startTime), true));
             specification.add(Restrictions.lte("time", Long.valueOf(endTime), true));
         }
@@ -228,18 +241,18 @@ public class ExchangeOrderService extends BaseService {
         Sort orders = new Sort(new Sort.Order(Sort.Direction.DESC, "time"));
         PageRequest pageRequest = new PageRequest(pageNo - 1, pageSize, orders);
         Criteria<ExchangeOrder> specification = new Criteria<ExchangeOrder>();
-        if(StringUtils.isNotEmpty(symbol)){
+        if (StringUtils.isNotEmpty(symbol)) {
             specification.add(Restrictions.eq("symbol", symbol, true));
         }
-        if(type!=null&&StringUtils.isNotEmpty(type.toString())){
+        if (type != null && StringUtils.isNotEmpty(type.toString())) {
             specification.add(Restrictions.eq("type", type, true));
         }
         specification.add(Restrictions.eq("memberId", uid, false));
-        if (StringUtils.isNotEmpty(startTime)&&StringUtils.isNotEmpty(endTime) ) {
+        if (StringUtils.isNotEmpty(startTime) && StringUtils.isNotEmpty(endTime)) {
             specification.add(Restrictions.gte("time", Long.valueOf(startTime), true));
             specification.add(Restrictions.lte("time", Long.valueOf(endTime), true));
         }
-        if(direction!=null&&StringUtils.isNotEmpty(direction.toString())){
+        if (direction != null && StringUtils.isNotEmpty(direction.toString())) {
             specification.add(Restrictions.eq("direction", direction, true));
         }
         specification.add(Restrictions.eq("status", ExchangeOrderStatus.TRADING, false));
@@ -292,8 +305,8 @@ public class ExchangeOrderService extends BaseService {
             return MessageResult.error(500, "invalid trade symbol {}" + buyOrder.getSymbol());
         }
         // 根据memberId锁表，防止死锁 
-        DB.query("select id from member_wallet where member_id = ? for update;",buyOrder.getMemberId());
-        if(!buyOrder.getMemberId().equals(sellOrder.getMemberId())) {
+        DB.query("select id from member_wallet where member_id = ? for update;", buyOrder.getMemberId());
+        if (!buyOrder.getMemberId().equals(sellOrder.getMemberId())) {
             DB.query("select id from member_wallet where member_id = ? for update;", sellOrder.getMemberId());
         }
         //处理买入订单 手续费 是交易币  交易币对usdtRat
@@ -312,7 +325,7 @@ public class ExchangeOrderService extends BaseService {
      * @param secondReferrerAward 二级推荐人是否返佣
      * @return
      */
-    public void processOrder(ExchangeOrder order, ExchangeTrade trade, ExchangeCoin coin,boolean secondReferrerAward) {
+    public void processOrder(ExchangeOrder order, ExchangeTrade trade, ExchangeCoin coin, boolean secondReferrerAward) {
         try {
             Long time = Calendar.getInstance().getTimeInMillis();
             //添加成交详情
@@ -338,8 +351,8 @@ public class ExchangeOrderService extends BaseService {
             }
             // ID为1的用户默认为机器人，此处当订单用户ID为机器人时，不收取手续费
             // ID为10001的用户默认为超级管理员，此处当订单用户ID为机器人时，不收取手续费
-            if(order.getMemberId() == 1 || order.getMemberId() == 10001) {
-            	fee = BigDecimal.ZERO;
+            if (order.getMemberId() == 1 || order.getMemberId() == 10001) {
+                fee = BigDecimal.ZERO;
             }
             orderDetail.setFee(fee);
             exchangeOrderDetailRepository.save(orderDetail);
@@ -412,16 +425,16 @@ public class ExchangeOrderService extends BaseService {
             transaction2.setDiscountFee("0");
             transactionService.save(transaction2);
             try {
-            	// 只对基础币手续费进行返佣
-            	if (order.getDirection() == ExchangeOrderDirection.SELL) {
-            		promoteReward(fee, member, incomeSymbol, secondReferrerAward);
-            	}
+                // 只对基础币手续费进行返佣
+                if (order.getDirection() == ExchangeOrderDirection.SELL) {
+                    promoteReward(fee, member, incomeSymbol, secondReferrerAward);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("发放币币交易推广手续费佣金出错", e);
             }
         } catch (Exception e) {
-            log.info(">>>>>处理交易明细出错>>>>>>>>>{}",e);
+            log.info(">>>>>处理交易明细出错>>>>>>>>>{}", e);
             e.printStackTrace();
         }
     }
@@ -507,7 +520,7 @@ public class ExchangeOrderService extends BaseService {
                         memberTransaction.setSymbol(incomeSymbol);
                         memberTransaction.setType(TransactionType.PROMOTION_AWARD);
                         transactionService.save(memberTransaction);
-                        
+
                         RewardRecord rewardRecord1 = new RewardRecord();
                         rewardRecord1.setAmount(reward1);
                         rewardRecord1.setCoin(memberWallet1.getCoin());
@@ -714,8 +727,9 @@ public class ExchangeOrderService extends BaseService {
     public List<ExchangeOrder> queryExchangeOrderByTime(long cancelTime) {
         return exchangeOrderRepository.queryExchangeOrderByTime(cancelTime);
     }
-    public List<ExchangeOrder> queryExchangeOrderByTimeById(long cancelTime,long sellMemberId,long buyMemberId) {
-        return exchangeOrderRepository.queryExchangeOrderByTimeById(cancelTime,sellMemberId,buyMemberId);
+
+    public List<ExchangeOrder> queryExchangeOrderByTimeById(long cancelTime, long sellMemberId, long buyMemberId) {
+        return exchangeOrderRepository.queryExchangeOrderByTimeById(cancelTime, sellMemberId, buyMemberId);
     }
 
     /**
@@ -728,6 +742,7 @@ public class ExchangeOrderService extends BaseService {
     public List<ExchangeOrder> queryExchangeOrderByTimeById(long cancelTime) {
         return exchangeOrderRepository.queryExchangeOrderByTimeById(cancelTime);
     }
+
     /**
      * API 添加订单接口
      *
@@ -793,24 +808,24 @@ public class ExchangeOrderService extends BaseService {
 
     /**
      * 强制取消订单,在撮合中心和数据库订单不一致的情况下使用
+     *
      * @param order
      */
     @Transactional
-    public void forceCancelOrder(ExchangeOrder order){
+    public void forceCancelOrder(ExchangeOrder order) {
         List<ExchangeOrderDetail> details = exchangeOrderDetailService.findAllByOrderId(order.getOrderId());
         BigDecimal tradedAmount = BigDecimal.ZERO;
         BigDecimal turnover = BigDecimal.ZERO;
-        for(ExchangeOrderDetail trade:details){
+        for (ExchangeOrderDetail trade : details) {
             tradedAmount = tradedAmount.add(trade.getAmount());
             turnover = turnover.add(trade.getAmount().multiply(trade.getPrice()));
         }
         order.setTradedAmount(tradedAmount);
         order.setTurnover(turnover);
-        if(order.isCompleted()){
-            tradeCompleted(order.getOrderId(),order.getTradedAmount(),order.getTurnover());
-        }
-        else{
-            cancelOrder(order.getOrderId(),order.getTradedAmount(),order.getTurnover());
+        if (order.isCompleted()) {
+            tradeCompleted(order.getOrderId(), order.getTradedAmount(), order.getTurnover());
+        } else {
+            cancelOrder(order.getOrderId(), order.getTradedAmount(), order.getTurnover());
         }
     }
 }

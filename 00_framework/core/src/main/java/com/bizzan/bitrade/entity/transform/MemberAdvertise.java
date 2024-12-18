@@ -5,7 +5,6 @@ import com.bizzan.bitrade.constant.AdvertiseType;
 import com.bizzan.bitrade.entity.Advertise;
 import com.bizzan.bitrade.entity.Country;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 

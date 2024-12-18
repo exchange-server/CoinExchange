@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>bitrade-parent</artifactId>
@@ -78,12 +78,12 @@
             <artifactId>spring-boot-devtools</artifactId>
         </dependency>
         <dependency>
-			<groupId>com.sparkframework</groupId>
-			<artifactId>spark-core</artifactId>
-			<scope>system</scope>
+            <groupId>com.sparkframework</groupId>
+            <artifactId>spark-core</artifactId>
+            <scope>system</scope>
             <version>2.6.0</version>
-			<systemPath>${project.basedir}/lib/spark-core-2.6.0.jar</systemPath>
-		</dependency>
+            <systemPath>${project.basedir}/lib/spark-core-2.6.0.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
@@ -115,8 +115,8 @@
                     </execution>
                 </executions>
                 <configuration>
-				    <includeSystemScope>true</includeSystemScope>
-				</configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -9,9 +9,9 @@ import lombok.ToString;
 
 @Data
 @ToString(callSuper = true)
-public class HistoryChatMessage extends BaseMessage{
+public class HistoryChatMessage extends BaseMessage {
 
-    private int limit = 20 ;
+    private int limit = 20;
 
     private String sortFiled = "sendTime";
 

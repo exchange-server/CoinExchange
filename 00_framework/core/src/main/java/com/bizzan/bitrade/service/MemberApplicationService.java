@@ -1,10 +1,21 @@
 package com.bizzan.bitrade.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.bizzan.bitrade.constant.*;
+import com.bizzan.bitrade.constant.AuditStatus;
+import com.bizzan.bitrade.constant.MemberLevelEnum;
+import com.bizzan.bitrade.constant.PromotionLevel;
+import com.bizzan.bitrade.constant.PromotionRewardType;
+import com.bizzan.bitrade.constant.RewardRecordType;
+import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.dao.MemberApplicationDao;
 import com.bizzan.bitrade.dao.MemberDao;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberApplication;
+import com.bizzan.bitrade.entity.MemberPromotion;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.RewardPromotionSetting;
+import com.bizzan.bitrade.entity.RewardRecord;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.pagination.PageResult;
 import com.bizzan.bitrade.service.Base.BaseService;
@@ -12,24 +23,23 @@ import com.bizzan.bitrade.util.BigDecimalUtils;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
 import static com.bizzan.bitrade.constant.AuditStatus.AUDIT_DEFEATED;
 import static com.bizzan.bitrade.constant.AuditStatus.AUDIT_SUCCESS;
 import static com.bizzan.bitrade.constant.RealNameStatus.NOT_CERTIFIED;
 import static com.bizzan.bitrade.constant.RealNameStatus.VERIFIED;
 import static com.bizzan.bitrade.entity.QMemberApplication.memberApplication;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author Jammy
@@ -40,37 +50,37 @@ import java.util.List;
 @Slf4j
 public class MemberApplicationService extends BaseService {
 
-    @Autowired
+    @Resource
     private MemberApplicationDao memberApplicationDao;
 
     @Value("${commission.need.real-name:1}")
-    private int needRealName ;
-    
-    @Value("${commission.promotion.second-level:0}")
-    private int promotionSecondLevel ;
+    private int needRealName;
 
-    @Autowired
+    @Value("${commission.promotion.second-level:0}")
+    private int promotionSecondLevel;
+
+    @Resource
     private MemberDao memberDao;
 
-    @Autowired
-    private MemberWalletService memberWalletService ;
+    @Resource
+    private MemberWalletService memberWalletService;
 
-    @Autowired
-    private RewardRecordService rewardRecordService ;
+    @Resource
+    private RewardRecordService rewardRecordService;
 
-    @Autowired
-    private RewardPromotionSettingService rewardPromotionSettingService ;
+    @Resource
+    private RewardPromotionSettingService rewardPromotionSettingService;
 
-    @Autowired
-    private MemberTransactionService memberTransactionService ;
+    @Resource
+    private MemberTransactionService memberTransactionService;
 
-    @Autowired
-    private MemberPromotionService memberPromotionService ;
-    
-	@Autowired
+    @Resource
+    private MemberPromotionService memberPromotionService;
+
+    @Resource
     private SMSProvider smsProvider;
 
-    @Autowired
+    @Resource
     private ESUtils esUtils;
 
 
@@ -135,8 +145,8 @@ public class MemberApplicationService extends BaseService {
         memberDao.save(member);
         application.setAuditStatus(AUDIT_SUCCESS);//审核成功
         // 审核通过给奖励
-        if(needRealName==1){
-            if(member.getInviterId() != null) {
+        if (needRealName == 1) {
+            if (member.getInviterId() != null) {
                 Member member1 = memberDao.findOne(member.getInviterId());
                 promotion(member1, member);
             }
@@ -145,46 +155,47 @@ public class MemberApplicationService extends BaseService {
         // 被邀请者本身的奖励
         RewardPromotionSetting rewardPromotionSetting = rewardPromotionSettingService.findByType(PromotionRewardType.REGISTER);
         if (rewardPromotionSetting != null) {
-        	BigDecimal amount1 = JSONObject.parseObject(rewardPromotionSetting.getInfo()).getBigDecimal("one");
-			MemberWallet memberWallet = memberWalletService.findByCoinAndMember(rewardPromotionSetting.getCoin(), member);
-			memberWallet.setBalance(BigDecimalUtils.add(memberWallet.getBalance(), amount1));
-	        memberWalletService.save(memberWallet);
-	        RewardRecord rewardRecord = new RewardRecord();
-	        rewardRecord.setAmount(amount1);
-	        rewardRecord.setCoin(rewardPromotionSetting.getCoin());
-	        rewardRecord.setMember(member);
-	        rewardRecord.setRemark(rewardPromotionSetting.getType().getCnName());
-	        rewardRecord.setType(RewardRecordType.PROMOTION);
-	        rewardRecordService.save(rewardRecord);
-	        MemberTransaction memberTransactionMember = new MemberTransaction();
-	        memberTransactionMember.setFee(BigDecimal.ZERO);
-	        memberTransactionMember.setAmount(amount1);
-	        memberTransactionMember.setSymbol(rewardPromotionSetting.getCoin().getUnit());
-	        memberTransactionMember.setType(TransactionType.PROMOTION_AWARD);
-	        memberTransactionMember.setMemberId(member.getId());
-	        memberTransactionMember.setRealFee("0");
-	        memberTransactionMember.setDiscountFee("0");
-	        memberTransactionMember.setCreateTime(new Date());
-	        memberTransactionService.save(memberTransactionMember);
-	        
-	        // 发送通知
-			try {
-				//smsProvider.sendCustomMessage(member.getMobilePhone(), "恭喜！您的" + amount1.setScale(2, BigDecimal.ROUND_HALF_DOWN) + "BZB注册实名奖励已到账，邀请好友可享更多奖励哦！" );
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+            BigDecimal amount1 = JSONObject.parseObject(rewardPromotionSetting.getInfo()).getBigDecimal("one");
+            MemberWallet memberWallet = memberWalletService.findByCoinAndMember(rewardPromotionSetting.getCoin(), member);
+            memberWallet.setBalance(BigDecimalUtils.add(memberWallet.getBalance(), amount1));
+            memberWalletService.save(memberWallet);
+            RewardRecord rewardRecord = new RewardRecord();
+            rewardRecord.setAmount(amount1);
+            rewardRecord.setCoin(rewardPromotionSetting.getCoin());
+            rewardRecord.setMember(member);
+            rewardRecord.setRemark(rewardPromotionSetting.getType().getCnName());
+            rewardRecord.setType(RewardRecordType.PROMOTION);
+            rewardRecordService.save(rewardRecord);
+            MemberTransaction memberTransactionMember = new MemberTransaction();
+            memberTransactionMember.setFee(BigDecimal.ZERO);
+            memberTransactionMember.setAmount(amount1);
+            memberTransactionMember.setSymbol(rewardPromotionSetting.getCoin().getUnit());
+            memberTransactionMember.setType(TransactionType.PROMOTION_AWARD);
+            memberTransactionMember.setMemberId(member.getId());
+            memberTransactionMember.setRealFee("0");
+            memberTransactionMember.setDiscountFee("0");
+            memberTransactionMember.setCreateTime(new Date());
+            memberTransactionService.save(memberTransactionMember);
+
+            // 发送通知
+            try {
+                //smsProvider.sendCustomMessage(member.getMobilePhone(), "恭喜！您的" + amount1.setScale(2, BigDecimal.ROUND_HALF_DOWN) + "BZB注册实名奖励已到账，邀请好友可享更多奖励哦！" );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         memberApplicationDao.save(application);
     }
-    
-    
+
+
     /**
      * 推广奖励
-     * @param member1  邀请者（一级奖励）
-     * @param member   被邀请者
+     *
+     * @param member1 邀请者（一级奖励）
+     * @param member  被邀请者
      */
     private void promotion(Member member1, Member member) {
-    	
+
         RewardPromotionSetting rewardPromotionSetting = rewardPromotionSettingService.findByType(PromotionRewardType.REGISTER);
         if (rewardPromotionSetting != null) {
             MemberWallet memberWallet1 = memberWalletService.findByCoinAndMember(rewardPromotionSetting.getCoin(), member1);
@@ -209,15 +220,15 @@ public class MemberApplicationService extends BaseService {
             memberTransaction.setDiscountFee("0");
             memberTransaction.setCreateTime(new Date());
             memberTransactionService.save(memberTransaction);
-            
+
             // 发送通知
-    		try {
-				//smsProvider.sendCustomMessage(member1.getMobilePhone(), "恭喜！您邀请的" + member.getMobilePhone().substring(0,3) + "****" + member.getMobilePhone().substring(member.getMobilePhone().length() - 4, member.getMobilePhone().length()) + "已完成认证，" + amount1.setScale(2, BigDecimal.ROUND_HALF_DOWN) + "BZB一级推荐奖励已到账！" );
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+            try {
+                //smsProvider.sendCustomMessage(member1.getMobilePhone(), "恭喜！您邀请的" + member.getMobilePhone().substring(0,3) + "****" + member.getMobilePhone().substring(member.getMobilePhone().length() - 4, member.getMobilePhone().length()) + "已完成认证，" + amount1.setScale(2, BigDecimal.ROUND_HALF_DOWN) + "BZB一级推荐奖励已到账！" );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        
+
         member1.setFirstLevel(member1.getFirstLevel() + 1);
 
         MemberPromotion one = new MemberPromotion();
@@ -226,12 +237,12 @@ public class MemberApplicationService extends BaseService {
         one.setLevel(PromotionLevel.ONE);
         memberPromotionService.save(one);
         // 二级赠送配置为开的时候
-        if(promotionSecondLevel == 1) {
-	        if (member1.getInviterId() != null) {
-	            Member member2 = memberDao.findOne(member1.getInviterId());
-	            // 当A推荐B，B推荐C，如果C通过实名认证，则B和A都可以获得奖励
-	            promotionLevelTwo(rewardPromotionSetting, member2, member);
-	        }
+        if (promotionSecondLevel == 1) {
+            if (member1.getInviterId() != null) {
+                Member member2 = memberDao.findOne(member1.getInviterId());
+                // 当A推荐B，B推荐C，如果C通过实名认证，则B和A都可以获得奖励
+                promotionLevelTwo(rewardPromotionSetting, member2, member);
+            }
         }
     }
 
@@ -258,13 +269,13 @@ public class MemberApplicationService extends BaseService {
             memberTransaction.setDiscountFee("0");
             memberTransaction.setCreateTime(new Date());
             memberTransactionService.save(memberTransaction);
-            
+
             // 发送通知
-    		try {
-				//smsProvider.sendCustomMessage(member2.getMobilePhone(), "恭喜！您邀请的" + member.getMobilePhone().substring(0,3) + "****" + member.getMobilePhone().substring(member.getMobilePhone().length() - 4, member.getMobilePhone().length()) + "已完成认证，" + amount2.setScale(2, BigDecimal.ROUND_HALF_DOWN) + "BZB二级推荐奖励已到账！" );
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+            try {
+                //smsProvider.sendCustomMessage(member2.getMobilePhone(), "恭喜！您邀请的" + member.getMobilePhone().substring(0,3) + "****" + member.getMobilePhone().substring(member.getMobilePhone().length() - 4, member.getMobilePhone().length()) + "已完成认证，" + amount2.setScale(2, BigDecimal.ROUND_HALF_DOWN) + "BZB二级推荐奖励已到账！" );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         member2.setSecondLevel(member2.getSecondLevel() + 1);
         MemberPromotion two = new MemberPromotion();
@@ -278,7 +289,7 @@ public class MemberApplicationService extends BaseService {
         }
     }
 
-    public long countAuditing(){
+    public long countAuditing() {
         return memberApplicationDao.countAllByAuditStatus(AuditStatus.AUDIT_ING);
     }
 
@@ -302,6 +313,7 @@ public class MemberApplicationService extends BaseService {
 
     /**
      * 根据身份证号 查询有多条记录
+     *
      * @param idCard
      * @return
      */

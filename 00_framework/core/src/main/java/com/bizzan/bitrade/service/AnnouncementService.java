@@ -4,14 +4,13 @@ import com.bizzan.bitrade.dao.AnnouncementDao;
 import com.bizzan.bitrade.entity.Announcement;
 import com.bizzan.bitrade.service.Base.BaseService;
 import com.querydsl.core.types.Predicate;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -21,7 +20,7 @@ import java.util.List;
  */
 @Service
 public class AnnouncementService extends BaseService<Announcement> {
-    @Autowired
+    @Resource
     private AnnouncementDao announcementDao;
 
     public Announcement save(Announcement announcement) {
@@ -50,7 +49,7 @@ public class AnnouncementService extends BaseService<Announcement> {
         }
     }
 
-    public int getMaxSort(){
+    public int getMaxSort() {
         return announcementDao.findMaxSort();
     }
 
@@ -61,28 +60,30 @@ public class AnnouncementService extends BaseService<Announcement> {
 
     /**
      * 获取公告上一条
+     *
      * @param id
      * @return
      */
-    public Announcement getBack(long id, String lang){
-    	Announcement back = announcementDao.getBack(id, lang);
-    	// 无需内容传输
-    	if(back != null) {
-    		back.setContent(null);
-    	}
+    public Announcement getBack(long id, String lang) {
+        Announcement back = announcementDao.getBack(id, lang);
+        // 无需内容传输
+        if (back != null) {
+            back.setContent(null);
+        }
         return back;
     }
 
     /**
      * 获取公告下一条
+     *
      * @param id
      * @return
      */
-    public Announcement getNext(long id, String lang){
-    	Announcement next = announcementDao.getNext(id, lang);
-    	if(next != null) {
-    		next.setContent(null);
-    	}
+    public Announcement getNext(long id, String lang) {
+        Announcement next = announcementDao.getNext(id, lang);
+        if (next != null) {
+            next.setContent(null);
+        }
         return next;
     }
 }

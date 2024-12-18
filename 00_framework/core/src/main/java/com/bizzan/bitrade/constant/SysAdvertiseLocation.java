@@ -2,7 +2,6 @@ package com.bizzan.bitrade.constant;
 
 import com.bizzan.bitrade.core.BaseEnum;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +22,7 @@ public enum SysAdvertiseLocation implements BaseEnum {
     PC_CLASSIFICATION("pc分类广告");
     @Setter
     private String cnName;
+
     @Override
     @JsonValue
     public int getOrdinal() {

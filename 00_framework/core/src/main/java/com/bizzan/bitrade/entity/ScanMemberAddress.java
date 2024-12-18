@@ -1,7 +1,5 @@
 package com.bizzan.bitrade.entity;
 
-import com.bizzan.bitrade.entity.ScanMemberAddress;
-
 import lombok.Builder;
 import lombok.Data;
 

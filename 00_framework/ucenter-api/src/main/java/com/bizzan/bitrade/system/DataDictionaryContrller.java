@@ -1,15 +1,16 @@
 package com.bizzan.bitrade.system;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.entity.DataDictionary;
 import com.bizzan.bitrade.service.DataDictionaryService;
 import com.bizzan.bitrade.util.MessageResult;
+
+import javax.annotation.Resource;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Jammy
@@ -20,7 +21,7 @@ import com.bizzan.bitrade.util.MessageResult;
 @RestController
 @RequestMapping("data-dictionary")
 public class DataDictionaryContrller extends BaseController {
-    @Autowired
+    @Resource
     private DataDictionaryService service;
 
     @GetMapping("{bond}")

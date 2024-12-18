@@ -1,5 +1,11 @@
 package com.bizzan.bitrade.interceptor;
 
+import com.bizzan.bitrade.annotation.AccessLog;
+import com.bizzan.bitrade.constant.AdminModule;
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.entity.Admin;
+import com.bizzan.bitrade.entity.AdminAccessLog;
+import com.bizzan.bitrade.service.AdminAccessLogService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.aop.AfterReturningAdvice;
@@ -8,13 +14,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.bizzan.bitrade.annotation.AccessLog;
-import com.bizzan.bitrade.constant.AdminModule;
-import com.bizzan.bitrade.constant.SysConstant;
-import com.bizzan.bitrade.entity.Admin;
-import com.bizzan.bitrade.entity.AdminAccessLog;
-import com.bizzan.bitrade.service.AdminAccessLogService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -13,12 +13,20 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 
@@ -31,9 +39,9 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("system/announcement")
 public class AnnouncementController extends BaseController {
-    @Autowired
+    @Resource
     private AnnouncementService announcementService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
     @RequiresPermissions("system:announcement:create")
@@ -59,10 +67,10 @@ public class AnnouncementController extends BaseController {
     @RequiresPermissions("system:announcement:top")
     @PostMapping("top")
     @AccessLog(module = AdminModule.CMS, operation = "公告置顶")
-    public MessageResult toTop(@RequestParam("id")long id){
+    public MessageResult toTop(@RequestParam("id") long id) {
         Announcement announcement = announcementService.findById(id);
         int a = announcementService.getMaxSort();
-        announcement.setSort(a+1);
+        announcement.setSort(a + 1);
         announcement.setIsTop("0");
         announcementService.save(announcement);
         return success(messageSource.getMessage("SUCCESS"));
@@ -71,13 +79,14 @@ public class AnnouncementController extends BaseController {
 
     /**
      * 取消公告置顶
+     *
      * @param id
      * @return
      */
     @RequiresPermissions("system:announcement:dwon")
     @PostMapping("down")
     @AccessLog(module = AdminModule.CMS, operation = "公告取消置顶")
-    public MessageResult toDown(@RequestParam("id")long id){
+    public MessageResult toDown(@RequestParam("id") long id) {
         Announcement announcement = announcementService.findById(id);
         announcement.setIsTop("1");
         announcementService.save(announcement);

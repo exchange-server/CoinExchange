@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JDBCConfig {
 
-   
+
     @Value("${spring.datasource.url}")
     private String dbURRL;
 

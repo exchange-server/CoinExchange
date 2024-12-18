@@ -3,7 +3,6 @@
 00_Framework下包含了后端项目的集合，本项目基于SpringCloud开发，具体依赖关系如下图所示：
 ![依赖关系](https://images.gitee.com/uploads/images/2020/0408/155903_9173b5dc_2182501.png "QQ截图20200407194419.png")
 
-
 ## 平台使用的技术
 
 - 后端：Spring、SpringMVC、SpringData、SpringCloud、SpringBoot

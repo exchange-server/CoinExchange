@@ -1,13 +1,12 @@
 package com.bizzan.bitrade.model.vo;
 
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberSignRecord;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
-
-import com.bizzan.bitrade.entity.Member;
-import com.bizzan.bitrade.entity.MemberSignRecord;
 
 /**
  * @author Shaoxianjun

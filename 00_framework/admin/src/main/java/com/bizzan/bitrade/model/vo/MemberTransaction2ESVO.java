@@ -14,14 +14,14 @@ public class MemberTransaction2ESVO {
     private String endTime;
 
 
-    private String minMoney ;
+    private String minMoney;
 
-    private String maxMoney ;
+    private String maxMoney;
 
-    private String memberId ;
-    private String minFee ;
+    private String memberId;
+    private String minFee;
 
-    private String maxFee ;
+    private String maxFee;
 
-    private String type ;
+    private String type;
 }

@@ -3,21 +3,20 @@ package com.bizzan.bitrade.model.screen;
 import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
 import com.bizzan.bitrade.constant.CommonStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class MemberScreen extends AccountScreen{
+public class MemberScreen extends AccountScreen {
 
     /**
      * 会员注册时间
      */
 
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     private Date startTime;
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     private Date endTime;
 
     /**
@@ -27,10 +26,10 @@ public class MemberScreen extends AccountScreen{
     /**
      * 01(正常/非法)
      */
-    private CommonStatus commonStatus ;
+    private CommonStatus commonStatus;
 
     /**
      * 代理商：0不是，1是
      */
-    private String superPartner="0";
+    private String superPartner = "0";
 }

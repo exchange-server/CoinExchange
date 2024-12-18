@@ -1,17 +1,17 @@
 package com.bizzan.bitrade.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.bizzan.bitrade.dao.TransferRecordDao;
+import com.bizzan.bitrade.entity.TransferRecord;
+import com.bizzan.bitrade.pagination.Criteria;
+import com.bizzan.bitrade.pagination.Restrictions;
+import com.bizzan.bitrade.service.Base.BaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bizzan.bitrade.dao.TransferRecordDao;
-import com.bizzan.bitrade.entity.TransferRecord;
-import com.bizzan.bitrade.pagination.Criteria;
-import com.bizzan.bitrade.pagination.Restrictions;
-import com.bizzan.bitrade.service.Base.BaseService;
+import javax.annotation.Resource;
 
 /**
  * @author Jammy
@@ -19,10 +19,10 @@ import com.bizzan.bitrade.service.Base.BaseService;
  */
 @Service
 public class TransferRecordService extends BaseService {
-    @Autowired
+    @Resource
     private TransferRecordDao transferRecordDao;
 
-    public TransferRecord save(TransferRecord transferRecord){
+    public TransferRecord save(TransferRecord transferRecord) {
         return transferRecordDao.save(transferRecord);
     }
 

@@ -5,22 +5,22 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class MemberWalletScreen extends AccountScreen{
+public class MemberWalletScreen extends AccountScreen {
 
-    String unit ;
+    String unit;
 
-    String walletAddress ;
+    String walletAddress;
 
-    BigDecimal minBalance ;
+    BigDecimal minBalance;
 
-    BigDecimal maxBalance ;
+    BigDecimal maxBalance;
 
     BigDecimal minFrozenBalance;
 
-    BigDecimal maxFrozenBalance ;
+    BigDecimal maxFrozenBalance;
 
-    BigDecimal minAllBalance ;
+    BigDecimal minAllBalance;
 
-    BigDecimal maxAllBalance ;
+    BigDecimal maxAllBalance;
 
 }

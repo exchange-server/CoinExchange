@@ -1,12 +1,5 @@
 package com.bizzan.bitrade.controller.activity;
 
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
 import com.bizzan.bitrade.entity.MemberSignRecord;
@@ -14,6 +7,14 @@ import com.bizzan.bitrade.model.screen.MemberSignRecordScreen;
 import com.bizzan.bitrade.model.vo.MemberSignRecordVO;
 import com.bizzan.bitrade.service.MemberSignRecordService;
 import com.bizzan.bitrade.util.MessageResult;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Shaoxianjun
@@ -23,7 +24,7 @@ import com.bizzan.bitrade.util.MessageResult;
 @RestController
 @RequestMapping("activity/member-sign-record")
 public class MemberSignRecordControler extends BaseAdminController {
-    @Autowired
+    @Resource
     private MemberSignRecordService service;
 
     @RequiresPermissions("activity:member-sign-record:page-query")

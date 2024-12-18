@@ -1,13 +1,5 @@
 package com.bizzan.bitrade.controller.system;
 
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.PageModel;
@@ -18,6 +10,15 @@ import com.bizzan.bitrade.service.SysPermissionService;
 import com.bizzan.bitrade.service.SysRoleService;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.MessageResult;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -30,9 +31,9 @@ import java.util.List;
 @RequestMapping(value = "system/role")
 public class RoleController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private SysRoleService sysRoleService;
-    @Autowired
+    @Resource
     private SysPermissionService sysPermissionService;
 
     /**

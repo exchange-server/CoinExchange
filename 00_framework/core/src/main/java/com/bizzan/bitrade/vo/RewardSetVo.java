@@ -15,15 +15,15 @@ public class RewardSetVo implements Serializable {
     private List<RewardSetVo> children;
     private ItemStyle itemStyle;
 
-    public void setCanUpdate(boolean canUpdate){
-        this.canUpdate=canUpdate;
-        if(canUpdate){
+    public void setCanUpdate(boolean canUpdate) {
+        this.canUpdate = canUpdate;
+        if (canUpdate) {
             ItemStyle itemStyle = new ItemStyle();
             itemStyle.setBorderColor("rgba(49, 205, 34, 1)");
-            this.itemStyle=itemStyle;
-        }else {
+            this.itemStyle = itemStyle;
+        } else {
             ItemStyle itemStyle = new ItemStyle();
-            this.itemStyle=itemStyle;
+            this.itemStyle = itemStyle;
         }
     }
 }

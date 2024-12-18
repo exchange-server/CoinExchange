@@ -1,12 +1,13 @@
 package com.bizzan.bitrade.job;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import com.bizzan.bitrade.entity.Order;
 import com.bizzan.bitrade.service.OrderService;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.Resource;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
 @Component
 @Slf4j
 public class CheckOrderTask {
-    @Autowired
+    @Resource
     private OrderService orderService;
 
     @Scheduled(fixedRate = 60000)

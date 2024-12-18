@@ -1,41 +1,4 @@
-
 package com.bizzan.bitrade.controller.system;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import com.sun.media.jfxmedia.logging.Logger;
-import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
-import org.springframework.util.Assert;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
@@ -58,13 +21,44 @@ import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.sparkframework.lang.Convert;
 import com.sparkframework.security.Encrypt;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
+import javax.annotation.Resource;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.util.Assert;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import javax.annotation.Resource;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -81,23 +75,23 @@ public class EmployeeController extends BaseAdminController {
     @Value("${spark.system.md5.key}")
     private String md5Key;
 
-    @Autowired
+    @Resource
     private SysRoleService sysRoleService;
 
-    @Autowired
+    @Resource
     private AdminService adminService;
 
-    @Autowired
+    @Resource
     private DepartmentService departmentService;
     @Resource
     private SysPermissionService sysPermissionService;
 
-    @Autowired
-    private RedisTemplate redisTemplate ;
+    @Resource
+    private RedisTemplate redisTemplate;
 
-    @Autowired
-    private SMSProvider smsProvider ;
-    @Autowired
+    @Resource
+    private SMSProvider smsProvider;
+    @Resource
     private JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username}")
@@ -120,10 +114,10 @@ public class EmployeeController extends BaseAdminController {
     @RequestMapping(value = "sign/in")
     @ResponseBody
     @AccessLog(module = AdminModule.SYSTEM, operation = "提交登录信息Admin")
-    public MessageResult doLogin(@SessionAttribute("username")String username,
-                                 @SessionAttribute("password")String password,
-                                 @SessionAttribute("phone")String phone,String code,
-                                 @RequestParam(value="rememberMe",defaultValue = "true")boolean rememberMe,
+    public MessageResult doLogin(@SessionAttribute("username") String username,
+                                 @SessionAttribute("password") String password,
+                                 @SessionAttribute("phone") String phone, String code,
+                                 @RequestParam(value = "rememberMe", defaultValue = "true") boolean rememberMe,
                                  HttpServletRequest request) {
     	/*
         Assert.notNull(code,"请输入验证码");
@@ -138,7 +132,7 @@ public class EmployeeController extends BaseAdminController {
         try {
             log.info("md5Key {}", md5Key);
 
-            UsernamePasswordToken token = new UsernamePasswordToken(username, password,true);
+            UsernamePasswordToken token = new UsernamePasswordToken(username, password, true);
             token.setHost(getRemoteIp(request));
             SecurityUtils.getSubject().login(token);
             //valueOperations.getOperations().delete(SysConstant.ADMIN_LOGIN_PHONE_PREFIX+phone);
@@ -155,12 +149,12 @@ public class EmployeeController extends BaseAdminController {
             Map<String, Object> map = new HashMap<>();
             map.put("permissions", list);
             map.put("admin", admin);
-            
+
             String[] adminList = admins.split(",");
-			for(int i = 0; i < adminList.length; i++) {
-				sendEmailMsg(adminList[i], "管理员(UserName: " + username + ", Phone: " + phone+ ") 登录后台", "管理员登录通知");
-			}
-			
+            for (int i = 0; i < adminList.length; i++) {
+                sendEmailMsg(adminList[i], "管理员(UserName: " + username + ", Phone: " + phone + ") 登录后台", "管理员登录通知");
+            }
+
             return success("登录成功", map);
         } catch (AuthenticationException e) {
             e.printStackTrace();
@@ -169,9 +163,9 @@ public class EmployeeController extends BaseAdminController {
     }
 
 
-
     /**
      * 发送邮件
+     *
      * @param email
      * @param msg
      * @param subject
@@ -180,34 +174,34 @@ public class EmployeeController extends BaseAdminController {
      * @throws TemplateException
      */
     @Async
-    public void sendEmailMsg(String email, String msg, String subject){
-    	try {
-	        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-	        MimeMessageHelper helper = null;
-	        helper = new MimeMessageHelper(mimeMessage, true);
-	        helper.setFrom(from);
-	        helper.setTo(email);
-	        helper.setSubject(company + "-" + subject);
-	        Map<String, Object> model = new HashMap<>(16);
-	        model.put("msg", msg);
-	        Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
-	        cfg.setClassForTemplateLoading(this.getClass(), "/templates");
-	        Template template = cfg.getTemplate("simpleMessage.ftl");
-	        String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
-	        helper.setText(html, true);
-	
-	        //发送邮件
-	        javaMailSender.send(mimeMessage);
-	        log.info("send email for {},content:{}", email, html);
-    	}catch(Exception e) {
-    		e.printStackTrace();
-    	}
+    public void sendEmailMsg(String email, String msg, String subject) {
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = null;
+            helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setFrom(from);
+            helper.setTo(email);
+            helper.setSubject(company + "-" + subject);
+            Map<String, Object> model = new HashMap<>(16);
+            model.put("msg", msg);
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
+            cfg.setClassForTemplateLoading(this.getClass(), "/templates");
+            Template template = cfg.getTemplate("simpleMessage.ftl");
+            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+            helper.setText(html, true);
+
+            //发送邮件
+            javaMailSender.send(mimeMessage);
+            log.info("send email for {},content:{}", email, html);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-    
+
     @RequestMapping(value = "/check")
     @ResponseBody
     @AccessLog(module = AdminModule.SYSTEM, operation = "判断后台登录输入手机验证码")
-    public MessageResult valiatePhoneCode(HttpServletRequest request){
+    public MessageResult valiatePhoneCode(HttpServletRequest request) {
         String username = Convert.strToStr(request(request, "username"), "");
         String password = Convert.strToStr(request(request, "password"), "");
         String captcha = Convert.strToStr(request(request, "captcha"), "");
@@ -230,17 +224,17 @@ public class EmployeeController extends BaseAdminController {
             return error("验证码不正确");
         }
         password = Encrypt.MD5(password + md5Key);
-        log.info("==================>"+password);
-        Admin admin = adminService.login(username,password);
-        if(admin==null){
+        log.info("==================>" + password);
+        Admin admin = adminService.login(username, password);
+        if (admin == null) {
             return error("用户名或密码不存在");
-        }else{
+        } else {
             try {
-                request.getSession().setAttribute("username",username);
-                request.getSession().setAttribute("password",password);
-                request.getSession().setAttribute("phone",admin.getMobilePhone());
+                request.getSession().setAttribute("username", username);
+                request.getSession().setAttribute("password", password);
+                request.getSession().setAttribute("phone", admin.getMobilePhone());
 
-               return success("",admin.getMobilePhone());
+                return success("", admin.getMobilePhone());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -249,7 +243,7 @@ public class EmployeeController extends BaseAdminController {
     }
 
 
-/**
+    /**
      * 退出登录
      *
      * @return
@@ -262,7 +256,7 @@ public class EmployeeController extends BaseAdminController {
         return success();
     }
 
-/**
+    /**
      * 创建或更改后台用户
      *
      * @param admin
@@ -362,8 +356,7 @@ public class EmployeeController extends BaseAdminController {
     }
 
 
-
-/**
+    /**
      * admin信息
      *
      * @param id
@@ -383,8 +376,7 @@ public class EmployeeController extends BaseAdminController {
     }
 
 
-
-/**
+    /**
      * admin信息
      *
      * @return

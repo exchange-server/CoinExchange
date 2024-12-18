@@ -1,44 +1,40 @@
 package com.bizzan.bitrade.service;
 
-import com.bizzan.bitrade.constant.BooleanEnum;
-import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.constant.WithdrawStatus;
 import com.bizzan.bitrade.dao.WithdrawCodeRecordDao;
-import com.bizzan.bitrade.dao.WithdrawRecordDao;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.QMember;
+import com.bizzan.bitrade.entity.QWithdrawCodeRecord;
+import com.bizzan.bitrade.entity.WithdrawCodeRecord;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.pagination.Criteria;
 import com.bizzan.bitrade.pagination.PageListMapResult;
 import com.bizzan.bitrade.pagination.PageResult;
 import com.bizzan.bitrade.pagination.Restrictions;
 import com.bizzan.bitrade.service.Base.BaseService;
-import com.bizzan.bitrade.vo.WithdrawRecordVO;
-import com.querydsl.core.types.*;
-import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
-
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
-import static com.bizzan.bitrade.constant.WithdrawStatus.*;
 import static com.bizzan.bitrade.entity.QWithdrawCodeRecord.withdrawCodeRecord;
-import static org.springframework.util.Assert.isTrue;
-import static org.springframework.util.Assert.notNull;
 
 /**
  * @author Jammy
@@ -47,15 +43,15 @@ import static org.springframework.util.Assert.notNull;
 @Service
 @Slf4j
 public class WithdrawCodeRecordService extends BaseService {
-    private Logger logger = LoggerFactory.getLogger(WithdrawCodeRecordService.class);
-    @Autowired
-    private WithdrawCodeRecordDao withdrawApplyDao;
-    @Autowired
-    private MemberWalletService walletService;
-    @Autowired
-    private MemberTransactionService transactionService;
-    @Autowired
+    @Resource
     ESUtils esUtils;
+    private Logger logger = LoggerFactory.getLogger(WithdrawCodeRecordService.class);
+    @Resource
+    private WithdrawCodeRecordDao withdrawApplyDao;
+    @Resource
+    private MemberWalletService walletService;
+    @Resource
+    private MemberTransactionService transactionService;
 
     public WithdrawCodeRecord save(WithdrawCodeRecord withdrawApply) {
         return withdrawApplyDao.save(withdrawApply);
@@ -122,13 +118,13 @@ public class WithdrawCodeRecordService extends BaseService {
     public void withdrawSuccess(Long withdrawId, Long memberId) {
         WithdrawCodeRecord record = findOne(withdrawId);
         if (record != null) {
-        	// 设置状态为成功（已提现）
+            // 设置状态为成功（已提现）
             record.setStatus(WithdrawStatus.SUCCESS);
             record.setDealTime(new Date());
             // 处理提现人账户
             MemberWallet wallet = walletService.findByCoinUnitAndMemberId(record.getCoin().getUnit(), record.getMemberId());
             if (wallet != null) {
-            	// 扣除发起提现码用户余额
+                // 扣除发起提现码用户余额
                 wallet.setFrozenBalance(wallet.getFrozenBalance().subtract(record.getWithdrawAmount()));
                 // 增加资产变更记录
                 MemberTransaction transaction = new MemberTransaction();
@@ -145,10 +141,10 @@ public class WithdrawCodeRecordService extends BaseService {
             }
             // 处理用提现码充值的用户账户
             MemberWallet walletRecharge = walletService.findByCoinUnitAndMemberId(record.getCoin().getUnit(), memberId);
-            if(walletRecharge != null) {
-            	walletRecharge.setBalance(walletRecharge.getBalance().add(record.getWithdrawAmount()));
-            	
-            	MemberTransaction transaction = new MemberTransaction();
+            if (walletRecharge != null) {
+                walletRecharge.setBalance(walletRecharge.getBalance().add(record.getWithdrawAmount()));
+
+                MemberTransaction transaction = new MemberTransaction();
                 transaction.setAmount(record.getWithdrawAmount());
                 transaction.setSymbol(walletRecharge.getCoin().getUnit());
                 transaction.setAddress("");
@@ -172,12 +168,12 @@ public class WithdrawCodeRecordService extends BaseService {
         return withdrawApplyDao.findAll(specification, pageRequest);
     }
 
-    public long countAuditing(){
+    public long countAuditing() {
         return withdrawApplyDao.countAllByStatus(WithdrawStatus.PROCESSING);
     }
 
-	public WithdrawCodeRecord findByWithdrawCode(String withdrawCode) {
-		return withdrawApplyDao.findByWithdrawCode(withdrawCode);
-	}
-    
+    public WithdrawCodeRecord findByWithdrawCode(String withdrawCode) {
+        return withdrawApplyDao.findByWithdrawCode(withdrawCode);
+    }
+
 }

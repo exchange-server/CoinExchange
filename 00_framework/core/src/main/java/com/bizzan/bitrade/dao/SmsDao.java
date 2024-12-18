@@ -1,11 +1,8 @@
 package com.bizzan.bitrade.dao;
 
-import org.springframework.data.jpa.repository.Query;
-
 import com.bizzan.bitrade.dao.base.BaseDao;
 import com.bizzan.bitrade.dto.SmsDTO;
-
-import java.util.List;
+import org.springframework.data.jpa.repository.Query;
 
 /**
  * @Description:
@@ -14,7 +11,7 @@ import java.util.List;
  * @Modified:
  */
 public interface SmsDao extends BaseDao<SmsDTO> {
-    
-    @Query(value = "select * from tb_sms where sms_status = '0' ",nativeQuery = true)
+
+    @Query(value = "select * from tb_sms where sms_status = '0' ", nativeQuery = true)
     SmsDTO findBySmsStatus();
 }

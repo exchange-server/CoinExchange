@@ -13,9 +13,9 @@ public class ExchangeTradeVO {
 
     private String buyOrderId;
 
-    private String sellOrderId ;
+    private String sellOrderId;
 
-    private String symbol ;
+    private String symbol;
 
     /**
      * 成交价
@@ -25,19 +25,19 @@ public class ExchangeTradeVO {
     /**
      * 成交量
      */
-    private BigDecimal amount ;
+    private BigDecimal amount;
 
-    private BigDecimal buyerFee ;
+    private BigDecimal buyerFee;
 
-    private BigDecimal sellerFee ;
+    private BigDecimal sellerFee;
 
     private String buyerUsername;
 
-    private String sellerUsername ;
+    private String sellerUsername;
 
     /**
      * 成交时间
      */
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date transactionTime ;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date transactionTime;
 }

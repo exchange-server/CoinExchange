@@ -1,11 +1,10 @@
 package com.bizzan.bitrade.model.update;
 
-import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
-
 import com.bizzan.bitrade.ability.UpdateAbility;
 import com.bizzan.bitrade.constant.Platform;
 import com.bizzan.bitrade.entity.AppRevision;
+import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Shaoxianjun

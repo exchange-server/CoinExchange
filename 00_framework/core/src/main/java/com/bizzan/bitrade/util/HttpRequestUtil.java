@@ -25,10 +25,8 @@ import java.util.Set;
  */
 public class HttpRequestUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(HttpRequestUtil.class);
-
     public static final String UTF8 = "UTF-8";
-
+    private static final Logger logger = LoggerFactory.getLogger(HttpRequestUtil.class);
     private static final String URL_PARAM_CONNECT_FLAG = "&";
 
     private static final String EMPTY = "";
@@ -99,7 +97,7 @@ public class HttpRequestUtil {
     }
 
     public static String URLPostForException(String url, Map<String, Object> busiParams, Map<String, Object>
-            headParams) throws Exception{
+            headParams) throws Exception {
         String response = EMPTY;
         PostMethod postMethod = null;
         try {
@@ -132,6 +130,7 @@ public class HttpRequestUtil {
         }
         return response;
     }
+
     /**
      * POST方式提交数据 json
      *
@@ -141,7 +140,7 @@ public class HttpRequestUtil {
      */
     public static String URLPostJSONParams(String url, String busiParams, Map<String, Object> headParams) {
         logger.info("URLPostJSONParams>>>url>>>" + url + ">>>busiParams>>>" + busiParams + ">>>headParams>>>" +
-				headParams);
+                headParams);
         String response = EMPTY;
         PostMethod postMethod = null;
         try {
@@ -181,7 +180,7 @@ public class HttpRequestUtil {
     public static String URLPostJSONParamsForException(String url, String busiParams, Map<String, Object> headParams)
             throws Exception {
         logger.info("URLPostJSONParams>>>url>>>" + url + ">>>busiParams>>>" + busiParams + ">>>headParams>>>" +
-				headParams);
+                headParams);
         String response = EMPTY;
         PostMethod postMethod = null;
         try {

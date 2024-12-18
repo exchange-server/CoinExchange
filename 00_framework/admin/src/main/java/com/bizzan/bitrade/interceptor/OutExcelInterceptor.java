@@ -12,16 +12,16 @@ public class OutExcelInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
         String fileName = httpServletRequest.getParameter("fileName");
-        if(fileName!=null){
-            if(!fileName.endsWith(".xls")){
-                fileName += ".xls" ;
+        if (fileName != null) {
+            if (!fileName.endsWith(".xls")) {
+                fileName += ".xls";
             }
-        }else{
+        } else {
             fileName = "default.xls";
         }
-        log.info("{}",fileName);
+        log.info("{}", fileName);
         httpServletResponse.setContentType("application/vnd.ms-excel");
-        httpServletResponse.setHeader("Content-Disposition", "attachment;filename="+fileName);
+        httpServletResponse.setHeader("Content-Disposition", "attachment;filename=" + fileName);
         httpServletResponse.setContentType("utf-8");
         return true;
     }

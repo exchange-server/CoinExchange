@@ -1,10 +1,16 @@
 package com.bizzan.bitrade.pagination;
+
 import org.springframework.util.StringUtils;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
 /**
  * 简单条件表达式
-
  */
 public class SimpleExpression implements Criterion {
 
@@ -21,24 +27,27 @@ public class SimpleExpression implements Criterion {
     public String getFieldName() {
         return fieldName;
     }
+
     public Object getValue() {
         return value;
     }
+
     public Operator getOperator() {
         return operator;
     }
+
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public Predicate toPredicate(Root<?> root, CriteriaQuery<?> query,
                                  CriteriaBuilder builder) {
         Path expression = null;
-        if(fieldName.contains(".")){
+        if (fieldName.contains(".")) {
             String[] names = StringUtils.split(fieldName, ".");
             expression = root.get(names[0]);
             for (int i = 1; i < names.length; i++) {
                 expression = expression.get(names[i]);
             }
-        }else{
+        } else {
             expression = root.get(fieldName);
         }
 

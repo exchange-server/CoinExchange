@@ -6,9 +6,6 @@ import com.bizzan.bitrade.dto.SmsDTO;
 import com.bizzan.bitrade.service.SmsService;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
@@ -17,8 +14,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -35,8 +32,8 @@ public class ChuangRuiSMSProvider implements SMSProvider {
     private String sign;
     private String accesskey;
     private String accessSecret;
-    
-    @Autowired
+
+    @Resource
     private SmsService smsService;
 
     public ChuangRuiSMSProvider(String gateway, String username, String password, String sign, String accesskey, String accessSecret) {
@@ -73,18 +70,18 @@ public class ChuangRuiSMSProvider implements SMSProvider {
     @Override
     public MessageResult sendSingleMessage(String mobile, String content) throws Exception {
         SmsDTO smsDTO = smsService.getByStatus();
-        if ("chuangrui".equals(smsDTO.getSmsName())){
-            return sendMessage(mobile,content,smsDTO);
-        }else if ("gongxintong".equals(smsDTO.getSmsName())){
-            return send2Method(mobile,content,smsDTO);
+        if ("chuangrui".equals(smsDTO.getSmsName())) {
+            return sendMessage(mobile, content, smsDTO);
+        } else if ("gongxintong".equals(smsDTO.getSmsName())) {
+            return send2Method(mobile, content, smsDTO);
         }
         return null;
     }
 
     @Override
-    public MessageResult sendMessageByTempId(String mobile, String content,String templateId) throws Exception {
+    public MessageResult sendMessageByTempId(String mobile, String content, String templateId) throws Exception {
         SmsDTO smsDTO = smsService.getByStatus();
-        if ("chuangrui".equals(smsDTO.getSmsName())){
+        if ("chuangrui".equals(smsDTO.getSmsName())) {
             SmsDTO smsTemp = new SmsDTO();
             smsTemp.setTemplateId(templateId);
             smsTemp.setKeyId(smsDTO.getKeyId());
@@ -92,14 +89,14 @@ public class ChuangRuiSMSProvider implements SMSProvider {
             smsTemp.setSmsName(smsDTO.getSmsName());
             smsTemp.setSignId(smsDTO.getSignId());
             smsTemp.setSmsStatus(smsDTO.getSmsStatus());
-            return sendMessage(mobile,content,smsTemp);
-        }else if ("gongxintong".equals(smsDTO.getSmsName())){
-            return sendByOder(mobile,content,smsDTO);
+            return sendMessage(mobile, content, smsTemp);
+        } else if ("gongxintong".equals(smsDTO.getSmsName())) {
+            return sendByOder(mobile, content, smsDTO);
         }
         return null;
     }
-    
-    public MessageResult sendMessage(String mobile, String content,SmsDTO smsDTO) throws Exception{
+
+    public MessageResult sendMessage(String mobile, String content, SmsDTO smsDTO) throws Exception {
         log.info("sms content={}", content);
 
         HttpClient httpClient = new HttpClient();
@@ -152,7 +149,7 @@ public class ChuangRuiSMSProvider implements SMSProvider {
         params.put("password", smsDTO.getKeySecret());
         JSONObject[] phoneSend = new JSONObject[1];
         JSONObject submit = new JSONObject();
-        submit.put("content", "您好，" + StringUtils.substringBefore(content,"#") + "广告有新的订单，对方用户名为"+StringUtils.substringAfterLast(content,"#")+"，请登录系统及时处理。【BIZZAN】");
+        submit.put("content", "您好，" + StringUtils.substringBefore(content, "#") + "广告有新的订单，对方用户名为" + StringUtils.substringAfterLast(content, "#") + "，请登录系统及时处理。【BIZZAN】");
         submit.put("phone", mobile);
 
         phoneSend[0] = submit;
@@ -199,7 +196,7 @@ public class ChuangRuiSMSProvider implements SMSProvider {
 
     }
 
-    private MessageResult parse2Result(String result){
+    private MessageResult parse2Result(String result) {
         //{"result":[{"phone":"15738776414","msgid":"1806282017484877844","return":"0","info":"成功"}],"id":1}
         JSONObject jsonObject = JSONObject.parseObject(result);
         MessageResult mr = new MessageResult(500, "系统错误");
@@ -210,12 +207,11 @@ public class ChuangRuiSMSProvider implements SMSProvider {
         return mr;
     }
 
-	@Override
-	public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+    @Override
+    public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 
 //    private MessageResult parseResult(String result) {

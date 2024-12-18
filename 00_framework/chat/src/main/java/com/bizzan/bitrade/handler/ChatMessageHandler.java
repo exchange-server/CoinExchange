@@ -1,12 +1,9 @@
 package com.bizzan.bitrade.handler;
 
-import com.alibaba.fastjson.JSON;
 import com.bizzan.bitrade.entity.ChatMessageRecord;
 import com.bizzan.bitrade.entity.HistoryChatMessage;
 import com.bizzan.bitrade.entity.HistoryMessagePage;
 import com.bizzan.bitrade.utils.DateUtils;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,12 +11,13 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 @Component
 public class ChatMessageHandler implements MessageHandler {
 
-    @Autowired
+    @Resource
     private MongoTemplate mongoTemplate;
 
     @Override
@@ -37,7 +35,7 @@ public class ChatMessageHandler implements MessageHandler {
     @Override
     public HistoryMessagePage getHistoryMessage(HistoryChatMessage message) {
         Criteria criteria = new Criteria();
-        if(!StringUtils.isEmpty(message.getOrderId())) {
+        if (!StringUtils.isEmpty(message.getOrderId())) {
             criteria = Criteria.where("orderId").is(message.getOrderId());
         }
         Sort sort = new Sort(new Sort.Order(Sort.Direction.DESC, message.getSortFiled()));

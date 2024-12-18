@@ -1,14 +1,5 @@
 package com.bizzan.bitrade.controller.system;
 
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.PageModel;
@@ -17,6 +8,16 @@ import com.bizzan.bitrade.entity.Department;
 import com.bizzan.bitrade.service.DepartmentService;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.MessageResult;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -28,7 +29,7 @@ import javax.validation.Valid;
 @RequestMapping(value = "/system/department")
 public class DepartmentController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private DepartmentService departmentService;
 
 

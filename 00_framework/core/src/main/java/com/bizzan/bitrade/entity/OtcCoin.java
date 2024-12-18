@@ -1,13 +1,18 @@
 package com.bizzan.bitrade.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CommonStatus;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
-import com.bizzan.bitrade.constant.BooleanEnum;
-import com.bizzan.bitrade.constant.CommonStatus;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.math.BigDecimal;
 
 /**
@@ -63,7 +68,9 @@ public class OtcCoin {
     @Excel(name = "otc货币单位", orderNum = "1", width = 20)
     private int sort;
 
-    /** 是否是平台币 */
+    /**
+     * 是否是平台币
+     */
     @Enumerated(EnumType.ORDINAL)
-    private BooleanEnum isPlatformCoin=BooleanEnum.IS_FALSE;
+    private BooleanEnum isPlatformCoin = BooleanEnum.IS_FALSE;
 }

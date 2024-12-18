@@ -5,7 +5,12 @@ import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.dao.MemberDao;
 import com.bizzan.bitrade.dao.MemberSignRecordDao;
 import com.bizzan.bitrade.dao.MemberTransactionDao;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberSignRecord;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.QMember;
+import com.bizzan.bitrade.entity.Sign;
 import com.bizzan.bitrade.exception.AuthenticationException;
 import com.bizzan.bitrade.pagination.Criteria;
 import com.bizzan.bitrade.pagination.PageResult;
@@ -16,9 +21,7 @@ import com.bizzan.bitrade.util.Md5;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,23 +29,24 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.bizzan.bitrade.constant.TransactionType.ACTIVITY_AWARD;
-
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.bizzan.bitrade.constant.TransactionType.ACTIVITY_AWARD;
 
 @Service
 public class MemberService extends BaseService {
 
-    @Autowired
+    @Resource
     private MemberDao memberDao;
 
-    @Autowired
+    @Resource
     private MemberSignRecordDao signRecordDao;
 
-    @Autowired
+    @Resource
     private MemberTransactionDao transactionDao;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSourceService;
 
     /**
@@ -119,8 +123,8 @@ public class MemberService extends BaseService {
     public List<Member> findPromotionMember(Long id) {
         return memberDao.findAllByInviterId(id);
     }
-    
-    public Page<Member> findPromotionMemberPage(Integer pageNo, Integer pageSize,Long id){
+
+    public Page<Member> findPromotionMemberPage(Integer pageNo, Integer pageSize, Long id) {
         Sort orders = Criteria.sortStatic("id");
         PageRequest pageRequest = new PageRequest(pageNo, pageSize, orders);
 
@@ -144,7 +148,7 @@ public class MemberService extends BaseService {
         specification.add(Restrictions.eq("status", status, false));
         return memberDao.findAll(specification, pageRequest);
     }
-    
+
     public Page<Member> findByPage(Integer pageNo, Integer pageSize) {
         //排序方式 (需要倒序 这样    Criteria.sort("id","createTime.desc") ) //参数实体类为字段名
         Sort orders = Criteria.sortStatic("id");
@@ -216,33 +220,35 @@ public class MemberService extends BaseService {
 
     /**
      * 判断验证码是否存在
+     *
      * @param promotion
      * @return
      */
     public boolean userPromotionCodeIsExist(String promotion) {
         return memberDao.getAllByPromotionCodeEquals(promotion).size() > 0 ? true : false;
     }
-    
+
     public Long getMaxId() {
-    	return memberDao.getMaxId();
+        return memberDao.getMaxId();
     }
 
-	public Member findMemberByPromotionCode(String code) {
-		return memberDao.findMemberByPromotionCode(code);
-	}
+    public Member findMemberByPromotionCode(String code) {
+        return memberDao.findMemberByPromotionCode(code);
+    }
 
     public List<Member> findSuperPartnerMembersByIds(String uppers) {
         String[] idss = uppers.split(",");
         List<Long> ids = new ArrayList<>();
-        for(String id:idss){
+        for (String id : idss) {
             ids.add(Long.parseLong(id));
         }
         return memberDao.findSuperPartnerMembersByIds(ids);
     }
+
     public List<Member> findAllByIds(String uppers) {
         String[] idss = uppers.split(",");
         List<Long> ids = new ArrayList<>();
-        for(String id:idss){
+        for (String id : idss) {
             ids.add(Long.parseLong(id));
         }
         return memberDao.findAllByIds(ids);

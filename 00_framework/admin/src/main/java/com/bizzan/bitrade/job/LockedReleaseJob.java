@@ -1,75 +1,81 @@
 package com.bizzan.bitrade.job;
 
 import com.bizzan.bitrade.constant.TransactionType;
-import com.bizzan.bitrade.entity.*;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.entity.LockedOrder;
+import com.bizzan.bitrade.entity.LockedOrderDetail;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.service.LockedOrderDetailService;
+import com.bizzan.bitrade.service.LockedOrderService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
 import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Slf4j
 public class LockedReleaseJob {
 
-    @Autowired
-    private SMSProvider smsProvider;
-
     private static Logger logger = LoggerFactory.getLogger(LockedReleaseJob.class);
-
-    @Autowired
+    @Resource
+    private SMSProvider smsProvider;
+    @Resource
     private LockedOrderDetailService lockedOrderDetailService;
 
-    @Autowired
+    @Resource
     private LockedOrderService lockedOrderService;
 
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
 
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
 
-    @Autowired
+    @Resource
     private MemberService memberService;
 
-    private void increaseToRelease(){
+    private void increaseToRelease() {
 
     }
+
     /**
      * 日处理：每天晚上11点30释放锁仓
      */
     @Scheduled(cron = "0 30 23 * * *")
-   // @Transactional(rollbackFor = Exception.class)
+    // @Transactional(rollbackFor = Exception.class)
     public void release() {
         List<LockedOrder> list = lockedOrderService.findAllByLockedStatus(1);
 
         Date currentDate = DateUtil.getCurrentDate();
-        for(LockedOrder item : list) {
-            if(this.checkNuccessary(item)) {
+        for (LockedOrder item : list) {
+            if (this.checkNuccessary(item)) {
                 this.doRelease(item);
             }
         }
     }
 
-    private boolean checkNuccessary(LockedOrder item){
+    private boolean checkNuccessary(LockedOrder item) {
         if (item.getLockedStatus() != 1) { // 不是释放中的状态
             return false;
         }
         // 日周期，直接释放
         // 周周期，计算是否是释放周期
         long days = DateUtil.diffDays(item.getCreateTime(), DateUtil.getCurrentDate());
-        if(days == 0) {
+        if (days == 0) {
             return false;
         }
         if (item.getPeriod() == 1) {
@@ -86,8 +92,8 @@ public class LockedReleaseJob {
         return true;
     }
 
-    @Transactional(propagation= Propagation.REQUIRES_NEW)
-    void doRelease(LockedOrder item){
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    void doRelease(LockedOrder item) {
 
         Member member = memberService.findOne(item.getMemberId());
         // 获取当前钱包
@@ -110,10 +116,10 @@ public class LockedReleaseJob {
         lockedOrderDetailService.save(lod);
 
         // 扣除用户钱包表中的资产
-        if(userWallet == null) {
+        if (userWallet == null) {
             logger.info("=======>userWallet is null");
         }
-        if(rAmount == null) {
+        if (rAmount == null) {
             logger.info("=======>rAmount is null");
         }
         memberWalletService.decreaseToRelease(userWallet.getId(), rAmount);

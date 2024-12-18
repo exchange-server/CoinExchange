@@ -1,19 +1,14 @@
 package com.bizzan.bitrade.service;
 
-import com.bizzan.bitrade.constant.CommonStatus;
 import com.bizzan.bitrade.constant.SysHelpClassification;
 import com.bizzan.bitrade.dao.SysHelpDao;
 import com.bizzan.bitrade.entity.QSysHelp;
 import com.bizzan.bitrade.entity.SysHelp;
 import com.bizzan.bitrade.pagination.PageResult;
 import com.bizzan.bitrade.service.Base.BaseService;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,12 +17,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-
-import static com.bizzan.bitrade.entity.QSysAdvertise.sysAdvertise;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +31,7 @@ import java.util.List;
  */
 @Service
 public class SysHelpService extends BaseService {
-    @Autowired
+    @Resource
     private SysHelpDao sysHelpDao;
 
     public SysHelp save(SysHelp sysHelp) {
@@ -61,7 +54,7 @@ public class SysHelpService extends BaseService {
         }
     }
 
-    public int getMaxSort(){
+    public int getMaxSort() {
         return sysHelpDao.findMaxSort();
     }
 
@@ -96,12 +89,13 @@ public class SysHelpService extends BaseService {
 
     /**
      * 根据分类分页查询
+     *
      * @param pageNo
      * @param pageSize
      * @param cate
      * @return
      */
-    public Page<SysHelp> findByCondition(int pageNo,int pageSize,SysHelpClassification cate, String lang){
+    public Page<SysHelp> findByCondition(int pageNo, int pageSize, SysHelpClassification cate, String lang) {
         Sort sort = new Sort(new Sort.Order(Sort.Direction.DESC, "sort"));
         Pageable pageable = new PageRequest(pageNo - 1, pageSize, sort);
         Specification specification = new Specification() {
@@ -109,20 +103,20 @@ public class SysHelpService extends BaseService {
 
             @Override
             public javax.persistence.criteria.Predicate toPredicate(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                predicates.add(criteriaBuilder.equal(root.get("sysHelpClassification"),cate));
-                predicates.add(criteriaBuilder.equal(root.get("lang"),lang));
+                predicates.add(criteriaBuilder.equal(root.get("sysHelpClassification"), cate));
+                predicates.add(criteriaBuilder.equal(root.get("lang"), lang));
                 return criteriaBuilder.and(predicates.toArray(new javax.persistence.criteria.Predicate[predicates.size()]));
             }
         };
-        return sysHelpDao.findAll(specification,pageable);
+        return sysHelpDao.findAll(specification, pageable);
     }
 
-    public List<SysHelp> getgetCateTops(String cate, String lang){
+    public List<SysHelp> getgetCateTops(String cate, String lang) {
         return sysHelpDao.getCateTopList(cate, lang);
     }
 
 
-    public Page<SysHelp> findByCate(int pageNo,int pageSize,String cate){
+    public Page<SysHelp> findByCate(int pageNo, int pageSize, String cate) {
         Sort sort = new Sort(new Sort.Order(Sort.Direction.DESC, "sort"));
         Pageable pageable = new PageRequest(pageNo - 1, pageSize, sort);
         Specification specification = new Specification() {
@@ -130,12 +124,12 @@ public class SysHelpService extends BaseService {
 
             @Override
             public javax.persistence.criteria.Predicate toPredicate(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                predicates.add(criteriaBuilder.equal(root.get("SysHelpClassification"),cate));
-                predicates.add(criteriaBuilder.equal(root.get("isTop"),"0"));
+                predicates.add(criteriaBuilder.equal(root.get("SysHelpClassification"), cate));
+                predicates.add(criteriaBuilder.equal(root.get("isTop"), "0"));
                 return criteriaBuilder.and(predicates.toArray(new javax.persistence.criteria.Predicate[predicates.size()]));
             }
         };
-        return sysHelpDao.findAll(specification,pageable);
+        return sysHelpDao.findAll(specification, pageable);
     }
 
 }

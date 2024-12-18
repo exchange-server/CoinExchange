@@ -1,17 +1,8 @@
 package com.bizzan.bitrade.vo;
 
-import com.bizzan.bitrade.constant.AdvertiseType;
-import com.bizzan.bitrade.constant.AppealStatus;
-import com.bizzan.bitrade.constant.BooleanEnum;
-import com.bizzan.bitrade.constant.OrderStatus;
-import com.bizzan.bitrade.entity.Appeal;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
@@ -22,57 +13,57 @@ public class AppealVO {
     /**
      * 申诉单id
      */
-    private BigInteger appealId ;
+    private BigInteger appealId;
 
     /**
      * 广告创建者
      */
-    private String advertiseCreaterUserName ;
+    private String advertiseCreaterUserName;
 
-    private String advertiseCreaterName ;
+    private String advertiseCreaterName;
 
     /**
      *
      */
-    private String customerUserName ;
+    private String customerUserName;
 
-    private String customerName ;
+    private String customerName;
 
     /**
      * 被投诉者真名
      */
-    private String associateName ;
+    private String associateName;
     /**
      * 被投诉者用户名
      */
-    private String associateUsername ;
+    private String associateUsername;
     /**
      * 申诉者用户名
      */
-    private String initiatorUsername ;
+    private String initiatorUsername;
     /**
      * 申诉者真名
      */
-    private String initiatorName ;
+    private String initiatorName;
     /**
      * 订单手续费
      */
-    private BigDecimal fee ;
+    private BigDecimal fee;
 
     /**
      * 订单数量
      */
-    private BigDecimal number ;
+    private BigDecimal number;
 
     /**
      * 订单金额
      */
-    private BigDecimal money ;
+    private BigDecimal money;
 
     /**
      * 订单编号
      */
-    private String orderSn ;
+    private String orderSn;
 
     /**
      * 交易时间
@@ -100,13 +91,13 @@ public class AppealVO {
     /**
      * 币种名称
      */
-    private String coinName ;
+    private String coinName;
 
     /**
      * 订单状态
      */
- /*   @Enumerated(EnumType.STRING)*/
-    private int orderStatus ;
+    /*   @Enumerated(EnumType.STRING)*/
+    private int orderStatus;
 
     /**
      * 是否胜诉

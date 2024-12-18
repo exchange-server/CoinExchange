@@ -1,11 +1,5 @@
 package com.bizzan.bitrade.controller.cms;
 
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.PageModel;
@@ -17,7 +11,16 @@ import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.util.FileUtil;
 import com.bizzan.bitrade.util.MessageResult;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.data.domain.Page;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -34,9 +37,9 @@ import static org.springframework.util.Assert.notNull;
 @RequestMapping("/cms/system-help")
 public class HelpController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private SysHelpService sysHelpService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     @RequiresPermissions("cms:system-help:create")
@@ -66,10 +69,10 @@ public class HelpController extends BaseAdminController {
     @RequiresPermissions("cms:system-help:top")
     @PostMapping("top")
     @AccessLog(module = AdminModule.CMS, operation = "系统帮助置顶")
-    public MessageResult toTop(@RequestParam("id")long id){
+    public MessageResult toTop(@RequestParam("id") long id) {
         SysHelp help = sysHelpService.findOne(id);
         int a = sysHelpService.getMaxSort();
-        help.setSort(a+1);
+        help.setSort(a + 1);
         help.setIsTop("0");
         sysHelpService.save(help);
         return success(msService.getMessage("TOP_SUCCESS"));
@@ -77,13 +80,14 @@ public class HelpController extends BaseAdminController {
 
     /**
      * 系统帮助取消置顶
+     *
      * @param id
      * @return
      */
     @RequiresPermissions("cms:system-help:down")
     @PostMapping("down")
     @AccessLog(module = AdminModule.CMS, operation = "系统帮助取消置顶")
-    public MessageResult toDown(@RequestParam("id")long id){
+    public MessageResult toDown(@RequestParam("id") long id) {
         SysHelp help = sysHelpService.findOne(id);
         help.setIsTop("1");
         sysHelpService.save(help);

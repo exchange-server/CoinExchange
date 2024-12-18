@@ -1,7 +1,5 @@
 package com.bizzan.bitrade.processor;
 
-import java.util.List;
-
 import com.bizzan.bitrade.component.CoinExchangeRate;
 import com.bizzan.bitrade.entity.CoinThumb;
 import com.bizzan.bitrade.entity.ExchangeTrade;
@@ -9,15 +7,19 @@ import com.bizzan.bitrade.entity.KLine;
 import com.bizzan.bitrade.handler.MarketHandler;
 import com.bizzan.bitrade.service.MarketService;
 
+import java.util.List;
+
 public interface CoinProcessor {
 
     void setIsHalt(boolean status);
 
     void setIsStopKLine(boolean stop);
-    
+
     boolean isStopKline();
+
     /**
      * 处理新生成的交易信息
+     *
      * @param trades
      * @return
      */
@@ -25,6 +27,7 @@ public interface CoinProcessor {
 
     /**
      * 添加存储器
+     *
      * @param storage
      */
     void addHandler(MarketHandler storage);

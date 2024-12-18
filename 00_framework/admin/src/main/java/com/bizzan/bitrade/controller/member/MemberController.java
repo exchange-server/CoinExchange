@@ -1,40 +1,61 @@
 package com.bizzan.bitrade.controller.member;
 
 import com.bizzan.bitrade.annotation.AccessLog;
-import com.bizzan.bitrade.constant.*;
+import com.bizzan.bitrade.constant.AdminModule;
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
+import com.bizzan.bitrade.constant.CommonStatus;
+import com.bizzan.bitrade.constant.DepositStatusEnum;
+import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
 import com.bizzan.bitrade.dto.MemberDTO;
 import com.bizzan.bitrade.entity.BusinessAuthApply;
 import com.bizzan.bitrade.entity.DepositRecord;
 import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.entity.MemberWallet;
-import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.event.MemberEvent;
 import com.bizzan.bitrade.model.screen.MemberScreen;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.BusinessAuthApplyService;
+import com.bizzan.bitrade.service.DepositRecordService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberWalletService;
 import com.bizzan.bitrade.util.FileUtil;
-import com.bizzan.bitrade.util.GeneratorUtil;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.util.PredicateUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
-import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.*;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.AUDITING;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.CANCEL_AUTH;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.FAILED;
+import static com.bizzan.bitrade.constant.CertifiedBusinessStatus.VERIFIED;
 import static com.bizzan.bitrade.constant.MemberLevelEnum.IDENTIFICATION;
-import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 import static com.bizzan.bitrade.entity.QMember.member;
 import static org.springframework.util.Assert.isTrue;
 import static org.springframework.util.Assert.notNull;
@@ -49,21 +70,21 @@ import static org.springframework.util.Assert.notNull;
 @Slf4j
 public class MemberController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private MemberService memberService;
 
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
 
-    @Autowired
+    @Resource
     private BusinessAuthApplyService businessAuthApplyService;
 
-    @Autowired
+    @Resource
     private DepositRecordService depositRecordService;
 
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
-    @Autowired
+    @Resource
     private MemberEvent memberEvent;
 
     @RequiresPermissions("member:all")
@@ -290,7 +311,7 @@ public class MemberController extends BaseAdminController {
             booleanExpressions.add(member.status.eq(screen.getCommonStatus()));
         }
 
-        if(screen.getSuperPartner() != null && !screen.getSuperPartner().equals("")) {
+        if (screen.getSuperPartner() != null && !screen.getSuperPartner().equals("")) {
             booleanExpressions.add(member.superPartner.eq(screen.getSuperPartner()));
         }
         return PredicateUtils.getPredicate(booleanExpressions);
@@ -325,6 +346,7 @@ public class MemberController extends BaseAdminController {
         }
         return PredicateUtils.getPredicate(booleanExpressions);
     }
+
     @RequiresPermissions("member:out-excel")
     @GetMapping("out-excel")
     @AccessLog(module = AdminModule.MEMBER, operation = "导出会员Member Excel")
@@ -401,6 +423,7 @@ public class MemberController extends BaseAdminController {
 
     /**
      * 更改用户等级（合伙人/代理商等）
+     *
      * @param superPartner
      * @param memberId
      * @return
@@ -419,6 +442,7 @@ public class MemberController extends BaseAdminController {
 
     /**
      * 查询代理商列表
+     *
      * @param pageModel
      * @param screen
      * @return
@@ -438,6 +462,7 @@ public class MemberController extends BaseAdminController {
 
     /**
      * 查询代理商邀请用户列表
+     *
      * @param pageModel
      * @param screen
      * @param userId
@@ -453,7 +478,7 @@ public class MemberController extends BaseAdminController {
             Long userId) {
         // 检查用户是否是代理商
         Member checkMember = memberService.findOne(userId);
-        if(!checkMember.getSuperPartner().equals("1")) {
+        if (!checkMember.getSuperPartner().equals("1")) {
             return error("您不是代理商！");
         }
         Predicate predicate = getPredicate(screen, userId);
@@ -471,10 +496,10 @@ public class MemberController extends BaseAdminController {
         notNull(member, "validate id!");
         Member pMember = memberService.findOne(inviterId);
         notNull(member, "validate id!");
-        if(member.getInviterId()!=null){
+        if (member.getInviterId() != null) {
             return error("已存在邀请人");
         }
-        memberEvent.setMemberInviter(member,pMember);
+        memberEvent.setMemberInviter(member, pMember);
         return success();
     }
 }

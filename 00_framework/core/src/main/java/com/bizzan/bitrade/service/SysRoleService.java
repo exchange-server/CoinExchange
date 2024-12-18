@@ -10,8 +10,6 @@ import com.bizzan.bitrade.entity.SysRole;
 import com.bizzan.bitrade.service.Base.TopBaseService;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.Predicate;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,25 +26,23 @@ import java.util.stream.Collectors;
  */
 @Service
 public class SysRoleService extends TopBaseService<SysRole, SysRoleDao> {
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
-    @Autowired
+    @Resource
     private AdminService adminService;
-
-    @Override
-    @Autowired
-    public void setDao(SysRoleDao dao) {
-        super.setDao(dao);
-    }
-
     @Resource
     private SysRoleDao sysRoleDao;
-
-    @Autowired
+    @Resource
     private AdminDao adminDao;
     @Resource
     private SysPermissionDao sysPermissionDao;
+
+    @Override
+    @Resource
+    public void setDao(SysRoleDao dao) {
+        super.setDao(dao);
+    }
 
     public SysRole findOne(Long id) {
         SysRole role = sysRoleDao.findOne(id);

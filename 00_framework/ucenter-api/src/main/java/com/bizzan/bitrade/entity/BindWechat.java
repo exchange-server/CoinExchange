@@ -15,6 +15,8 @@ public class BindWechat {
     private String wechat;
     @NotBlank(message = "{BindWechat.jyPassword.null}")
     private String jyPassword;
-    /** 微信收款二维码 */
+    /**
+     * 微信收款二维码
+     */
     private String qrCodeUrl;
 }

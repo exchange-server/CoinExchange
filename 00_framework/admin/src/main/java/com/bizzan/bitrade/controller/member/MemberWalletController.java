@@ -8,20 +8,31 @@ import com.bizzan.bitrade.constant.SysConstant;
 import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
 import com.bizzan.bitrade.dto.MemberWalletDTO;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Admin;
+import com.bizzan.bitrade.entity.Coin;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.QMember;
+import com.bizzan.bitrade.entity.QMemberWallet;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.model.screen.MemberWalletScreen;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.CoinService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
 import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.Predicate;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -37,6 +48,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -44,30 +57,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
 @RestController
 @RequestMapping("member/member-wallet")
 @Slf4j
 public class MemberWalletController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
 
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private CoinService coinService;
-    @Autowired
+    @Resource
     private KafkaTemplate kafkaTemplate;
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
-    @Autowired
+    @Resource
     private ESUtils esUtils;
-    @Autowired
+    @Resource
     private JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username}")
@@ -135,7 +145,7 @@ public class MemberWalletController extends BaseAdminController {
     @PostMapping("recharge")
     @AccessLog(module = AdminModule.MEMBER, operation = "充币管理")
     public MessageResult recharge(
-    		@SessionAttribute(SysConstant.SESSION_ADMIN) Admin admin,
+            @SessionAttribute(SysConstant.SESSION_ADMIN) Admin admin,
             @RequestParam("unit") String unit,
             @RequestParam("uid") Long uid,
             @RequestParam("amount") BigDecimal amount) {
@@ -156,18 +166,19 @@ public class MemberWalletController extends BaseAdminController {
         memberTransaction.setCreateTime(DateUtil.getCurrentDate());
         memberTransaction.setRealFee("0");
         memberTransaction.setDiscountFee("0");
-        memberTransaction= memberTransactionService.save(memberTransaction);
-        
+        memberTransaction = memberTransactionService.save(memberTransaction);
+
         String[] adminList = admins.split(",");
-        for(int i = 0; i < adminList.length; i++) {
-			sendEmailMsg(adminList[i], "管理员人工充值(用户ID: " + uid + ", 币种: " + unit + ", 数量: " + amount + "); 操作者：" +admin.getUsername() + "/" + admin.getMobilePhone(), "人工充值通知");
-		}
-        
+        for (int i = 0; i < adminList.length; i++) {
+            sendEmailMsg(adminList[i], "管理员人工充值(用户ID: " + uid + ", 币种: " + unit + ", 数量: " + amount + "); 操作者：" + admin.getUsername() + "/" + admin.getMobilePhone(), "人工充值通知");
+        }
+
         return success(messageSource.getMessage("SUCCESS"));
     }
-    
+
     /**
      * 发送邮件
+     *
      * @param email
      * @param msg
      * @param subject
@@ -176,30 +187,30 @@ public class MemberWalletController extends BaseAdminController {
      * @throws TemplateException
      */
     @Async
-    public void sendEmailMsg(String email, String msg, String subject){
-    	try {
-	        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-	        MimeMessageHelper helper = null;
-	        helper = new MimeMessageHelper(mimeMessage, true);
-	        helper.setFrom(from);
-	        helper.setTo(email);
-	        helper.setSubject(company + "-" + subject);
-	        Map<String, Object> model = new HashMap<>(16);
-	        model.put("msg", msg);
-	        Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
-	        cfg.setClassForTemplateLoading(this.getClass(), "/templates");
-	        Template template = cfg.getTemplate("simpleMessage.ftl");
-	        String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
-	        helper.setText(html, true);
-	
-	        //发送邮件
-	        javaMailSender.send(mimeMessage);
-	        log.info("send email for {},content:{}", email, html);
-    	}catch(Exception e) {
-    		e.printStackTrace();
-    	}
+    public void sendEmailMsg(String email, String msg, String subject) {
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = null;
+            helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setFrom(from);
+            helper.setTo(email);
+            helper.setSubject(company + "-" + subject);
+            Map<String, Object> model = new HashMap<>(16);
+            model.put("msg", msg);
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
+            cfg.setClassForTemplateLoading(this.getClass(), "/templates");
+            Template template = cfg.getTemplate("simpleMessage.ftl");
+            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+            helper.setText(html, true);
+
+            //发送邮件
+            javaMailSender.send(mimeMessage);
+            log.info("send email for {},content:{}", email, html);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-    
+
     @RequiresPermissions("member:member-wallet:reset-address")
     @PostMapping("reset-address")
     @AccessLog(module = AdminModule.MEMBER, operation = "重置钱包地址")

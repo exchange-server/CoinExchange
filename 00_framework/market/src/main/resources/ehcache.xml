@@ -2,14 +2,14 @@
 <ehcache name="es">
 
     <diskStore path="java.io.tmpdir"/>
-	<defaultCache eternal="false" 
-		   maxElementsInMemory="1000"
-       	   overflowToDisk="false" 
-       	   diskPersistent="false" 
-       	   timeToIdleSeconds="0"
-           timeToLiveSeconds="600" 
-           memoryStoreEvictionPolicy="LRU" />
- 
+    <defaultCache eternal="false"
+                  maxElementsInMemory="1000"
+                  overflowToDisk="false"
+                  diskPersistent="false"
+                  timeToIdleSeconds="0"
+                  timeToLiveSeconds="600"
+                  memoryStoreEvictionPolicy="LRU"/>
+
     <cache name="shiro-activeSessionCache"
            maxEntriesLocalHeap="2000"
            eternal="false"
@@ -18,8 +18,8 @@
            overflowToDisk="false"
            statistics="true">
     </cache>
-	<!--         
-   	 配置自定义缓存        
+    <!--
+        配置自定义缓存
     name：Cache的唯一标识        
     maxElementsInMemory：缓存中允许创建的最大对象数        
     maxElementsOnDisk：磁盘中最大缓存对象数，若是0表示无穷大        
@@ -34,11 +34,11 @@
     diskSpoolBufferSizeMB：这个参数设置DiskStore（磁盘缓存）的缓存区大小。默认是30MB。每个Cache都应该有自己的一个缓冲区        
     memoryStoreEvictionPolicy：缓存满了之后的淘汰算法。默认策略是LRU（最近最少使用）。你可以设置为FIFO（先进先出）或是LFU（较少使用）        
       -->
-    <cache name="mybatisCache"         
-        maxElementsInMemory="10000"         
-        eternal="false"        
-        overflowToDisk="false"         
-        timeToIdleSeconds="900"         
-        timeToLiveSeconds="1800"        
-        memoryStoreEvictionPolicy="LFU" />  
+    <cache name="mybatisCache"
+           maxElementsInMemory="10000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="900"
+           timeToLiveSeconds="1800"
+           memoryStoreEvictionPolicy="LFU"/>
 </ehcache>

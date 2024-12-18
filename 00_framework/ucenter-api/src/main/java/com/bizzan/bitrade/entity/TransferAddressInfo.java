@@ -14,6 +14,6 @@ import java.util.Map;
 @Data
 @Builder
 public class TransferAddressInfo {
-    private List<Map<String,Object>> info;
+    private List<Map<String, Object>> info;
     private BigDecimal balance;//可用余额
 }

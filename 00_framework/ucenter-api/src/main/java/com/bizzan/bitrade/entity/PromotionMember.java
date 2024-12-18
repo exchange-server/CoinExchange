@@ -3,7 +3,6 @@ package com.bizzan.bitrade.entity;
 import com.bizzan.bitrade.constant.PromotionLevel;
 import com.bizzan.bitrade.constant.RealNameStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 

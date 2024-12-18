@@ -2,9 +2,12 @@ package com.bizzan.bitrade.controller;
 
 import com.bizzan.bitrade.constant.LegalWalletState;
 import com.bizzan.bitrade.constant.PageModel;
-import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.controller.screen.LegalWalletScreen;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Coin;
+import com.bizzan.bitrade.entity.LegalWalletRecharge;
+import com.bizzan.bitrade.entity.LegalWalletRechargeModel;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.QLegalWalletRecharge;
 import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.service.CoinService;
 import com.bizzan.bitrade.service.LegalWalletRechargeService;
@@ -12,15 +15,21 @@ import com.bizzan.bitrade.service.MemberService;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
-import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
-
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 
 /**
  * 会员充值
@@ -28,11 +37,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("legal-wallet-recharge")
 public class LegalWalletRechargeController extends BaseController {
-    @Autowired
+    @Resource
     private LegalWalletRechargeService legalWalletRechargeService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private CoinService coinService;
 
     /**

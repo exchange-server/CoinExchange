@@ -5,7 +5,8 @@ import com.bizzan.bitrade.entity.ExchangeCoin;
 import com.bizzan.bitrade.pagination.Criteria;
 import com.querydsl.core.types.Predicate;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +20,7 @@ import java.util.List;
 
 @Service
 public class ExchangeCoinService {
-    @Autowired
+    @Resource
     private ExchangeCoinRepository coinRepository;
 
     public List<ExchangeCoin> findAllEnabled() {
@@ -45,7 +46,7 @@ public class ExchangeCoinService {
         Sort sort = new Sort(order);
         return coinRepository.findAll(spec, sort);
     }
-    
+
     public List<ExchangeCoin> findAllByRobotType(int robotType) {
         Specification<ExchangeCoin> spec = (root, criteriaQuery, criteriaBuilder) -> {
             Path<String> visible = root.get("visible");
@@ -58,7 +59,7 @@ public class ExchangeCoinService {
         Sort sort = new Sort(order);
         return coinRepository.findAll(spec, sort);
     }
-    
+
     public List<ExchangeCoin> findAllByFlag(int flag) {
         Specification<ExchangeCoin> spec = (root, criteriaQuery, criteriaBuilder) -> {
             Path<String> enable = root.get("enable");
@@ -101,8 +102,8 @@ public class ExchangeCoinService {
     }
 
     public boolean isSupported(String symbol) {
-    	ExchangeCoin coin = findBySymbol(symbol);
-    	return coin != null && (coin.getEnable() == 1);
+        ExchangeCoin coin = findBySymbol(symbol);
+        return coin != null && (coin.getEnable() == 1);
     }
 
     public Page<ExchangeCoin> findAll(Predicate predicate, Pageable pageable) {
@@ -117,7 +118,7 @@ public class ExchangeCoinService {
         return coinRepository.findCoinSymbol(baseSymbol);
     }
 
-    public List<String> getAllCoin(){
+    public List<String> getAllCoin() {
         return coinRepository.findAllCoinSymbol();
     }
 

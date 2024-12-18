@@ -1,12 +1,11 @@
 package com.bizzan.bitrade.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bizzan.bitrade.dao.MemberLevelDao;
 import com.bizzan.bitrade.entity.MemberLevel;
 import com.bizzan.bitrade.service.Base.BaseService;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -16,11 +15,11 @@ import java.util.List;
  */
 @Service
 public class MemberLevelService extends BaseService {
-    @Autowired
+    @Resource
     private MemberLevelDao memberLevelDao;
 
     @Override
-    public List<MemberLevel> findAll(){
+    public List<MemberLevel> findAll() {
         return memberLevelDao.findAll();
     }
 
@@ -29,8 +28,8 @@ public class MemberLevelService extends BaseService {
      * @description id查询一个
      * @date 2019/12/27 10:54
      */
-    public MemberLevel findOne(Long id){
-        return  memberLevelDao.findOne(id);
+    public MemberLevel findOne(Long id) {
+        return memberLevelDao.findOne(id);
     }
 
     /**
@@ -48,7 +47,7 @@ public class MemberLevelService extends BaseService {
      * @date 2019/12/27 11:02
      */
     public int updateDefault() {
-       return memberLevelDao.updateDefault();
+        return memberLevelDao.updateDefault();
     }
 
     public MemberLevel save(MemberLevel memberLevel) {

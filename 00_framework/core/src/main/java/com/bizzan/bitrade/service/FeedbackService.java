@@ -1,11 +1,11 @@
 package com.bizzan.bitrade.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bizzan.bitrade.dao.FeedbackDao;
 import com.bizzan.bitrade.entity.Feedback;
 import com.bizzan.bitrade.service.Base.BaseService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author Jammy
@@ -13,10 +13,10 @@ import com.bizzan.bitrade.service.Base.BaseService;
  */
 @Service
 public class FeedbackService extends BaseService {
-    @Autowired
+    @Resource
     private FeedbackDao feedbackDao;
 
-    public Feedback save(Feedback feedback){
+    public Feedback save(Feedback feedback) {
         return feedbackDao.save(feedback);
     }
 }

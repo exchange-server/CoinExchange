@@ -2,42 +2,75 @@ package com.bizzan.bitrade.controller;
 
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
-import com.aliyuncs.dm.model.v20151123.*;
+import com.aliyuncs.dm.model.v20151123.SingleSendMailRequest;
+import com.aliyuncs.dm.model.v20151123.SingleSendMailResponse;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.http.MethodType;
-import com.aliyuncs.profile.*;
-import freemarker.template.*;
+import com.aliyuncs.profile.DefaultProfile;
+import com.aliyuncs.profile.IClientProfile;
+import com.bizzan.bitrade.constant.CommonStatus;
+import com.bizzan.bitrade.constant.MemberLevelEnum;
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.controller.sdk.NECaptchaVerifier;
+import com.bizzan.bitrade.controller.sdk.NESecretPair;
+import com.bizzan.bitrade.entity.Country;
+import com.bizzan.bitrade.entity.Location;
+import com.bizzan.bitrade.entity.LoginByEmail;
+import com.bizzan.bitrade.entity.LoginByPhone;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.transform.AuthMember;
+import com.bizzan.bitrade.event.MemberEvent;
+import com.bizzan.bitrade.service.CountryService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.util.BindingResultUtil;
+import com.bizzan.bitrade.util.GeneratorUtil;
+import com.bizzan.bitrade.util.IdWorkByTwitter;
+import com.bizzan.bitrade.util.Md5;
+import com.bizzan.bitrade.util.MessageResult;
+import com.bizzan.bitrade.util.ValidateUtil;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.util.ByteSource;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.data.redis.core.*;
-import org.springframework.mail.javamail.*;
+
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
-import org.springframework.util.*;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import com.bizzan.bitrade.constant.*;
-import com.bizzan.bitrade.controller.sdk.*;
-import com.bizzan.bitrade.entity.*;
-import com.bizzan.bitrade.entity.transform.AuthMember;
-import com.bizzan.bitrade.event.MemberEvent;
-import com.bizzan.bitrade.service.*;
-import com.bizzan.bitrade.util.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import static com.bizzan.bitrade.constant.SysConstant.*;
+import static com.bizzan.bitrade.constant.SysConstant.ADD_ADDRESS_CODE_PREFIX;
+import static com.bizzan.bitrade.constant.SysConstant.EMAIL_BIND_CODE_PREFIX;
 import static com.bizzan.bitrade.constant.SysConstant.EMAIL_REG_CODE_PREFIX;
+import static com.bizzan.bitrade.constant.SysConstant.RESET_PASSWORD_CODE_PREFIX;
+import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 import static com.bizzan.bitrade.util.MessageResult.error;
 import static com.bizzan.bitrade.util.MessageResult.success;
 import static org.springframework.util.Assert.isTrue;
@@ -53,16 +86,19 @@ import static org.springframework.util.Assert.notNull;
 @Slf4j
 public class RegisterController {
 
-    @Autowired
+    //短信上行验证
+    private static final String captchaId = "b7df23a75b054789b77c9d2cc7804fe9"; // 验证码id
+    private static final String secretId = "8835fbc77225f5cf8dbc58613d78d2c4"; // 密钥对id
+    private static final String secretKey = "67d091cb32ac9efb387e83f1727e7fea"; // 密钥对key
+    private final NECaptchaVerifier verifier = new NECaptchaVerifier(captchaId, new NESecretPair(secretId, secretKey));
+    @Resource
     private JavaMailSender javaMailSender;
-
     @Value("${spring.mail.username}")
     private String from;
     @Value("${spark.system.host}")
     private String host;
     @Value("${spark.system.name}")
     private String company;
-
     @Value("${aliyun.mail-sms.region}")
     private String e_Region;
     @Value("${aliyun.mail-sms.access-key-id}")
@@ -75,35 +111,21 @@ public class RegisterController {
     private String emailAlias;
     @Value("${aliyun.mail-sms.email-tag}")
     private String emailTag;
-
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
-
-    @Autowired
+    @Resource
     private MemberService memberService;
-
-    @Autowired
+    @Resource
     private IdWorkByTwitter idWorkByTwitter;
-
-    @Autowired
+    @Resource
     private MemberEvent memberEvent;
-
-    @Autowired
+    @Resource
     private CountryService countryService;
-    @Autowired
-    private GeetestController gtestCon ;
-
+    @Resource
+    private GeetestController gtestCon;
     @Resource
     private LocaleMessageSourceService localeMessageSourceService;
-
     private String userNameFormat = "U%06d";
-    //短信上行验证
-    private static final String captchaId = "b7df23a75b054789b77c9d2cc7804fe9"; // 验证码id
-    private static final String secretId = "8835fbc77225f5cf8dbc58613d78d2c4"; // 密钥对id
-    private static final String secretKey = "67d091cb32ac9efb387e83f1727e7fea"; // 密钥对key
-
-    private final NECaptchaVerifier verifier = new NECaptchaVerifier(captchaId, new NESecretPair(secretId, secretKey));
-
     // 邮件配置
     private IClientProfile profile = DefaultProfile.getProfile("cn-hangzhou", "jcC9y3s110TrN0Hs", "Lrhrntpc11Os6jOw5qoCTm6YfUsbE4");
 
@@ -221,9 +243,9 @@ public class RegisterController {
         member.setSalt(credentialsSalt);
         member.setAvatar("https://bizzanex.oss-cn-hangzhou.aliyuncs.com/defaultavatar.png"); // 默认用户头像
         Member member1 = memberService.save(member);
-        
+
         if (member1 != null) {
-        	// Member为@entity注解类，与数据库直接映射，因此，此处setPromotionCode会直接同步到数据库
+            // Member为@entity注解类，与数据库直接映射，因此，此处setPromotionCode会直接同步到数据库
             member1.setPromotionCode(GeneratorUtil.getPromotionCode(member1.getId()));
             memberEvent.onRegisterSuccess(member1, loginByEmail.getPromotion().trim());
         }
@@ -250,7 +272,7 @@ public class RegisterController {
         // isTrue(memberService.userPromotionCodeIsExist(loginByEmail.getPromotion()),localeMessageSourceService.getMessage("USER_PROMOTION_CODE_EXISTS"));
         ValueOperations valueOperations = redisTemplate.opsForValue();
 
-        Object code =valueOperations.get(SysConstant.EMAIL_REG_CODE_PREFIX + email);
+        Object code = valueOperations.get(SysConstant.EMAIL_REG_CODE_PREFIX + email);
         notNull(code, localeMessageSourceService.getMessage("VERIFICATION_CODE_NOT_EXISTS"));
         if (!code.toString().equals(loginByEmail.getCode())) {
             return error(localeMessageSourceService.getMessage("VERIFICATION_CODE_INCORRECT"));
@@ -329,7 +351,7 @@ public class RegisterController {
     @Transactional(rollbackFor = Exception.class)
     public MessageResult loginByPhone(
             @Valid LoginByPhone loginByPhone,
-            BindingResult bindingResult,HttpServletRequest request) throws Exception {
+            BindingResult bindingResult, HttpServletRequest request) throws Exception {
         MessageResult result = BindingResultUtil.validate(bindingResult);
         if (result != null) {
             return result;
@@ -345,7 +367,7 @@ public class RegisterController {
         isTrue(!memberService.phoneIsExist(phone), localeMessageSourceService.getMessage("PHONE_ALREADY_EXISTS"));
         isTrue(!memberService.usernameIsExist(loginByPhone.getUsername()), localeMessageSourceService.getMessage("USERNAME_ALREADY_EXISTS"));
         if (StringUtils.hasText(loginByPhone.getPromotion().trim())) {
-        	isTrue(memberService.userPromotionCodeIsExist(loginByPhone.getPromotion()),localeMessageSourceService.getMessage("USER_PROMOTION_CODE_EXISTS"));        	
+            isTrue(memberService.userPromotionCodeIsExist(loginByPhone.getPromotion()), localeMessageSourceService.getMessage("USER_PROMOTION_CODE_EXISTS"));
         }
         //校验是否通过验证码 短信上行
         // isTrue(verifier.verify(loginByPhone.getValidate(),""),localeMessageSourceService.getMessage("VERIFICATION_CODE_INCORRECT"));
@@ -367,7 +389,7 @@ public class RegisterController {
         String password = Md5.md5Digest(loginByPhone.getPassword() + credentialsSalt).toLowerCase();
         Member member = new Member();
         //新增超级合伙人 判断0  普通 默认普通用户   1 超级合伙人 >>2.专业超级合伙人
-        if(!StringUtils.isEmpty(loginByPhone.getSuperPartner())){
+        if (!StringUtils.isEmpty(loginByPhone.getSuperPartner())) {
             member.setSuperPartner(loginByPhone.getSuperPartner());
             if (!"0".equals(loginByPhone.getSuperPartner())) {
                 //需要后台审核解禁
@@ -388,7 +410,7 @@ public class RegisterController {
         member.setAvatar("https://bizzanex.oss-cn-hangzhou.aliyuncs.com/defaultavatar.png"); // 默认用户头像
         Member member1 = memberService.save(member);
         if (member1 != null) {
-        	// Member为@entity注解类，与数据库直接映射，因此，此处setPromotionCode会直接同步到数据库
+            // Member为@entity注解类，与数据库直接映射，因此，此处setPromotionCode会直接同步到数据库
             member1.setPromotionCode(GeneratorUtil.getPromotionCode(member1.getId()));
             memberEvent.onRegisterSuccess(member1, loginByPhone.getPromotion().trim());
             return success(localeMessageSourceService.getMessage("REGISTRATION_SUCCESS"));
@@ -414,8 +436,10 @@ public class RegisterController {
 //        log.info("============请到PC端注册---registerPC");
 //        return error(localeMessageSourceService.getMessage("REGISTER_TO_PC"));
 //    }
+
     /**
      * 为了手机注册
+     *
      * @param loginByPhone
      * @param bindingResult
      * @param request
@@ -427,7 +451,7 @@ public class RegisterController {
     @Transactional(rollbackFor = Exception.class)
     public MessageResult loginByPhone4Mobile(
             @Valid LoginByPhone loginByPhone,
-            BindingResult bindingResult,HttpServletRequest request) throws Exception {
+            BindingResult bindingResult, HttpServletRequest request) throws Exception {
         MessageResult result = BindingResultUtil.validate(bindingResult);
         if (result != null) {
             return result;
@@ -439,11 +463,11 @@ public class RegisterController {
         String ip = request.getHeader("X-Real-IP");
         String phone = loginByPhone.getPhone();
         ValueOperations valueOperations = redisTemplate.opsForValue();
-        Object code =valueOperations.get(SysConstant.PHONE_REG_CODE_PREFIX + phone);
+        Object code = valueOperations.get(SysConstant.PHONE_REG_CODE_PREFIX + phone);
         isTrue(!memberService.phoneIsExist(phone), localeMessageSourceService.getMessage("PHONE_ALREADY_EXISTS"));
         isTrue(!memberService.usernameIsExist(loginByPhone.getUsername()), localeMessageSourceService.getMessage("USERNAME_ALREADY_EXISTS"));
         if (StringUtils.hasText(loginByPhone.getPromotion().trim())) {
-        	isTrue(memberService.userPromotionCodeIsExist(loginByPhone.getPromotion()),localeMessageSourceService.getMessage("USER_PROMOTION_CODE_EXISTS"));        	
+            isTrue(memberService.userPromotionCodeIsExist(loginByPhone.getPromotion()), localeMessageSourceService.getMessage("USER_PROMOTION_CODE_EXISTS"));
         }
 //        isTrue(memberService.userPromotionCodeIsExist(loginByPhone.getPromotion()),localeMessageSourceService.getMessage("USER_PROMOTION_CODE_EXISTS"));
         //校验是否通过验证码 短信上行
@@ -464,7 +488,7 @@ public class RegisterController {
         String password = Md5.md5Digest(loginByPhone.getPassword() + credentialsSalt).toLowerCase();
         Member member = new Member();
         //新增超级合伙人 判断0  普通 默认普通用户   1 超级合伙人 >>2.专业超级合伙人
-        if(!StringUtils.isEmpty(loginByPhone.getSuperPartner())){
+        if (!StringUtils.isEmpty(loginByPhone.getSuperPartner())) {
             member.setSuperPartner(loginByPhone.getSuperPartner());
             if (!"0".equals(loginByPhone.getSuperPartner())) {
                 //需要后台审核解禁
@@ -492,6 +516,7 @@ public class RegisterController {
             return error(localeMessageSourceService.getMessage("REGISTRATION_FAILED"));
         }
     }
+
     /**
      * 发送绑定邮箱验证码
      *
@@ -666,6 +691,7 @@ public class RegisterController {
         member.setPassword(newPassword);
         return success();
     }
+
     /**
      * 发送解绑旧邮箱验证码
      *
@@ -674,12 +700,12 @@ public class RegisterController {
      */
     @RequestMapping(value = "/untie/email/code", method = RequestMethod.POST)
     @ResponseBody
-    public MessageResult untieEmailCode(@SessionAttribute(SESSION_MEMBER) AuthMember user){
+    public MessageResult untieEmailCode(@SessionAttribute(SESSION_MEMBER) AuthMember user) {
         Member member = memberService.findOne(user.getId());
-        isTrue(member.getEmail()!=null, localeMessageSourceService.getMessage("NOT_BIND_EMAIL"));
+        isTrue(member.getEmail() != null, localeMessageSourceService.getMessage("NOT_BIND_EMAIL"));
         ValueOperations valueOperations = redisTemplate.opsForValue();
         Object cache = valueOperations.get(SysConstant.EMAIL_UNTIE_CODE_PREFIX + member.getEmail());
-        if(cache!=null){
+        if (cache != null) {
             return error(localeMessageSourceService.getMessage("EMAIL_ALREADY_SEND"));
         }
         String code = String.valueOf(GeneratorUtil.getRandomNumber(100000, 999999));
@@ -699,15 +725,15 @@ public class RegisterController {
      */
     @RequestMapping(value = "/update/email/code", method = RequestMethod.POST)
     @ResponseBody
-    public MessageResult updateEmailCode(@SessionAttribute(SESSION_MEMBER) AuthMember user,String email){
-        if(memberService.emailIsExist(email)){
+    public MessageResult updateEmailCode(@SessionAttribute(SESSION_MEMBER) AuthMember user, String email) {
+        if (memberService.emailIsExist(email)) {
             return MessageResult.error(localeMessageSourceService.getMessage("REPEAT_EMAIL_REQUEST"));
         }
         Member member = memberService.findOne(user.getId());
         ValueOperations valueOperations = redisTemplate.opsForValue();
-        isTrue(member.getEmail()!=null, localeMessageSourceService.getMessage("NOT_BIND_EMAIL"));
+        isTrue(member.getEmail() != null, localeMessageSourceService.getMessage("NOT_BIND_EMAIL"));
         Object cache = valueOperations.get(SysConstant.EMAIL_UPDATE_CODE_PREFIX + email);
-        if(cache!=null){
+        if (cache != null) {
             return error(localeMessageSourceService.getMessage("EMAIL_ALREADY_SEND"));
         }
         String code = String.valueOf(GeneratorUtil.getRandomNumber(100000, 999999));

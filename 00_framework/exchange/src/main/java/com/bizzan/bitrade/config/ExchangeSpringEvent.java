@@ -1,33 +1,25 @@
 package com.bizzan.bitrade.config;
 
+import com.bizzan.bitrade.Trader.CoinTraderFactory;
+import com.bizzan.bitrade.service.ExchangeOrderDetailService;
+import com.bizzan.bitrade.service.ExchangeOrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import com.bizzan.bitrade.Trader.CoinTrader;
-import com.bizzan.bitrade.Trader.CoinTraderFactory;
-import com.bizzan.bitrade.entity.ExchangeOrder;
-import com.bizzan.bitrade.entity.ExchangeOrderDetail;
-import com.bizzan.bitrade.service.ExchangeOrderDetailService;
-import com.bizzan.bitrade.service.ExchangeOrderService;
-
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 @Component
 public class ExchangeSpringEvent implements ApplicationListener<ContextRefreshedEvent> {
-    private Logger log = LoggerFactory.getLogger(ExchangeSpringEvent.class);
-    @Autowired
+    @Resource
     CoinTraderFactory coinTraderFactory;
-    @Autowired
+    private Logger log = LoggerFactory.getLogger(ExchangeSpringEvent.class);
+    @Resource
     private ExchangeOrderService exchangeOrderService;
-    @Autowired
+    @Resource
     private ExchangeOrderDetailService exchangeOrderDetailService;
 
     @Override

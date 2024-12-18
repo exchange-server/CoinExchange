@@ -6,11 +6,9 @@ import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
-import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.entity.MemberTransaction;
 import com.bizzan.bitrade.entity.QMember;
 import com.bizzan.bitrade.entity.QMemberTransaction;
-import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.model.screen.MemberTransactionScreen;
 import com.bizzan.bitrade.model.vo.MemberTransaction2ESVO;
@@ -23,15 +21,20 @@ import com.bizzan.bitrade.vo.MemberTransactionVO;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 import static org.springframework.util.Assert.notNull;
 
 /**
@@ -53,17 +55,17 @@ import static org.springframework.util.Assert.notNull;
 @RequestMapping("/finance/member-transaction")
 public class MemberTransactionController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private EntityManager entityManager;
 
     //查询工厂实体
     private JPAQueryFactory queryFactory;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-    @Autowired
+    @Resource
     private ESUtils esUtils;
 
     @RequiresPermissions("finance:member-transaction:all")
@@ -95,36 +97,36 @@ public class MemberTransactionController extends BaseAdminController {
             MemberTransactionScreen screen) {
         List<Predicate> predicates = new ArrayList<>();
 
-        if(screen.getMemberId()!=null) {
+        if (screen.getMemberId() != null) {
             predicates.add((QMember.member.id.eq(screen.getMemberId())));
         }
         if (!StringUtils.isEmpty(screen.getAccount())) {
-            predicates.add(QMember.member.username.like("%"+screen.getAccount()+"%")
-                        .or(QMember.member.realName.like("%"+screen.getAccount()+"%")));
+            predicates.add(QMember.member.username.like("%" + screen.getAccount() + "%")
+                    .or(QMember.member.realName.like("%" + screen.getAccount() + "%")));
         }
         if (screen.getStartTime() != null) {
             predicates.add(QMemberTransaction.memberTransaction.createTime.goe(screen.getStartTime()));
         }
-        if (screen.getEndTime() != null){
-            predicates.add(QMemberTransaction.memberTransaction.createTime.lt(DateUtil.dateAddDay(screen.getEndTime(),1)));
+        if (screen.getEndTime() != null) {
+            predicates.add(QMemberTransaction.memberTransaction.createTime.lt(DateUtil.dateAddDay(screen.getEndTime(), 1)));
         }
         if (screen.getType() != null) {
             predicates.add(QMemberTransaction.memberTransaction.type.eq(screen.getType()));
         }
 
-        if(screen.getMinMoney()!=null) {
+        if (screen.getMinMoney() != null) {
             predicates.add(QMemberTransaction.memberTransaction.amount.goe(screen.getMinMoney()));
         }
 
-        if(screen.getMaxMoney()!=null) {
+        if (screen.getMaxMoney() != null) {
             predicates.add(QMemberTransaction.memberTransaction.amount.loe(screen.getMaxMoney()));
         }
 
-        if(screen.getMinFee()!=null) {
+        if (screen.getMinFee() != null) {
             predicates.add(QMemberTransaction.memberTransaction.fee.goe(screen.getMinFee()));
         }
 
-        if(screen.getMaxFee()!=null) {
+        if (screen.getMaxFee() != null) {
             predicates.add(QMemberTransaction.memberTransaction.fee.loe(screen.getMaxFee()));
         }
 
@@ -171,47 +173,47 @@ public class MemberTransactionController extends BaseAdminController {
             "finance:member-transaction:page-query:check", "finance:member-transaction:page-query:fee"}, logical = Logical.OR)
     @PostMapping("page-query_es")
     @AccessLog(module = AdminModule.FINANCE, operation = "分页查找交易记录MemberTransaction")
-    public MessageResult getPageQueryByES( MemberTransaction2ESVO transactionVO) {
+    public MessageResult getPageQueryByES(MemberTransaction2ESVO transactionVO) {
         log.info(">>>>>>查询交易明细开始>>>>>>>>>");
         try {
-            String query="{\"from\":"+(transactionVO.getPageNo()-1)*transactionVO.getPageSize()+",\"size\":"+ transactionVO.getPageSize()+",\"sort\":[{\"create_time\":{\"order\":\"desc\"}}]," +
+            String query = "{\"from\":" + (transactionVO.getPageNo() - 1) * transactionVO.getPageSize() + ",\"size\":" + transactionVO.getPageSize() + ",\"sort\":[{\"create_time\":{\"order\":\"desc\"}}]," +
                     "\"query\":{\"bool\":{\"must\":[";
-            boolean deleteFlag =false;
-            if(!StringUtils.isEmpty(transactionVO.getStartTime())&&!StringUtils.isEmpty(transactionVO.getEndTime())){
-                query+="{\"range\":{\"create_time\":{\"gte\":\""+transactionVO.getStartTime()+"\",\"lte\":\""+transactionVO.getEndTime()+"\"}}},";
-                deleteFlag =true;
+            boolean deleteFlag = false;
+            if (!StringUtils.isEmpty(transactionVO.getStartTime()) && !StringUtils.isEmpty(transactionVO.getEndTime())) {
+                query += "{\"range\":{\"create_time\":{\"gte\":\"" + transactionVO.getStartTime() + "\",\"lte\":\"" + transactionVO.getEndTime() + "\"}}},";
+                deleteFlag = true;
             }
-            if(!StringUtils.isEmpty(transactionVO.getType())){
-                query+="{\"match\":{\"type\":\""+transactionVO.getType()+"\"}},";
-                deleteFlag =true;
+            if (!StringUtils.isEmpty(transactionVO.getType())) {
+                query += "{\"match\":{\"type\":\"" + transactionVO.getType() + "\"}},";
+                deleteFlag = true;
             }
-            if(!StringUtils.isEmpty(transactionVO.getMemberId())){
-                query+="{\"match\":{\"member_id\":\""+transactionVO.getMemberId()+"\"}},";
-                deleteFlag =true;
+            if (!StringUtils.isEmpty(transactionVO.getMemberId())) {
+                query += "{\"match\":{\"member_id\":\"" + transactionVO.getMemberId() + "\"}},";
+                deleteFlag = true;
             }
-            if(!StringUtils.isEmpty(transactionVO.getMinMoney())){
-                query+="{\"range\":{\"amount\":{\"gte\":\""+transactionVO.getMinMoney()+"\"}}},";
-                deleteFlag =true;
+            if (!StringUtils.isEmpty(transactionVO.getMinMoney())) {
+                query += "{\"range\":{\"amount\":{\"gte\":\"" + transactionVO.getMinMoney() + "\"}}},";
+                deleteFlag = true;
             }
-            if(!StringUtils.isEmpty(transactionVO.getMaxMoney())){
-                query+="{\"range\":{\"amount\":{\"lte\":\""+transactionVO.getMaxMoney()+"\"}}},";
-                deleteFlag =true;
+            if (!StringUtils.isEmpty(transactionVO.getMaxMoney())) {
+                query += "{\"range\":{\"amount\":{\"lte\":\"" + transactionVO.getMaxMoney() + "\"}}},";
+                deleteFlag = true;
             }
-            if(!StringUtils.isEmpty(transactionVO.getMinFee())){
-                query+="{\"range\":{\"fee\":{\"gte\":\""+transactionVO.getMinFee()+"\"}}},";
+            if (!StringUtils.isEmpty(transactionVO.getMinFee())) {
+                query += "{\"range\":{\"fee\":{\"gte\":\"" + transactionVO.getMinFee() + "\"}}},";
             }
-            if(!StringUtils.isEmpty(transactionVO.getMaxFee())){
-                query+="{\"range\":{\"fee\":{\"lte\":\""+transactionVO.getMaxFee()+"\"}}},";
-                deleteFlag =true;
+            if (!StringUtils.isEmpty(transactionVO.getMaxFee())) {
+                query += "{\"range\":{\"fee\":{\"lte\":\"" + transactionVO.getMaxFee() + "\"}}},";
+                deleteFlag = true;
             }
-            if(deleteFlag){
+            if (deleteFlag) {
                 //去除最后一个符号
-                query.substring(0,query.length()-1);
+                query.substring(0, query.length() - 1);
             }
-            query+="]}}}";
-            return success(esUtils.queryForAnyOne(JSONObject.parseObject(query),"member_transaction","mem_transaction"));
-        }catch (Exception e){
-            log.info(">>>>>>查询异常>>>"+e);
+            query += "]}}}";
+            return success(esUtils.queryForAnyOne(JSONObject.parseObject(query), "member_transaction", "mem_transaction"));
+        } catch (Exception e) {
+            log.info(">>>>>>查询异常>>>" + e);
             return error("查询异常");
         }
     }
@@ -219,6 +221,7 @@ public class MemberTransactionController extends BaseAdminController {
 
     /**
      * 查询代理商下面资产变更记录
+     *
      * @param pageModel
      * @param screen
      * @param memberId
@@ -237,36 +240,36 @@ public class MemberTransactionController extends BaseAdminController {
 
         predicates.add(QMember.member.inviterId.eq(memberId));
 
-        if(screen.getMemberId()!=null) {
+        if (screen.getMemberId() != null) {
             predicates.add((QMember.member.id.eq(screen.getMemberId())));
         }
         if (!StringUtils.isEmpty(screen.getAccount())) {
-            predicates.add(QMember.member.username.like("%"+screen.getAccount()+"%")
-                    .or(QMember.member.realName.like("%"+screen.getAccount()+"%")));
+            predicates.add(QMember.member.username.like("%" + screen.getAccount() + "%")
+                    .or(QMember.member.realName.like("%" + screen.getAccount() + "%")));
         }
         if (screen.getStartTime() != null) {
             predicates.add(QMemberTransaction.memberTransaction.createTime.goe(screen.getStartTime()));
         }
-        if (screen.getEndTime() != null){
-            predicates.add(QMemberTransaction.memberTransaction.createTime.lt(DateUtil.dateAddDay(screen.getEndTime(),1)));
+        if (screen.getEndTime() != null) {
+            predicates.add(QMemberTransaction.memberTransaction.createTime.lt(DateUtil.dateAddDay(screen.getEndTime(), 1)));
         }
         if (screen.getType() != null) {
             predicates.add(QMemberTransaction.memberTransaction.type.eq(screen.getType()));
         }
 
-        if(screen.getMinMoney()!=null) {
+        if (screen.getMinMoney() != null) {
             predicates.add(QMemberTransaction.memberTransaction.amount.goe(screen.getMinMoney()));
         }
 
-        if(screen.getMaxMoney()!=null) {
+        if (screen.getMaxMoney() != null) {
             predicates.add(QMemberTransaction.memberTransaction.amount.loe(screen.getMaxMoney()));
         }
 
-        if(screen.getMinFee()!=null) {
+        if (screen.getMinFee() != null) {
             predicates.add(QMemberTransaction.memberTransaction.fee.goe(screen.getMinFee()));
         }
 
-        if(screen.getMaxFee()!=null) {
+        if (screen.getMaxFee() != null) {
             predicates.add(QMemberTransaction.memberTransaction.fee.loe(screen.getMaxFee()));
         }
 

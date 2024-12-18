@@ -9,7 +9,7 @@ import com.bizzan.bitrade.entity.SysAdvertise;
 import com.bizzan.bitrade.service.SysAdvertiseService;
 import com.bizzan.bitrade.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 public class SystemAdvertiseJob {
 
-    @Autowired
+    @Resource
     private SysAdvertiseService sysAdvertiseService ;
 
     @Scheduled(cron = "1 0 0 * * *")

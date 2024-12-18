@@ -1,12 +1,10 @@
 package com.bizzan.bitrade.entity;
 
+import com.bizzan.bitrade.constant.PayMode;
 import lombok.Data;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
-import com.bizzan.bitrade.constant.PayMode;
-
 import java.math.BigDecimal;
 
 @Data

@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface MemberWeightUpperDao extends BaseDao<MemberWeightUpper> {
 
-    @Query(value = "select * from member_weight_upper where member_id in (:ids) order by member_id desc",nativeQuery = true)
+    @Query(value = "select * from member_weight_upper where member_id in (:ids) order by member_id desc", nativeQuery = true)
     List<MemberWeightUpper> findAllByUpperIds(@Param("ids") List<Long> ids);
 }

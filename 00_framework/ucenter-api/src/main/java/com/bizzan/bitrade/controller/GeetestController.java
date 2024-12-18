@@ -1,21 +1,18 @@
 package com.bizzan.bitrade.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.aliyun.oss.common.utils.HttpUtil;
-import com.bizzan.bitrade.config.GeetestConfig;
-import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.system.GeetestLib;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,26 +27,13 @@ import java.util.HashMap;
 @Slf4j
 public class GeetestController extends BaseController {
 
-    @Autowired
-    private GeetestLib gtSdk;
-    @Value("${water.proof.app.id}")
-    private  String appId;
-    @Value("${water.proof.app.secret.key}")
-    private  String appSecretKey ;
     private static final String url = "https://ssl.captcha.qq.com/ticket/verify";
-
     private static MultiThreadedHttpConnectionManager connectionManager = null;
-
     private static int connectionTimeOut = 15000;
-
     private static int socketTimeOut = 15000;
-
     private static int maxConnectionPerHost = 500;
-
     private static int maxTotalConnections = 500;
-
     private static HttpClient client;
-
 
     static {
         connectionManager = new MultiThreadedHttpConnectionManager();
@@ -59,6 +43,13 @@ public class GeetestController extends BaseController {
         connectionManager.getParams().setMaxTotalConnections(maxTotalConnections);
         client = new HttpClient(connectionManager);
     }
+
+    @Resource
+    private GeetestLib gtSdk;
+    @Value("${water.proof.app.id}")
+    private String appId;
+    @Value("${water.proof.app.secret.key}")
+    private String appSecretKey;
 
     @RequestMapping(value = "/start/captcha")
     public String startCaptcha(HttpServletRequest request) {
@@ -80,7 +71,7 @@ public class GeetestController extends BaseController {
         return resStr;
     }
 
-    public  Boolean  watherProof( String ticket,  String randStr, String ip) throws Exception {
+    public Boolean watherProof(String ticket, String randStr, String ip) throws Exception {
         String response = null;
         GetMethod getMethod = null;
         Boolean responseBool = false;
@@ -109,14 +100,14 @@ public class GeetestController extends BaseController {
                 getMethod = null;
             }
         }
-        log.info(">>>>>>>>发送校验结果响应为>>>>>>"+response);
-        if(!StringUtils.isEmpty(response)){
+        log.info(">>>>>>>>发送校验结果响应为>>>>>>" + response);
+        if (!StringUtils.isEmpty(response)) {
             JSONObject responseJson = JSONObject.parseObject(response);
             String code = responseJson.getString("response");
-            if("1".equals(code)){
-                responseBool = true ;
+            if ("1".equals(code)) {
+                responseBool = true;
             }
         }
-        return  responseBool;
+        return responseBool;
     }
 }

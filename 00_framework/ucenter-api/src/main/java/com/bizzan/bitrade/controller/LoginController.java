@@ -1,19 +1,6 @@
 package com.bizzan.bitrade.controller;
 
-import com.alibaba.fastjson.JSONArray;
-import com.bizzan.bitrade.entity.KLine;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-
 import com.bizzan.bitrade.constant.SysConstant;
-import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.entity.LoginInfo;
 import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.entity.Sign;
@@ -24,14 +11,23 @@ import com.bizzan.bitrade.service.MemberService;
 import com.bizzan.bitrade.service.SignService;
 import com.bizzan.bitrade.system.GeetestLib;
 import com.bizzan.bitrade.util.MessageResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import javax.servlet.http.HttpServletRequest;
-
-import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
-
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
+
+import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 
 /**
  * @author Jammy
@@ -41,19 +37,19 @@ import java.util.List;
 @Slf4j
 public class LoginController extends BaseController {
 
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private MemberEvent memberEvent;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSourceService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
-    @Autowired
+    @Resource
     private GeetestLib gtSdk;
-    @Autowired
+    @Resource
     private SignService signService;
-    
+
     @Value("${person.promote.prefix:}")
     private String promotePrefix;
 
@@ -67,7 +63,7 @@ public class LoginController extends BaseController {
         String validate = request.getParameter(GeetestLib.fn_geetest_validate);
         String seccode = request.getParameter(GeetestLib.fn_geetest_seccode);
 
-        
+
         //兼容没有极验证
         if (challenge == null && validate == null && seccode == null) {
             try {
@@ -129,7 +125,7 @@ public class LoginController extends BaseController {
         member.setTokenExpireTime(calendar.getTime());
         // 获取登录次数
         int loginCount = member.getLoginCount();
-        member.setLoginCount(loginCount+1);
+        member.setLoginCount(loginCount + 1);
         // 签到活动是否进行
         Sign sign = signService.fetchUnderway();
         LoginInfo loginInfo;
@@ -155,10 +151,10 @@ public class LoginController extends BaseController {
             request.getSession().removeAttribute(SysConstant.SESSION_MEMBER);
             Member member = memberService.findOne(user.getId());
             member.setToken(null);
-            messageResult= request.getSession().getAttribute(SysConstant.SESSION_MEMBER) != null ? error(messageSourceService.getMessage("LOGOUT_FAILED")) : success(messageSourceService.getMessage("LOGOUT_SUCCESS"));
+            messageResult = request.getSession().getAttribute(SysConstant.SESSION_MEMBER) != null ? error(messageSourceService.getMessage("LOGOUT_FAILED")) : success(messageSourceService.getMessage("LOGOUT_SUCCESS"));
         } catch (Exception e) {
             e.printStackTrace();
-            log.info(">>>>>登出失败>>>>>"+e);
+            log.info(">>>>>登出失败>>>>>" + e);
         }
         log.info(">>>>>退出登陆接口结束>>>>>");
         return messageResult;

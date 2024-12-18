@@ -1,20 +1,21 @@
 package com.bizzan.bitrade.aspect;
 
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import com.bizzan.bitrade.constant.SysConstant;
-import com.bizzan.bitrade.service.LocaleMessageSourceService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Slf4j
 public class AntiAttackAspect {
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
     @Resource
     private LocaleMessageSourceService localeMessageSourceService;

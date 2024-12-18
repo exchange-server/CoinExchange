@@ -1,5 +1,7 @@
 package com.bizzan.bitrade.config;
 
+import com.bizzan.bitrade.ext.OrdinalToEnumConverterFactory;
+import com.bizzan.bitrade.interceptor.MemberInterceptor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,16 +16,13 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.bizzan.bitrade.ext.OrdinalToEnumConverterFactory;
-import com.bizzan.bitrade.interceptor.MemberInterceptor;
-
 /**
  * @author Jammy
  * @date 2020年02月06日
  * @see 重命名 corsFilter 解决与 Spring Security 冲突的问题
  */
 @Configuration
-public class ApplicationConfig  extends WebMvcConfigurerAdapter {
+public class ApplicationConfig extends WebMvcConfigurerAdapter {
 
 
     /**
@@ -64,19 +63,19 @@ public class ApplicationConfig  extends WebMvcConfigurerAdapter {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new MemberInterceptor())
                 .addPathPatterns("/**")
-                .excludePathPatterns("/register/**", "/mobile/code", "/login","/check/login","/start/captcha","/support/country",
-                        "/ancillary/**","/announcement/**","/mobile/reset/code","/reset/email/code","/reset/login/password","/vote/info","/coin/supported","/financial/items/**","/coin/guess/index","/coin/guess/record"
-                        ,"/coin/guess/detail"
-                        ,"/coin/guess/type"
-                        ,"/activity/page-query"
-                        ,"/activity/detail"
-                        ,"/promotion/toprank"
-                        ,"/promotioncard/detail"
-                        ,"/redenvelope/query"
-                        ,"/redenvelope/query-detail"
-                        ,"/redenvelope/receive"
-                        ,"/redenvelope/code"
-                        ,"/reg/email/code");
+                .excludePathPatterns("/register/**", "/mobile/code", "/login", "/check/login", "/start/captcha", "/support/country",
+                        "/ancillary/**", "/announcement/**", "/mobile/reset/code", "/reset/email/code", "/reset/login/password", "/vote/info", "/coin/supported", "/financial/items/**", "/coin/guess/index", "/coin/guess/record"
+                        , "/coin/guess/detail"
+                        , "/coin/guess/type"
+                        , "/activity/page-query"
+                        , "/activity/detail"
+                        , "/promotion/toprank"
+                        , "/promotioncard/detail"
+                        , "/redenvelope/query"
+                        , "/redenvelope/query-detail"
+                        , "/redenvelope/receive"
+                        , "/redenvelope/code"
+                        , "/reg/email/code");
         super.addInterceptors(registry);
     }
 

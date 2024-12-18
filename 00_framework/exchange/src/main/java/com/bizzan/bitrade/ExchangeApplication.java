@@ -10,7 +10,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 @EnableDiscoveryClient
 @EnableEurekaClient
 public class ExchangeApplication {
-    public static void main(String[] args){
-        SpringApplication.run(ExchangeApplication.class,args);
+    public static void main(String[] args) {
+        SpringApplication.run(ExchangeApplication.class, args);
     }
 }

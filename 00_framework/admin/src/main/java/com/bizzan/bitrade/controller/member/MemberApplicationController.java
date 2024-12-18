@@ -13,12 +13,18 @@ import com.bizzan.bitrade.util.PredicateUtils;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +40,11 @@ import static org.springframework.util.Assert.notNull;
 @RestController
 @RequestMapping("member/member-application")
 public class MemberApplicationController extends BaseAdminController {
-	@Autowired
+    @Resource
     private SMSProvider smsProvider;
-    @Autowired
+    @Resource
     private MemberApplicationService memberApplicationService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
     @RequiresPermissions("member:member-application:all")
@@ -72,10 +78,10 @@ public class MemberApplicationController extends BaseAdminController {
         if (!StringUtils.isEmpty(screen.getAccount())) {
             booleanExpressions.add(memberApplication.member.username.like("%" + screen.getAccount() + "%")
                     //.or(memberApplication.member.mobilePhone.like(screen.getAccount() + "%"))
-                   // .or(memberApplication.member.email.like(screen.getAccount() + "%"))
+                    // .or(memberApplication.member.email.like(screen.getAccount() + "%"))
                     .or(memberApplication.member.realName.like("%" + screen.getAccount() + "%")));
         }
-        if(!StringUtils.isEmpty(screen.getCardNo())) {
+        if (!StringUtils.isEmpty(screen.getCardNo())) {
             booleanExpressions.add(memberApplication.member.idNumber.like("%" + screen.getCardNo() + "%"));
         }
         Predicate predicate = PredicateUtils.getPredicate(booleanExpressions);
@@ -94,10 +100,10 @@ public class MemberApplicationController extends BaseAdminController {
         memberApplicationService.auditPass(application);
         // 发送通知
         try {
-			smsProvider.sendCustomMessage(application.getMember().getMobilePhone(), "恭喜！您提交的实名认证申请已通过审核！");
-		} catch (Exception e) {
-			return error(e.getMessage());
-		}
+            smsProvider.sendCustomMessage(application.getMember().getMobilePhone(), "恭喜！您提交的实名认证申请已通过审核！");
+        } catch (Exception e) {
+            return error(e.getMessage());
+        }
         //返回
         return success();
     }
@@ -114,17 +120,17 @@ public class MemberApplicationController extends BaseAdminController {
         //业务
         application.setRejectReason(rejectReason);//拒绝原因
         memberApplicationService.auditNotPass(application);
-        
+
         try {
-			smsProvider.sendCustomMessage(application.getMember().getMobilePhone(), "您提交的实名认证申请未通过审核，请查看原因后重新申请！");
-		} catch (Exception e) {
-			return error(e.getMessage());
-		}
+            smsProvider.sendCustomMessage(application.getMember().getMobilePhone(), "您提交的实名认证申请未通过审核，请查看原因后重新申请！");
+        } catch (Exception e) {
+            return error(e.getMessage());
+        }
         //返回
         return success();
     }
-    
+
     private void sendMsg() {
-    	
+
     }
 }

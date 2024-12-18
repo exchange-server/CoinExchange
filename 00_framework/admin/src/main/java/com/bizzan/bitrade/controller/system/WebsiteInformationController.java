@@ -1,18 +1,19 @@
 package com.bizzan.bitrade.controller.system;
 
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
 import com.bizzan.bitrade.entity.WebsiteInformation;
 import com.bizzan.bitrade.service.WebsiteInformationService;
 import com.bizzan.bitrade.util.MessageResult;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Shaoxianjun
@@ -22,7 +23,7 @@ import com.bizzan.bitrade.util.MessageResult;
 @RestController
 @RequestMapping("/system/website-information")
 public class WebsiteInformationController extends BaseAdminController {
-    @Autowired
+    @Resource
     private WebsiteInformationService websiteInformationService;
 
     @RequiresPermissions("system:website-information:find-one")

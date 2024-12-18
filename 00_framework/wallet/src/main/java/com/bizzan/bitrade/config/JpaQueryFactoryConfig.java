@@ -9,7 +9,7 @@ import javax.persistence.EntityManager;
 @Configuration
 public class JpaQueryFactoryConfig {
     @Bean
-    public JPAQueryFactory getJPAQueryFactory(EntityManager entityManager){
+    public JPAQueryFactory getJPAQueryFactory(EntityManager entityManager) {
         return new JPAQueryFactory(entityManager);
     }
 }

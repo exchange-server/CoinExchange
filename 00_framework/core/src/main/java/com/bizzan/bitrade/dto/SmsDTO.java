@@ -2,7 +2,11 @@ package com.bizzan.bitrade.dto;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * @Description:
@@ -50,11 +54,6 @@ public class SmsDTO {
      * 接入公司名称( chuangrui  , gongxintong)
      */
     private String smsName;
-
-
-
-
-
 
 
 }

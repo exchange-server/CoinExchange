@@ -2,17 +2,17 @@ package com.bizzan.bitrade.model;
 
 public class RewardRecordScreen {
 
-    private String unit ;
+    private String unit;
 
     /**
      * 推荐者
      */
-    private String presenter ;
+    private String presenter;
 
     /**
      * 被推荐者
      */
-    private String presentee ;
+    private String presentee;
 
    /* public List<BooleanExpression> getBooleanExpressions() throws IllegalAccessException {
         List<BooleanExpression> booleanExpressions = new ArrayList<>();

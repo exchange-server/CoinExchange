@@ -3,7 +3,6 @@ package com.bizzan.bitrade.entity;
 import com.bizzan.bitrade.constant.AdvertiseType;
 import com.bizzan.bitrade.constant.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 

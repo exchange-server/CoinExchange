@@ -160,9 +160,10 @@ public class BigDecimalUtils {
         return v1.multiply(v2);
     }
 
-    public static BigDecimal mulDown(BigDecimal v1, BigDecimal v2,int x) {
-        return v1.multiply(v2).setScale(x,BigDecimal.ROUND_DOWN);
+    public static BigDecimal mulDown(BigDecimal v1, BigDecimal v2, int x) {
+        return v1.multiply(v2).setScale(x, BigDecimal.ROUND_DOWN);
     }
+
     /**
      * 提供相对精确的乘法运算，四舍五入保留八位小数。
      *

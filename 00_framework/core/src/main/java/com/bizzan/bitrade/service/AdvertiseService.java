@@ -1,35 +1,5 @@
 package com.bizzan.bitrade.service;
 
-import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
-import static com.bizzan.bitrade.constant.BooleanEnum.IS_TRUE;
-import static com.bizzan.bitrade.entity.QAdvertise.advertise;
-import static com.bizzan.bitrade.util.BigDecimalUtils.mulRound;
-import static com.bizzan.bitrade.util.BigDecimalUtils.rate;
-
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import com.bizzan.bitrade.constant.AdvertiseControlStatus;
 import com.bizzan.bitrade.constant.AdvertiseType;
 import com.bizzan.bitrade.constant.BooleanEnum;
@@ -58,8 +28,35 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.sparkframework.sql.DB;
 import com.sparkframework.sql.DataException;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
+import static com.bizzan.bitrade.constant.BooleanEnum.IS_TRUE;
+import static com.bizzan.bitrade.entity.QAdvertise.advertise;
+import static com.bizzan.bitrade.util.BigDecimalUtils.mulRound;
+import static com.bizzan.bitrade.util.BigDecimalUtils.rate;
 
 /**
  * @author Jammy
@@ -69,11 +66,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdvertiseService extends BaseService {
 
-    @Autowired
+    @Resource
     private AdvertiseDao advertiseDao;
-    @Autowired
+    @Resource
     private OtcCoinDao otcCoinDao;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
 
     @PersistenceContext
@@ -574,7 +571,7 @@ public class AdvertiseService extends BaseService {
             special.setContext(
                     list.stream().map((Map<String, String> x) ->
                                     ScanAdvertise.builder()
-                                            .premiseRate(Integer.parseInt(x.get("price_type")) == 0? null:BigDecimal.valueOf(Double.valueOf(x.get("premise_rate"))))
+                                            .premiseRate(Integer.parseInt(x.get("price_type")) == 0 ? null : BigDecimal.valueOf(Double.valueOf(x.get("premise_rate"))))
                                             .price(BigDecimalUtils.round(Double.valueOf(x.get("price")), 2))
                                             .transactions(Integer.parseInt(x.get("transactions")))
                                             .remainAmount(BigDecimal.valueOf(Double.valueOf(x.get("remain_amount"))))

@@ -10,16 +10,15 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.bizzan.bitrade.entity.QSysAdvertise.sysAdvertise;
-
+import javax.annotation.Resource;
 import java.util.List;
+
+import static com.bizzan.bitrade.entity.QSysAdvertise.sysAdvertise;
 
 /**
  * @author Jammy
@@ -28,7 +27,7 @@ import java.util.List;
  */
 @Service
 public class SysAdvertiseService extends BaseService {
-    @Autowired
+    @Resource
     SysAdvertiseDao sysAdvertiseDao;
 
     /**
@@ -59,7 +58,7 @@ public class SysAdvertiseService extends BaseService {
         return sysAdvertiseDao.findOne(serialNumber);
     }
 
-    public int getMaxSort(){
+    public int getMaxSort() {
         return sysAdvertiseDao.findMaxSort();
     }
 
@@ -68,12 +67,11 @@ public class SysAdvertiseService extends BaseService {
     }
 
     /**
-     *
      * @param sysAdvertise
      */
     public void saveAll(List<SysAdvertise> sysAdvertise) {
-        for (SysAdvertise sys:sysAdvertise) {
-              sysAdvertiseDao.save(sys);
+        for (SysAdvertise sys : sysAdvertise) {
+            sysAdvertiseDao.save(sys);
         }
     }
 
@@ -83,8 +81,8 @@ public class SysAdvertiseService extends BaseService {
     }
 
     //根据sort，sysAdvertiseLocation对数据进行筛选
-    public List<SysAdvertise> querySysAdvertise(int sort,int cate) {
-        return sysAdvertiseDao.querySysAdvertise(sort , cate);
+    public List<SysAdvertise> querySysAdvertise(int sort, int cate) {
+        return sysAdvertiseDao.querySysAdvertise(sort, cate);
     }
 
     public void deleteOne(String serialNumber) {

@@ -7,19 +7,12 @@ import java.math.BigDecimal;
 
 @Data
 public class KLine {
-    public KLine(){
-
-    }
-    public KLine(String period){
-        this.period = period;
-    }
     private BigDecimal openPrice = BigDecimal.ZERO;
-    private BigDecimal highestPrice  = BigDecimal.ZERO;
-    private BigDecimal lowestPrice  = BigDecimal.ZERO;
-    private BigDecimal closePrice  = BigDecimal.ZERO;
+    private BigDecimal highestPrice = BigDecimal.ZERO;
+    private BigDecimal lowestPrice = BigDecimal.ZERO;
+    private BigDecimal closePrice = BigDecimal.ZERO;
     private long time;
     private String period;
-
     /**
      * 成交笔数
      */
@@ -32,4 +25,12 @@ public class KLine {
      * 成交额
      */
     private BigDecimal turnover = BigDecimal.ZERO;
+
+    public KLine() {
+
+    }
+
+    public KLine(String period) {
+        this.period = period;
+    }
 }

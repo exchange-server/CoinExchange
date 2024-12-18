@@ -1,12 +1,10 @@
 package com.bizzan.bitrade.service;
 
-import com.bizzan.bitrade.entity.CountryVo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bizzan.bitrade.dao.CountryDao;
 import com.bizzan.bitrade.entity.Country;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -15,14 +13,14 @@ import java.util.List;
  */
 @Service
 public class CountryService {
-    @Autowired
+    @Resource
     private CountryDao countryDao;
 
-    public List<Country> getAllCountry(){
+    public List<Country> getAllCountry() {
         return countryDao.findAllOrderBySort();
     }
 
-    public Country findOne(String zhName){
+    public Country findOne(String zhName) {
         return countryDao.findByZhName(zhName);
     }
 

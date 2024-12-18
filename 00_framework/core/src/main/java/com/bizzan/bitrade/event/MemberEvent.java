@@ -6,17 +6,26 @@ import com.bizzan.bitrade.constant.PromotionRewardType;
 import com.bizzan.bitrade.constant.RewardRecordType;
 import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.dao.MemberDao;
-import com.bizzan.bitrade.entity.*;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberPromotion;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.RewardPromotionSetting;
+import com.bizzan.bitrade.entity.RewardRecord;
+import com.bizzan.bitrade.service.MemberPromotionService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.MemberWeightUpperService;
+import com.bizzan.bitrade.service.RewardPromotionSettingService;
+import com.bizzan.bitrade.service.RewardRecordService;
 import com.bizzan.bitrade.util.BigDecimalUtils;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -27,30 +36,30 @@ import java.util.Date;
 @Service
 @Slf4j
 public class MemberEvent {
-    @Autowired
+    @Resource
     private KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
+    @Resource
     private MemberDao memberDao;
-    @Autowired
+    @Resource
     private MemberPromotionService memberPromotionService;
-    @Autowired
+    @Resource
     private RewardPromotionSettingService rewardPromotionSettingService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private RewardRecordService rewardRecordService;
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-    @Autowired
+    @Resource
     private MemberWeightUpperService memberWeightUpperService;
     /**
      * 如果值为1，推荐注册的推荐人必须被推荐人实名认证才能获得奖励
      */
     @Value("${commission.need.real-name:1}")
     private int needRealName;
-    
+
     @Value("${commission.promotion.second-level:0}")
-    private int promotionSecondLevel ;
+    private int promotionSecondLevel;
 
     /**
      * 注册成功事件
@@ -83,6 +92,7 @@ public class MemberEvent {
 
     /**
      * 设置邀请人
+     *
      * @param member
      * @param inviterMember
      * @throws InterruptedException
@@ -140,7 +150,7 @@ public class MemberEvent {
         one.setInviteesId(member.getId());
         one.setLevel(PromotionLevel.ONE);
         memberPromotionService.save(one);
-        
+
         if (member1.getInviterId() != null) {
             Member member2 = memberDao.findOne(member1.getInviterId());
             // 当A推荐B，B推荐C，如果C通过实名认证，则B和A都可以获得奖励
@@ -166,7 +176,8 @@ public class MemberEvent {
             memberTransaction.setAmount(amount2);
             memberTransaction.setSymbol(rewardPromotionSetting.getCoin().getUnit());
             memberTransaction.setType(TransactionType.PROMOTION_AWARD);
-            memberTransaction.setMemberId(member2.getId());memberTransaction.setRealFee("0");
+            memberTransaction.setMemberId(member2.getId());
+            memberTransaction.setRealFee("0");
             memberTransaction.setDiscountFee("0");
             memberTransaction.setCreateTime(new Date());
             memberTransactionService.save(memberTransaction);

@@ -8,14 +8,19 @@ import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vo.TurnoverStatisticsVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import org.apache.shiro.util.Assert;
 import org.bson.types.Decimal128;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +28,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("finance/statistics")
@@ -33,7 +43,7 @@ public class FinanceStatisticsController {
 
     @Resource(name = "newMongoTemplate")
     private MongoTemplate mongoTemplate;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
     /**

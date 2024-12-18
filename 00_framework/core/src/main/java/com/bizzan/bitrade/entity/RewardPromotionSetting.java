@@ -3,11 +3,18 @@ package com.bizzan.bitrade.entity;
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.PromotionRewardType;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.math.BigDecimal;
@@ -68,11 +75,11 @@ public class RewardPromotionSetting {
     @Max(value = 100)
     @Min(value = 0)
     @Transient
-    private BigDecimal one ;
+    private BigDecimal one;
 
     @Max(value = 100)
     @Min(value = 0)
     @Transient
-    private BigDecimal two ;
+    private BigDecimal two;
 
 }

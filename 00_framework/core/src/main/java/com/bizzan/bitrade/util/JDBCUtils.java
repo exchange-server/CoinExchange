@@ -1,18 +1,21 @@
 package com.bizzan.bitrade.util;
 
-import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.config.JDBCConfig;
 import com.bizzan.bitrade.dto.MemberBonusDTO;
 import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.entity.MemberWallet;
 import com.bizzan.bitrade.es.ESUtils;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -25,11 +28,10 @@ import java.util.List;
 @Component
 public class JDBCUtils {
 
-    @Autowired
-    private JDBCConfig jdbcConfig;
     static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-
-    @Autowired
+    @Resource
+    private JDBCConfig jdbcConfig;
+    @Resource
     private ESUtils esUtils;
 
 
@@ -170,9 +172,6 @@ public class JDBCUtils {
     }
 
 
-
-
-
     public void deleteFromMemberByRelaNameStatus() {
         long startTime = System.currentTimeMillis();
         Connection connection = null;
@@ -190,23 +189,23 @@ public class JDBCUtils {
 
             rs = statement.executeQuery(sql);
 
-            while(rs.next()){
+            while (rs.next()) {
                 Long memberId = rs.getLong("inviter_id");
                 Long counts = rs.getLong("counts");
-                String updateSql = "update member_wallet set to_released=to_released - "+(counts*60 )+" where member_id = "+memberId+ " AND coin_id='BHB' ";
-                log.info(">>>>>>更新sql>>>>>"+updateSql);
+                String updateSql = "update member_wallet set to_released=to_released - " + (counts * 60) + " where member_id = " + memberId + " AND coin_id='BHB' ";
+                log.info(">>>>>>更新sql>>>>>" + updateSql);
                 updateStatement.executeUpdate(updateSql);
-                log.info(">>>>此次更新数据会员id>>"+memberId+">>>金额>>>>"+(counts*60)+">>>>清理会员>>>"+counts);
-                log.info("会员:"+memberId+"名下有:"+counts+"被邀请人未实名，扣减BHB数量:"+(counts*60));
+                log.info(">>>>此次更新数据会员id>>" + memberId + ">>>金额>>>>" + (counts * 60) + ">>>>清理会员>>>" + counts);
+                log.info("会员:" + memberId + "名下有:" + counts + "被邀请人未实名，扣减BHB数量:" + (counts * 60));
                 Thread.sleep(10);
 
             }
-            log.info(">>>>>>此次插入时间>>>>"+(System.currentTimeMillis()-startTime));
-        //5.处理ResultSet
+            log.info(">>>>>>此次插入时间>>>>" + (System.currentTimeMillis() - startTime));
+            //5.处理ResultSet
 
         } catch (Exception e) {
             e.printStackTrace();
-        }finally{
+        } finally {
             try {
                 if (statement != null) {
                     connection.close();
@@ -225,7 +224,7 @@ public class JDBCUtils {
         }
     }
 
-    public void synchronization2MemberRegisterWallet(List<Member> members,String coinId) {
+    public void synchronization2MemberRegisterWallet(List<Member> members, String coinId) {
         long startTime = System.currentTimeMillis();
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -253,11 +252,11 @@ public class JDBCUtils {
             rs = state.executeQuery(querySql);
             conn.setAutoCommit(false);
 
-            int i=0;
-            while(rs.next()){
+            int i = 0;
+            while (rs.next()) {
 
-                log.info("sql>>>>"+sql);
-                log.info("会员id>>>>>"+rs.getLong("id")+">>>>币种>>>"+coinId);
+                log.info("sql>>>>" + sql);
+                log.info("会员id>>>>>" + rs.getLong("id") + ">>>>币种>>>" + coinId);
                 stmt.setLong(1, rs.getLong("id"));
                 stmt.setString(2, coinId);
                 i++;
@@ -329,10 +328,10 @@ public class JDBCUtils {
             rs = state.executeQuery(querySql);
             conn.setAutoCommit(false);
 
-            int i=0;
-            while(rs.next()){
+            int i = 0;
+            while (rs.next()) {
 
-                log.info("sql>>>>"+sql);
+                log.info("sql>>>>" + sql);
                 //log.info("会员id>>>>>"+rs.getLong("id")+">>>>币种>>>"+coinId);
                 stmt.setLong(1, rs.getLong("id")); // member_d
                 stmt.setLong(2, contractId); // contract_id

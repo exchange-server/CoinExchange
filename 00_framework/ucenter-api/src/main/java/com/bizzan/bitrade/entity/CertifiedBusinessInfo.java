@@ -2,7 +2,6 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
 import com.bizzan.bitrade.constant.MemberLevelEnum;
-
 import lombok.Data;
 
 /**
@@ -19,8 +18,7 @@ public class CertifiedBusinessInfo {
      */
     private String detail;
     /**
-     *
      * 退保原因
      */
-    private String reason ;
+    private String reason;
 }

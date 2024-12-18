@@ -7,10 +7,11 @@ import com.bizzan.bitrade.entity.ExchangeOrder;
 import com.bizzan.bitrade.entity.ExchangeOrderDetail;
 import com.bizzan.bitrade.service.ExchangeOrderDetailService;
 import com.bizzan.bitrade.service.ExchangeOrderService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -19,29 +20,28 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class CoinTraderEvent implements ApplicationListener<ContextRefreshedEvent> {
-    private Logger log = LoggerFactory.getLogger(CoinTraderEvent.class);
-    @Autowired
+    @Resource
     CoinTraderFactory coinTraderFactory;
-    @Autowired
+    private Logger log = LoggerFactory.getLogger(CoinTraderEvent.class);
+    @Resource
     private ExchangeOrderService exchangeOrderService;
-    @Autowired
+    @Resource
     private ExchangeOrderDetailService exchangeOrderDetailService;
-    @Autowired
-    private KafkaTemplate<String,String> kafkaTemplate;
+    @Resource
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         log.info("======initialize coinTrader======");
         // coinTraderFactory.getTraderMap();
-        Map<String,CoinTrader> traders = coinTraderFactory.getTraderMap();
-        traders.forEach((symbol,trader) ->{
-        	log.info("======CoinTrader Process: " + symbol + "======");
+        Map<String, CoinTrader> traders = coinTraderFactory.getTraderMap();
+        traders.forEach((symbol, trader) -> {
+            log.info("======CoinTrader Process: " + symbol + "======");
             List<ExchangeOrder> orders = exchangeOrderService.findAllTradingOrderBySymbol(symbol);
             log.info("Initialize: find all trading orders, total count( " + orders.size() + ")");
             List<ExchangeOrder> tradingOrders = new ArrayList<>();
@@ -51,29 +51,28 @@ public class CoinTraderEvent implements ApplicationListener<ContextRefreshedEven
                 BigDecimal turnover = BigDecimal.ZERO;
                 List<ExchangeOrderDetail> details = exchangeOrderDetailService.findAllByOrderId(order.getOrderId());
 
-                for(ExchangeOrderDetail trade:details){
+                for (ExchangeOrderDetail trade : details) {
                     tradedAmount = tradedAmount.add(trade.getAmount());
                     turnover = turnover.add(trade.getAmount().multiply(trade.getPrice()));
                 }
                 order.setTradedAmount(tradedAmount);
                 order.setTurnover(turnover);
-                if(!order.isCompleted()){
+                if (!order.isCompleted()) {
                     tradingOrders.add(order);
-                }
-                else{
+                } else {
                     completedOrders.add(order);
                 }
             });
             log.info("Initialize: tradingOrders total count( " + tradingOrders.size() + ")");
             try {
-				trader.trade(tradingOrders);
-			} catch (ParseException e) {
-				e.printStackTrace();
-				log.info("异常：trader.trade(tradingOrders);");
-			}
+                trader.trade(tradingOrders);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                log.info("异常：trader.trade(tradingOrders);");
+            }
             //判断已完成的订单发送消息通知
-            if(completedOrders.size() > 0){
-            	log.info("Initialize: completedOrders total count( " + tradingOrders.size() + ")");
+            if (completedOrders.size() > 0) {
+                log.info("Initialize: completedOrders total count( " + tradingOrders.size() + ")");
                 kafkaTemplate.send("exchange-order-completed", JSON.toJSONString(completedOrders));
             }
             trader.setReady(true);

@@ -1,21 +1,21 @@
 package com.bizzan.bitrade.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.entity.HistoryChatMessage;
 import com.bizzan.bitrade.entity.HistoryMessagePage;
 import com.bizzan.bitrade.handler.MessageHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 
 @RestController
 public class HistoryMessageController {
 
-    @Autowired
-    private MessageHandler chatMessageHandler ;
+    @Resource
+    private MessageHandler chatMessageHandler;
 
     @RequestMapping("/getHistoryMessage")
-    public HistoryMessagePage getHistoryMessage(HistoryChatMessage message){
+    public HistoryMessagePage getHistoryMessage(HistoryChatMessage message) {
         return chatMessageHandler.getHistoryMessage(message);
     }
 }

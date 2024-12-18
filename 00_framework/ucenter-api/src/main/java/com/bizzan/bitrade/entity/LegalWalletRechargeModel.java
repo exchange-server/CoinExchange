@@ -1,9 +1,8 @@
 package com.bizzan.bitrade.entity;
 
+import com.bizzan.bitrade.constant.PayMode;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
-
-import com.bizzan.bitrade.constant.PayMode;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;

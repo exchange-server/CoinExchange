@@ -4,16 +4,16 @@ import com.bizzan.bitrade.constant.RewardRecordType;
 import com.bizzan.bitrade.dao.RewardRecordDao;
 import com.bizzan.bitrade.entity.Member;
 import com.bizzan.bitrade.entity.RewardRecord;
-import com.bizzan.bitrade.pagination.Criteria;
-import com.bizzan.bitrade.pagination.Restrictions;
 import com.bizzan.bitrade.service.Base.BaseService;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @Service
 public class RewardRecordService extends BaseService {
-    @Autowired
+    @Resource
     private RewardRecordDao rewardRecordDao;
 
     public RewardRecord save(RewardRecord rewardRecord) {
@@ -57,7 +57,7 @@ public class RewardRecordService extends BaseService {
                 return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
             }
         };
-        return rewardRecordDao.findAll(specification,pageable);
+        return rewardRecordDao.findAll(specification, pageable);
     }
 
 

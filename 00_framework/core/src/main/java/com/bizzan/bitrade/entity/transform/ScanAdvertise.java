@@ -2,7 +2,6 @@ package com.bizzan.bitrade.entity.transform;
 
 import com.bizzan.bitrade.constant.AdvertiseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 

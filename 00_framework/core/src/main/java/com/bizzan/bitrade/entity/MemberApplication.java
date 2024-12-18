@@ -2,13 +2,20 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.AuditStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -43,7 +50,7 @@ public class MemberApplication {
     private String identityCardImgInHand;
 
     /**
-     *  审核状态
+     * 审核状态
      */
     @NotNull
     @Enumerated(EnumType.ORDINAL)
@@ -52,7 +59,7 @@ public class MemberApplication {
     /**
      * 审核信息所有者
      */
-    @JoinColumn(name = "member_id",nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     @ManyToOne
     private Member member;
 

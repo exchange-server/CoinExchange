@@ -2,9 +2,7 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.WithdrawStatus;
-import com.bizzan.bitrade.entity.WithdrawRecord;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -38,7 +36,7 @@ public class ScanWithdrawRecord {
     /**
      * 提现状态
      */
-    private WithdrawStatus status ;
+    private WithdrawStatus status;
     /**
      * 是否是自动提现
      */
@@ -46,7 +44,9 @@ public class ScanWithdrawRecord {
 
     private String unit;
 
-    /** 能不能自动提现 */
+    /**
+     * 能不能自动提现
+     */
     private BooleanEnum canAutoWithdraw;
 
     /**

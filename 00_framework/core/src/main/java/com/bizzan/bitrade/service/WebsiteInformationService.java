@@ -1,13 +1,13 @@
 package com.bizzan.bitrade.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bizzan.bitrade.dao.WebsiteInformationDao;
 import com.bizzan.bitrade.entity.QWebsiteInformation;
 import com.bizzan.bitrade.entity.WebsiteInformation;
 import com.bizzan.bitrade.service.Base.BaseService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
  * @author Jammy
@@ -16,7 +16,7 @@ import com.bizzan.bitrade.service.Base.BaseService;
  */
 @Service
 public class WebsiteInformationService extends BaseService {
-    @Autowired
+    @Resource
     private WebsiteInformationDao websiteInformationDao;
 
     @Transactional(readOnly = true)

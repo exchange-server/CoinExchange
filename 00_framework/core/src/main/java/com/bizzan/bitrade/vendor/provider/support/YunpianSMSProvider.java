@@ -3,10 +3,7 @@ package com.bizzan.bitrade.vendor.provider.support;
 import com.bizzan.bitrade.util.HttpSend;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
 import org.dom4j.DocumentException;
@@ -14,7 +11,6 @@ import org.dom4j.DocumentException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -25,6 +21,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class YunpianSMSProvider implements SMSProvider {
 
+    private static Pattern RESPONSE_PATTERN = Pattern.compile("<response><error>(-?\\d+)</error><message>(.*[\\\\u4e00-\\\\u9fa5]*)</message></response>");
     private String gateway;
     private String apikey;
 
@@ -32,9 +29,6 @@ public class YunpianSMSProvider implements SMSProvider {
         this.gateway = gateway;
         this.apikey = apikey;
     }
-
-    private static Pattern RESPONSE_PATTERN = Pattern.compile("<response><error>(-?\\d+)</error><message>(.*[\\\\u4e00-\\\\u9fa5]*)</message></response>");
-
 
     public static String getName() {
         return "yunpian";
@@ -47,7 +41,7 @@ public class YunpianSMSProvider implements SMSProvider {
         params.put("text", content);
         params.put("mobile", mobile);
         log.info("yunpianParameters====", params.toString());
-        String resultXml= HttpSend.yunpianPost(gateway, params);
+        String resultXml = HttpSend.yunpianPost(gateway, params);
         log.info("result = {}", resultXml);
         return parseXml(resultXml);
     }
@@ -64,7 +58,7 @@ public class YunpianSMSProvider implements SMSProvider {
         params.put("apikey", apikey);
         params.put("text", content);
         params.put("mobile", mobile);
-        String resultXml= HttpSend.yunpianPost(gateway, params);
+        String resultXml = HttpSend.yunpianPost(gateway, params);
         log.info("result = {}", resultXml);
         return parseXml(resultXml);
     }
@@ -90,17 +84,16 @@ public class YunpianSMSProvider implements SMSProvider {
         JSONObject myJsonObject = JSONObject.fromObject(xml);
         int code = myJsonObject.getInt("code");
         MessageResult result = new MessageResult(500, "系统错误");
-        if(code == 0)
-        {
+        if (code == 0) {
             result.setCode(code);
             result.setMessage(myJsonObject.getString("msg"));
         }
         return result;
     }
 
-	@Override
-	public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

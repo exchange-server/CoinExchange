@@ -17,7 +17,6 @@ public class InitPlate {
     private Long id;
 
 
-
     //交易对
     private String symbol;
     //拉升初始价
@@ -25,11 +24,10 @@ public class InitPlate {
     //拉升最终价
     private String initPrice;
     //拉升时长
-    private String relativeTime ;
+    private String relativeTime;
 
     //干扰因子 0-70
     private String interferenceFactor;
-
 
 
 }

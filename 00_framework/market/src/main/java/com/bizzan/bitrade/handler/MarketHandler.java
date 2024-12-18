@@ -8,6 +8,7 @@ public interface MarketHandler {
 
     /**
      * 存储交易信息
+     *
      * @param exchangeTrade
      */
     void handleTrade(String symbol, ExchangeTrade exchangeTrade, CoinThumb thumb);
@@ -18,5 +19,5 @@ public interface MarketHandler {
      *
      * @param kLine
      */
-    void handleKLine(String symbol,KLine kLine);
+    void handleKLine(String symbol, KLine kLine);
 }

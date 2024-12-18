@@ -4,7 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -48,25 +52,25 @@ public class ExchangeOrder implements Serializable {
     //取消时间
     private Long canceledTime;
     //是否使用折扣 0 不使用 1使用
-    private  String useDiscount ;
+    private String useDiscount;
 
     private ExchangeOrderResource orderResource = ExchangeOrderResource.CUSTOMER;
 
     @Transient
     private List<ExchangeOrderDetail> detail;
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);
     }
 
-    public boolean isCompleted(){
-        if(status != ExchangeOrderStatus.TRADING) {
+    public boolean isCompleted() {
+        if (status != ExchangeOrderStatus.TRADING) {
             return true;
-        } else{
-            if(type == ExchangeOrderType.MARKET_PRICE && direction == ExchangeOrderDirection.BUY){
+        } else {
+            if (type == ExchangeOrderType.MARKET_PRICE && direction == ExchangeOrderDirection.BUY) {
                 return amount.compareTo(turnover) <= 0;
-            }
-            else{
+            } else {
                 return amount.compareTo(tradedAmount) <= 0;
             }
         }

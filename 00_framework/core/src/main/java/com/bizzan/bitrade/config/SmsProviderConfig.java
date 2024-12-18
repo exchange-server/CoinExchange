@@ -1,12 +1,10 @@
 package com.bizzan.bitrade.config;
 
-import com.bizzan.bitrade.vendor.provider.support.*;
-import org.apache.commons.lang.StringUtils;
+import com.bizzan.bitrade.vendor.provider.SMSProvider;
+import com.bizzan.bitrade.vendor.provider.support.SaiyouSMSProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.bizzan.bitrade.vendor.provider.SMSProvider;
 
 @Configuration
 public class SmsProviderConfig {
@@ -44,7 +42,7 @@ public class SmsProviderConfig {
 
     @Bean
     public SMSProvider getSMSProvider(@Value("${sms.driver:}") String driverName) {
-    	//赛邮
+        //赛邮
         return new SaiyouSMSProvider(username, password, sign, gateway);
 
         //飞鸽

@@ -1,16 +1,15 @@
 package com.bizzan.bitrade.dao;
 
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CommonStatus;
+import com.bizzan.bitrade.dto.CoinDTO;
+import com.bizzan.bitrade.entity.Coin;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import com.bizzan.bitrade.constant.BooleanEnum;
-import com.bizzan.bitrade.constant.CommonStatus;
-import com.bizzan.bitrade.dto.CoinDTO;
-import com.bizzan.bitrade.entity.Coin;
 
 import java.util.List;
 

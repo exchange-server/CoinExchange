@@ -9,13 +9,10 @@ import com.bizzan.bitrade.util.HttpSend;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +23,7 @@ public class SaiyouSMSProvider implements SMSProvider {
     private String sign; // sign
     private String gateway; // gateway
 
-    @Autowired
+    @Resource
     private SmsService smsService;
 
     public SaiyouSMSProvider(String username, String password, String sign, String gateway) {
@@ -43,8 +40,8 @@ public class SaiyouSMSProvider implements SMSProvider {
     @Override
     public MessageResult sendSingleMessage(String mobile, String content) throws Exception {
         SmsDTO smsDTO = smsService.getByStatus();
-        if("saiyou".equals(smsDTO.getSmsName())){
-            return sendMessage(mobile,content,smsDTO);
+        if ("saiyou".equals(smsDTO.getSmsName())) {
+            return sendMessage(mobile, content, smsDTO);
         }
         return null;
     }
@@ -54,7 +51,7 @@ public class SaiyouSMSProvider implements SMSProvider {
         return null;
     }
 
-    public MessageResult sendMessage(String mobile, String content,SmsDTO smsDTO) throws Exception{
+    public MessageResult sendMessage(String mobile, String content, SmsDTO smsDTO) throws Exception {
 
 //        Map<String, String> params = new HashMap<String, String>();
 //        params.put("appid", username);
@@ -72,10 +69,10 @@ public class SaiyouSMSProvider implements SMSProvider {
         singleSenderResult = singleSender.send(0, "86", mobile, smsContent, "", "");
 
         MessageResult mr = new MessageResult(500, "系统错误");
-        if(singleSenderResult.result == 0) {
+        if (singleSenderResult.result == 0) {
             mr.setCode(0);
             mr.setMessage("短信发送成功！");
-        }else{
+        } else {
             mr.setCode(1);
             mr.setMessage("短信发送失败，请联系平台处理！");
         }
@@ -93,10 +90,10 @@ public class SaiyouSMSProvider implements SMSProvider {
         JSONObject jsonObject = JSONObject.parseObject(result);
 
         MessageResult mr = new MessageResult(500, "系统错误");
-        if(jsonObject.getString("status").equals("success")) {
+        if (jsonObject.getString("status").equals("success")) {
             mr.setCode(0);
             mr.setMessage("短信发送成功！");
-        }else{
+        } else {
             mr.setCode(1);
             mr.setMessage("短信发送失败，请联系平台处理！");
         }
@@ -105,6 +102,7 @@ public class SaiyouSMSProvider implements SMSProvider {
 
     /**
      * 转换返回值类型为UTF-8格式.
+     *
      * @param is
      * @return
      */
@@ -140,7 +138,7 @@ public class SaiyouSMSProvider implements SMSProvider {
         params.put("content", smsContent);
         params.put("signature", password);
         log.info("云邮短信====", params.toString());
-        String returnStr= HttpSend.post(gateway, params);
+        String returnStr = HttpSend.post(gateway, params);
         log.info("result = {}", returnStr);
         return parseResult(returnStr);
     }

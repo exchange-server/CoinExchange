@@ -1,26 +1,10 @@
 package com.bizzan.bitrade.handler;
 
-import com.alibaba.fastjson.JSON;
-import com.bizzan.bitrade.entity.ChatMessageRecord;
-import com.cdeer.apns.http2.core.manager.ApnsServiceManager;
-import com.cdeer.apns.http2.core.model.Payload;
-import com.cdeer.apns.http2.core.model.PushNotification;
-import com.cdeer.apns.http2.core.service.ApnsService;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
-
 // @Component
 public class ApnsHandler {
 	/*
     private Map<String,String> uidTokenMap = new HashMap<>();
-    @Autowired
+    @Resource
     private ApnsService apnsService;
     private Logger logger = LoggerFactory.getLogger(ApnsHandler.class);
 

@@ -1,23 +1,42 @@
 package com.bizzan.bitrade.controller.otc;
 
 import com.bizzan.bitrade.annotation.AccessLog;
-import com.bizzan.bitrade.constant.*;
+import com.bizzan.bitrade.constant.AdminModule;
+import com.bizzan.bitrade.constant.AdvertiseType;
+import com.bizzan.bitrade.constant.AppealStatus;
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CommonStatus;
+import com.bizzan.bitrade.constant.OrderStatus;
+import com.bizzan.bitrade.constant.PageModel;
+import com.bizzan.bitrade.constant.TransactionType;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Appeal;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.Order;
+import com.bizzan.bitrade.entity.QAppeal;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.event.OrderEvent;
 import com.bizzan.bitrade.exception.InformationExpiredException;
 import com.bizzan.bitrade.model.screen.AppealScreen;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.AdvertiseService;
+import com.bizzan.bitrade.service.AppealService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.OrderService;
 import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vo.AppealVO;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.hibernate.transform.Transformers;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -46,30 +65,30 @@ import static org.springframework.util.Assert.notNull;
 @RequestMapping("/otc/appeal")
 public class AdminAppealController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private AppealService appealService;
 
-    @Autowired
+    @Resource
     private OrderService orderService;
 
-    @Autowired
+    @Resource
     private AdvertiseService advertiseService;
 
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
 
-    @Autowired
+    @Resource
     private MemberService memberService;
 
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
-    @Autowired
+    @Resource
     private OrderEvent orderEvent;
 
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
-    @Autowired
+    @Resource
     private ESUtils esUtils;
 
 
@@ -89,44 +108,44 @@ public class AdminAppealController extends BaseAdminController {
                 .append("a.create_time createTime,a.deal_with_time dealWithTime,b.pay_mode payMode, e.name coinName,")
                 .append("b.status orderStatus,a.is_success isSuccess,b.advertise_type advertiseType,a.status,a.remark ");
 
-        StringBuilder countHead = new StringBuilder("select count(*) ") ;
+        StringBuilder countHead = new StringBuilder("select count(*) ");
 
         StringBuilder endSql = new StringBuilder("from appeal a,otc_order b,member c,member d,otc_coin e")
                 .append(" where a.order_id = b.id and a.initiator_id = c.id and a.associate_id = d.id ")
                 .append(" and b.coin_id = e.id and b.status != 0 ");
 
-        if(!StringUtils.isEmpty(screen.getNegotiant())) {
-            endSql.append(" and (b.customer_name like '%"+screen.getNegotiant()+"%'")
-                  .append(" or b.customer_real_name like '%"+screen.getNegotiant()+"%')");
+        if (!StringUtils.isEmpty(screen.getNegotiant())) {
+            endSql.append(" and (b.customer_name like '%" + screen.getNegotiant() + "%'")
+                    .append(" or b.customer_real_name like '%" + screen.getNegotiant() + "%')");
         }
-        if(!StringUtils.isEmpty(screen.getComplainant())) {
-            endSql.append(" and (b.member_name like '%"+screen.getComplainant()+"%'")
-                    .append(" or b.member_real_name like '%"+screen.getComplainant()+"%')");
+        if (!StringUtils.isEmpty(screen.getComplainant())) {
+            endSql.append(" and (b.member_name like '%" + screen.getComplainant() + "%'")
+                    .append(" or b.member_real_name like '%" + screen.getComplainant() + "%')");
         }
 
         if (screen.getAdvertiseType() != null) {
-            endSql.append(" and b.advertise_type = "+screen.getAdvertiseType().getOrdinal()+" ");
+            endSql.append(" and b.advertise_type = " + screen.getAdvertiseType().getOrdinal() + " ");
         }
 
-        if(screen.getSuccess() != null) {
+        if (screen.getSuccess() != null) {
             endSql.append(" and (a.is_success = " + screen.getSuccess().getOrdinal() + " and a.deal_with_time is not null) ");
-        }else{
-            if(screen.getAuditing()){
+        } else {
+            if (screen.getAuditing()) {
                 endSql.append(" and a.is_success is null ");
             }
         }
 
-        if(!StringUtils.isEmpty(screen.getUnit())) {
-            endSql.append(" and lower(e.unit) = '"+screen.getUnit().toLowerCase()+"'");
+        if (!StringUtils.isEmpty(screen.getUnit())) {
+            endSql.append(" and lower(e.unit) = '" + screen.getUnit().toLowerCase() + "'");
         }
 
-        if(screen.getStatus()!=null&&screen.getStatus().getOrdinal()!=0) {
-            endSql.append(" and b.status = "+screen.getStatus().getOrdinal());
+        if (screen.getStatus() != null && screen.getStatus().getOrdinal() != 0) {
+            endSql.append(" and b.status = " + screen.getStatus().getOrdinal());
         }
 
-        Page page = appealService.createNativePageQuery(countHead.append(endSql),headSqlBuilder.append(endSql),pageModel, Transformers.ALIAS_TO_ENTITY_MAP);
+        Page page = appealService.createNativePageQuery(countHead.append(endSql), headSqlBuilder.append(endSql), pageModel, Transformers.ALIAS_TO_ENTITY_MAP);
 
-        return success("获取成功",page);
+        return success("获取成功", page);
     }
 
     @RequiresPermissions("otc:appeal:detail")
@@ -220,15 +239,15 @@ public class AdminAppealController extends BaseAdminController {
     }
 
 
-    private MessageResult cancel(Order order , BigDecimal amount , Long memberId)  throws InformationExpiredException{
-        MemberWallet memberWallet  ;
+    private MessageResult cancel(Order order, BigDecimal amount, Long memberId) throws InformationExpiredException {
+        MemberWallet memberWallet;
         //更改广告
         if (!advertiseService.updateAdvertiseAmountForCancel(order.getAdvertiseId(), amount)) {
             throw new InformationExpiredException("Information Expired");
         }
         memberWallet = memberWalletService.findByOtcCoinAndMemberId(order.getCoin(), memberId);
-        log.info("======memberWallet===="+memberWallet.toString());
-        MessageResult result = memberWalletService.thawBalance(memberWallet,amount);
+        log.info("======memberWallet====" + memberWallet.toString());
+        MessageResult result = memberWalletService.thawBalance(memberWallet, amount);
         if (result.getCode() == 0) {
             return MessageResult.success("取消订单成功");
         } else {
@@ -356,7 +375,7 @@ public class AdminAppealController extends BaseAdminController {
         memberTransaction.setMemberId(memberId);
         memberTransaction.setAmount(order.getNumber());
         memberTransaction.setDiscountFee("0");
-        memberTransaction.setRealFee(fee+"");
+        memberTransaction.setRealFee(fee + "");
         memberTransaction.setCreateTime(new Date());
         memberTransaction = memberTransactionService.save(memberTransaction);
 

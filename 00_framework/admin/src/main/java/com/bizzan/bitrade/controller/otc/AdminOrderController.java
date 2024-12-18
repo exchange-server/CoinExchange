@@ -1,30 +1,35 @@
 package com.bizzan.bitrade.controller.otc;
 
 import com.bizzan.bitrade.annotation.AccessLog;
-import com.bizzan.bitrade.annotation.ExcelSheet;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.OrderStatus;
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.entity.Order;
-import com.bizzan.bitrade.entity.QAdvertise;
 import com.bizzan.bitrade.entity.QOrder;
 import com.bizzan.bitrade.model.screen.OrderScreen;
-import com.bizzan.bitrade.model.screen.OtcOrderExcelScreen;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.service.OrderService;
-import com.bizzan.bitrade.util.*;
+import com.bizzan.bitrade.util.DateUtil;
+import com.bizzan.bitrade.util.ExcelUtil;
+import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vo.OtcOrderVO;
 import com.querydsl.core.types.Predicate;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.annotation.Resource;
+
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,9 +45,9 @@ import static org.springframework.util.Assert.notNull;
 @RequestMapping("/otc/order")
 public class AdminOrderController extends BaseController {
 
-    @Autowired
+    @Resource
     private OrderService orderService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
     @RequiresPermissions("otc:order:all")
@@ -82,14 +87,14 @@ public class AdminOrderController extends BaseController {
     }
 
 
-    @RequiresPermissions(value = {"otc:order:page-query","finance:otc:order:page-query"},logical = Logical.OR)
+    @RequiresPermissions(value = {"otc:order:page-query", "finance:otc:order:page-query"}, logical = Logical.OR)
     @PostMapping("page-query")
     @AccessLog(module = AdminModule.OTC, operation = "分页查找法币交易订单Order")
     public MessageResult page(
             PageModel pageModel,
             OrderScreen screen) {
         List<Predicate> predicate = getPredicates(screen);
-        Page<OtcOrderVO> page = orderService.outExcel(predicate,pageModel);
+        Page<OtcOrderVO> page = orderService.outExcel(predicate, pageModel);
         //Page<Order> all = orderService.findAll(predicate, pageModel.getPageable());
         return success(page);
     }
@@ -103,8 +108,8 @@ public class AdminOrderController extends BaseController {
         if (screen.getStartTime() != null) {
             predicates.add(QOrder.order.createTime.goe(screen.getStartTime()));
         }
-        if (screen.getEndTime() != null){
-            predicates.add(QOrder.order.createTime.lt(DateUtil.dateAddDay(screen.getEndTime(),1)));
+        if (screen.getEndTime() != null) {
+            predicates.add(QOrder.order.createTime.lt(DateUtil.dateAddDay(screen.getEndTime(), 1)));
         }
         if (screen.getStatus() != null) {
             predicates.add(QOrder.order.status.eq(screen.getStatus()));
@@ -114,25 +119,25 @@ public class AdminOrderController extends BaseController {
         }
         if (StringUtils.isNotBlank(screen.getMemberName())) {
             predicates.add(QOrder.order.memberName.like("%" + screen.getMemberName() + "%")
-                                    .or(QOrder.order.memberRealName.like("%" + screen.getMemberName() + "%")));
+                    .or(QOrder.order.memberRealName.like("%" + screen.getMemberName() + "%")));
         }
         if (StringUtils.isNotBlank(screen.getCustomerName())) {
             predicates.add(QOrder.order.customerName.like("%" + screen.getCustomerName() + "%")
-                                    .or(QOrder.order.customerRealName.like("%" + screen.getCustomerName() + "%")));
+                    .or(QOrder.order.customerRealName.like("%" + screen.getCustomerName() + "%")));
         }
-        if(screen.getMinMoney()!=null) {
+        if (screen.getMinMoney() != null) {
             predicates.add(QOrder.order.money.goe(screen.getMinMoney()));
         }
-        if(screen.getMaxMoney()!=null) {
+        if (screen.getMaxMoney() != null) {
             predicates.add(QOrder.order.money.loe(screen.getMaxMoney()));
         }
-        if(screen.getMinNumber()!=null) {
+        if (screen.getMinNumber() != null) {
             predicates.add(QOrder.order.number.goe(screen.getMinNumber()));
         }
-        if(screen.getMaxNumber()!=null) {
+        if (screen.getMaxNumber() != null) {
             predicates.add(QOrder.order.number.loe(screen.getMaxNumber()));
         }
-        if (screen.getAdvertiseType() != null){
+        if (screen.getAdvertiseType() != null) {
             predicates.add(QOrder.order.advertiseType.eq(screen.getAdvertiseType()));
         }
         return /*PredicateUtils.getPredicate(booleanExpressions)*/predicates;
@@ -148,6 +153,7 @@ public class AdminOrderController extends BaseController {
 
     /**
      * 参数 fileName 为导出excel 文件的文件名 格式为 .xls  定义在OutExcelInterceptor 拦截器中 ，非必须参数
+     *
      * @param pageModel
      * @param screen
      * @param response
@@ -160,9 +166,9 @@ public class AdminOrderController extends BaseController {
             PageModel pageModel,
             OrderScreen screen,
             HttpServletResponse response
-            ) throws Exception {
-        List<OtcOrderVO> list = orderService.outExcel(getPredicates(screen),pageModel).getContent();
-        ExcelUtil.listToExcel(list,OtcOrderVO.class.getDeclaredFields(),response.getOutputStream());
+    ) throws Exception {
+        List<OtcOrderVO> list = orderService.outExcel(getPredicates(screen), pageModel).getContent();
+        ExcelUtil.listToExcel(list, OtcOrderVO.class.getDeclaredFields(), response.getOutputStream());
     }
 
 

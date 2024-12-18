@@ -11,14 +11,14 @@ import lombok.ToString;
 @ToString
 public class BaseMessage {
 
-    private String orderId ;
+    private String orderId;
 
-    private String uidTo ;
+    private String uidTo;
 
-    private String uidFrom ;
+    private String uidFrom;
 
-    private String nameTo ;
+    private String nameTo;
 
-    private String nameFrom ;
+    private String nameFrom;
 
 }

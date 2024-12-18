@@ -1,19 +1,18 @@
 package com.bizzan.bitrade.aspect;
 
-import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
 import com.bizzan.bitrade.exception.GeeTestException;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.system.GeetestLib;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+
+import javax.annotation.Resource;
+
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -29,26 +28,28 @@ import java.util.HashMap;
 //@Component
 @Slf4j
 public class GeeTestAspect {
-    @Autowired
+    @Resource
     private GeetestLib gtSdk;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     private ThreadLocal<Long> startTime = new ThreadLocal<>();
-    
- // "||execution(public * com.bizzan.bitrade.controller.SmsController.resetPasswordCode(..))"+
-    @Pointcut("execution(public * com.bizzan.bitrade.controller.RegisterController.registerByEmail(..))"+
+
+    // "||execution(public * com.bizzan.bitrade.controller.SmsController.resetPasswordCode(..))"+
+    @Pointcut("execution(public * com.bizzan.bitrade.controller.RegisterController.registerByEmail(..))" +
             "||execution(public * com.bizzan.bitrade.controller.RegisterController.sendResetPasswordCode(..))")
     public void geeTest() {
 
     }
+
     @Pointcut("execution(public * com.bizzan.bitrade.controller.SmsController.sendCheckCode(..))" +
             "||execution(public * com.bizzan.bitrade.controller.RegisterController.sendRegEmail(..))")
-    public void webControllerAspect(){
+    public void webControllerAspect() {
 
     }
+
     @Before("webControllerAspect()")
-    public void doWebBefore(JoinPoint joinPoint){
+    public void doWebBefore(JoinPoint joinPoint) {
         log.info(">>>>>>>>>>>>>>>>>>注册发送验证码>>>>>>>>>>");
         sendVerifyCode(joinPoint);
     }
@@ -67,7 +68,7 @@ public class GeeTestAspect {
     }
 
     @AfterReturning(pointcut = "webControllerAspect()")
-    public void doWebAfterReturning()  {
+    public void doWebAfterReturning() {
         log.info("处理耗时：" + (System.currentTimeMillis() - startTime.get()) + "ms");
         log.info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<验证码发送成功<<<<<<<<<<<<<<<<<<<<<<<<");
     }
@@ -79,7 +80,6 @@ public class GeeTestAspect {
     }
 
 
-
     public void gee(JoinPoint joinPoint) throws GeeTestException {
         startTime.set(System.currentTimeMillis());
         // 接收到请求，记录请求内容
@@ -89,14 +89,14 @@ public class GeeTestAspect {
         String challenge = request.getParameter(GeetestLib.fn_geetest_challenge);
         String validate = request.getParameter(GeetestLib.fn_geetest_validate);
         String seccode = request.getParameter(GeetestLib.fn_geetest_seccode);
-        log.info(">>>>>>>>>>>>challenge>>>>"+challenge);
-        log.info(">>>>>>>>>>>>validate>>>>"+validate);
-        log.info(">>>>>>>>>>>>seccode>>>>"+seccode);
-        log.info(">>>>>>>>"+ip+">>>>>>>>>");
+        log.info(">>>>>>>>>>>>challenge>>>>" + challenge);
+        log.info(">>>>>>>>>>>>validate>>>>" + validate);
+        log.info(">>>>>>>>>>>>seccode>>>>" + seccode);
+        log.info(">>>>>>>>" + ip + ">>>>>>>>>");
         //从session中获取gt-server状态
-        Integer gt_server_status_code=(Integer) request.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
+        Integer gt_server_status_code = (Integer) request.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
         //从session中获取userid
-        String userid = (String)request.getSession().getAttribute("userid");
+        String userid = (String) request.getSession().getAttribute("userid");
         //自定义参数,可选择添加
         HashMap<String, String> param = new HashMap<String, String>();
         param.put("user_id", userid); //网站用户id
@@ -104,7 +104,7 @@ public class GeeTestAspect {
         param.put("ip_address", ip); //传输用户请求验证时所携带的IP
 
         int gtResult = 0;
-        log.info(">>>>>>>>>>>>从session中获取get-server状态>>>>>"+gt_server_status_code);
+        log.info(">>>>>>>>>>>>从session中获取get-server状态>>>>>" + gt_server_status_code);
         if (null != gt_server_status_code && gt_server_status_code == 1) {
             //gt-server正常，向gt-server进行二次验证
             gtResult = gtSdk.enhencedValidateRequest(challenge, validate, seccode, param);
@@ -113,8 +113,8 @@ public class GeeTestAspect {
             System.out.println("failback:use your own server captcha validate");
             gtResult = gtSdk.failbackValidateRequest(challenge, validate, seccode);
         }
-        log.info(">>>>>>>>>>>>从session中获取gtResult状态>>>>>"+gtResult);
-        if (gtResult!=1){
+        log.info(">>>>>>>>>>>>从session中获取gtResult状态>>>>>" + gtResult);
+        if (gtResult != 1) {
             throw new GeeTestException(msService.getMessage("GEETEST_FAIL"));
         }
         // 记录下请求内容

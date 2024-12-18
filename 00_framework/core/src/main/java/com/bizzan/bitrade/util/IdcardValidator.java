@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
  *
  * @Author:chenssy
  * @date:2020年6月1日 下午12:29:41
- *
  */
 public class IdcardValidator {
 
@@ -24,25 +23,10 @@ public class IdcardValidator {
      */
 
     // 每位加权因子
-    private static int power[] = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
+    private static int power[] = {7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2};
 
     /**
-     * 验证身份证是否合法
-     *
-     * @author : chenssy
-     * @date : 2020年6月1日 下午12:30:03
-     *
-     * @param idcard
-     * @return
-     */
-    @SuppressWarnings("static-access")
-    public boolean isValidatedAllIdcard(String idcard) {
-        return isValidate18Idcard(idcard);
-    }
-
-    /**
-     *
-     <p>
+     * <p>
      * 判断18位身份证的合法性
      * </p>
      * 根据〖中华人民共和国国家标准GB11643-1999〗中有关公民身份号码的规定，公民身份号码是特征组合码，由十七位数字本体码和一位数字校验码组成。
@@ -72,12 +56,10 @@ public class IdcardValidator {
      * 5.通过上面得知如果余数是2，就会在身份证的第18位数字上出现罗马数字的Ⅹ。如果余数是10，身份证的最后一位号码就是2。
      * </p>
      *
+     * @param idcard 待验证的身份证
+     * @return
      * @author : chenssy
      * @date : 2020年6月1日 下午12:31:10
-     *
-     * @param idcard
-     * 					待验证的身份证
-     * @return
      */
     public static boolean isValidate18Idcard(String idcard) {
         // 非18位为假
@@ -118,12 +100,10 @@ public class IdcardValidator {
     /**
      * 18位身份证号码的基本数字和位数验校
      *
+     * @param idcard 待验证的身份证
+     * @return
      * @author : chenssy
      * @date : 2020年6月1日 下午12:31:49
-     *
-     * @param idcard
-     * 					待验证的身份证
-     * @return
      */
     public static boolean is18Idcard(String idcard) {
         return Pattern.matches("^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}([\\d|x|X]{1})$", idcard);
@@ -132,11 +112,10 @@ public class IdcardValidator {
     /**
      * 数字验证
      *
-     * @author : chenssy
-     * @date : 2020年6月1日 下午12:32:18
-     *
      * @param str
      * @return
+     * @author : chenssy
+     * @date : 2020年6月1日 下午12:32:18
      */
     private static boolean isDigital(String str) {
         return str == null || "".equals(str) ? false : str.matches("^[0-9]*$");
@@ -145,11 +124,10 @@ public class IdcardValidator {
     /**
      * 将身份证的每位和对应位的加权因子相乘之后，再得到和值
      *
-     * @author : chenssy
-     * @date : 2020年6月1日 下午12:32:34
-     *
      * @param bit
      * @return
+     * @author : chenssy
+     * @date : 2020年6月1日 下午12:32:34
      */
     private static int getPowerSum(int[] bit) {
         int sum = 0;
@@ -171,11 +149,10 @@ public class IdcardValidator {
     /**
      * 将和值与11取模得到余数进行校验码判断
      *
-     * @author : chenssy
-     * @date : 2020年6月1日 下午12:32:51
-     *
      * @param sum17
      * @return
+     * @author : chenssy
+     * @date : 2020年6月1日 下午12:32:51
      */
     private static String getCheckCodeBySum(int sum17) {
         String checkCode = null;
@@ -213,8 +190,8 @@ public class IdcardValidator {
             case 0:
                 checkCode = "1";
                 break;
-             default:
-                 checkCode="";
+            default:
+                checkCode = "";
         }
         return checkCode;
     }
@@ -222,12 +199,11 @@ public class IdcardValidator {
     /**
      * 将字符数组转为整型数组
      *
-     * @author : chenssy
-     * @date : 2020年6月1日 下午12:33:22
-     *
      * @param c
      * @return
      * @throws NumberFormatException
+     * @author : chenssy
+     * @date : 2020年6月1日 下午12:33:22
      */
     private static int[] converCharToInt(char[] c) throws NumberFormatException {
         int[] a = new int[c.length];
@@ -239,18 +215,30 @@ public class IdcardValidator {
     }
 
     /**
-     *
      * @param idno
      * @return 身份证信息中代表性别的数值
      */
     public static int getUserSex(String idno) {
-        String sex="1";
-        if(idno!=null){
-            if(idno.length()>15){
+        String sex = "1";
+        if (idno != null) {
+            if (idno.length() > 15) {
                 sex = idno.substring(16, 17);
             }
         }
 
-        return Integer.parseInt(sex) % 2==0 ? 0:1;
+        return Integer.parseInt(sex) % 2 == 0 ? 0 : 1;
+    }
+
+    /**
+     * 验证身份证是否合法
+     *
+     * @param idcard
+     * @return
+     * @author : chenssy
+     * @date : 2020年6月1日 下午12:30:03
+     */
+    @SuppressWarnings("static-access")
+    public boolean isValidatedAllIdcard(String idcard) {
+        return isValidate18Idcard(idcard);
     }
 }

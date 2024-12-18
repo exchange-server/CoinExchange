@@ -1,7 +1,6 @@
 package com.bizzan.bitrade.model.screen;
 
 import com.bizzan.bitrade.constant.WithdrawStatus;
-
 import lombok.Data;
 
 @Data

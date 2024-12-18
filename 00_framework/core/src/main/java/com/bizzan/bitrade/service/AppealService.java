@@ -1,14 +1,5 @@
 package com.bizzan.bitrade.service;
 
-import java.math.BigInteger;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bizzan.bitrade.constant.AppealStatus;
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.dao.AppealDao;
@@ -25,6 +16,14 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.math.BigInteger;
+import java.util.List;
 
 /**
  * @author Jammy
@@ -32,10 +31,10 @@ import com.querydsl.jpa.impl.JPAQuery;
  */
 @Service
 public class AppealService extends BaseService {
-    @Autowired
+    @Resource
     private AppealDao appealDao;
 
-    @Autowired
+    @Resource
     private MemberDao memberDao;
 
     public Appeal findOne(Long id) {
@@ -59,31 +58,31 @@ public class AppealService extends BaseService {
      */
     @Transactional(readOnly = true)
     public PageResult<AppealVO> joinFind(List<BooleanExpression> booleanExpressionList, PageModel pageModel) {
-        QAppeal qAppeal = QAppeal.appeal ;
+        QAppeal qAppeal = QAppeal.appeal;
         QBean qBean = Projections.fields(AppealVO.class
-                ,qAppeal.id.as("appealId")
-                ,qAppeal.order.memberName.as("advertiseCreaterUserName")
-                ,qAppeal.order.memberRealName.as("advertiseCreaterName")
-                ,qAppeal.order.customerName.as("customerUserName")
-                ,qAppeal.order.customerRealName.as("customerName")
-                ,qAppeal.initiatorId==qAppeal.order.memberId?qAppeal.order.memberName.as("initiatorUsername"):qAppeal.order.customerName.as("initiatorUsername")
-                ,qAppeal.initiatorId==qAppeal.order.memberId?qAppeal.order.memberRealName.as("initiatorName"):qAppeal.order.customerRealName.as("initiatorName")
-                ,qAppeal.initiatorId==qAppeal.order.memberId?qAppeal.order.customerName.as("associateUsername"):qAppeal.order.memberName.as("associateUsername")
-                ,qAppeal.initiatorId==qAppeal.order.memberId?qAppeal.order.customerRealName.as("associateName"):qAppeal.order.memberRealName.as("associateName")
-                ,qAppeal.order.commission.as("fee")
-                ,qAppeal.order.number
-                ,qAppeal.order.money
-                ,qAppeal.order.orderSn.as("orderSn")
-                ,qAppeal.order.createTime.as("transactionTime")
-                ,qAppeal.createTime.as("createTime")
-                ,qAppeal.dealWithTime.as("dealTime")
-                ,qAppeal.order.payMode.as("payMode")
-                ,qAppeal.order.coin.name.as("coinName")
-                ,qAppeal.order.status.as("orderStatus")
-                ,qAppeal.isSuccess.as("isSuccess")
-                ,qAppeal.order.advertiseType.as("advertiseType")
-                ,qAppeal.status
-                ,qAppeal.remark
+                , qAppeal.id.as("appealId")
+                , qAppeal.order.memberName.as("advertiseCreaterUserName")
+                , qAppeal.order.memberRealName.as("advertiseCreaterName")
+                , qAppeal.order.customerName.as("customerUserName")
+                , qAppeal.order.customerRealName.as("customerName")
+                , qAppeal.initiatorId == qAppeal.order.memberId ? qAppeal.order.memberName.as("initiatorUsername") : qAppeal.order.customerName.as("initiatorUsername")
+                , qAppeal.initiatorId == qAppeal.order.memberId ? qAppeal.order.memberRealName.as("initiatorName") : qAppeal.order.customerRealName.as("initiatorName")
+                , qAppeal.initiatorId == qAppeal.order.memberId ? qAppeal.order.customerName.as("associateUsername") : qAppeal.order.memberName.as("associateUsername")
+                , qAppeal.initiatorId == qAppeal.order.memberId ? qAppeal.order.customerRealName.as("associateName") : qAppeal.order.memberRealName.as("associateName")
+                , qAppeal.order.commission.as("fee")
+                , qAppeal.order.number
+                , qAppeal.order.money
+                , qAppeal.order.orderSn.as("orderSn")
+                , qAppeal.order.createTime.as("transactionTime")
+                , qAppeal.createTime.as("createTime")
+                , qAppeal.dealWithTime.as("dealTime")
+                , qAppeal.order.payMode.as("payMode")
+                , qAppeal.order.coin.name.as("coinName")
+                , qAppeal.order.status.as("orderStatus")
+                , qAppeal.isSuccess.as("isSuccess")
+                , qAppeal.order.advertiseType.as("advertiseType")
+                , qAppeal.status
+                , qAppeal.remark
         );
         List<OrderSpecifier> orderSpecifiers = pageModel.getOrderSpecifiers();
         JPAQuery<AppealVO> jpaQuery = queryFactory.select(qBean);
@@ -102,10 +101,11 @@ public class AppealService extends BaseService {
 
     /**
      * 申诉详情
+     *
      * @param appeal
      * @return
      */
-    private AppealVO generateAppealVO(Appeal appeal){
+    private AppealVO generateAppealVO(Appeal appeal) {
         Member initialMember = memberDao.findOne(appeal.getInitiatorId());
         Member associateMember = memberDao.findOne(appeal.getAssociateId());
         AppealVO vo = new AppealVO();
@@ -114,7 +114,7 @@ public class AppealService extends BaseService {
         vo.setAssociateUsername(associateMember.getUsername());
         vo.setInitiatorName(initialMember.getRealName());
         vo.setInitiatorUsername(initialMember.getUsername());
-        Order order = appeal.getOrder() ;
+        Order order = appeal.getOrder();
         vo.setCoinName(order.getCoin().getName());
         vo.setFee(order.getCommission());
         vo.setMoney(order.getMoney());
@@ -133,14 +133,14 @@ public class AppealService extends BaseService {
         vo.setCreateTime(appeal.getCreateTime());
         vo.setDealTime(appeal.getDealWithTime());
         vo.setRemark(appeal.getRemark());
-        return vo ;
+        return vo;
     }
 
     public Page<Appeal> findAll(com.querydsl.core.types.Predicate predicate, Pageable pageable) {
         return appealDao.findAll(predicate, pageable);
     }
 
-    public long countAuditing(){
+    public long countAuditing() {
         return appealDao.countAllByStatus(AppealStatus.NOT_PROCESSED);
     }
 }

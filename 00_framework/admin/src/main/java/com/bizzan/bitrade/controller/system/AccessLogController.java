@@ -11,14 +11,19 @@ import com.bizzan.bitrade.service.AdminAccessLogService;
 import com.bizzan.bitrade.service.AdminService;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +41,11 @@ import static org.springframework.util.Assert.notNull;
 @Transactional(readOnly = true)
 public class AccessLogController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private AdminAccessLogService adminAccessLogService;
 
-    @Autowired
-    private AdminService adminService ;
+    @Resource
+    private AdminService adminService;
 
     @RequiresPermissions("system:access-log:all")
     @GetMapping("/all")
@@ -70,9 +75,9 @@ public class AccessLogController extends BaseAdminController {
         List<BooleanExpression> list = new ArrayList<>();
         list.add(QAdmin.admin.id.eq(QAdminAccessLog.adminAccessLog.adminId));
         if (!StringUtils.isEmpty(adminName)) {
-            list.add(QAdmin.admin.username.like("%"+adminName+"%"));
+            list.add(QAdmin.admin.username.like("%" + adminName + "%"));
         }
-        if(module!=null) {
+        if (module != null) {
             list.add(QAdminAccessLog.adminAccessLog.module.eq(module));
         }
         Page<AdminAccessLog> all = adminAccessLogService.page(list, pageModel);

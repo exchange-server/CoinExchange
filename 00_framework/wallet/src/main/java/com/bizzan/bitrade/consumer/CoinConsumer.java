@@ -9,11 +9,12 @@ import com.bizzan.bitrade.entity.MemberWallet;
 import com.bizzan.bitrade.service.CoinService;
 import com.bizzan.bitrade.service.MemberService;
 import com.bizzan.bitrade.service.MemberWalletService;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -33,17 +34,17 @@ import java.util.Map;
 @Component
 public class CoinConsumer {
 
-    private Logger logger = LoggerFactory.getLogger(CoinConsumer.class);
-    @Autowired
-    private CoinService coinService;
-    @Autowired
-    private MemberWalletService walletService;
-    @Autowired
-    private RestTemplate restTemplate;
-    @Autowired
-    private MemberService memberService;
     @PersistenceContext
     protected EntityManager em;
+    private Logger logger = LoggerFactory.getLogger(CoinConsumer.class);
+    @Resource
+    private CoinService coinService;
+    @Resource
+    private MemberWalletService walletService;
+    @Resource
+    private RestTemplate restTemplate;
+    @Resource
+    private MemberService memberService;
 
     /**
      * 添加新币种，为用户增加钱包

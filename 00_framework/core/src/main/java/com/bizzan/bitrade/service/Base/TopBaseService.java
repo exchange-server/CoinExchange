@@ -6,37 +6,28 @@ import com.bizzan.bitrade.ability.UpdateAbility;
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.dao.base.BaseDao;
 import com.bizzan.bitrade.dto.Pagenation;
-import com.bizzan.bitrade.pagination.PageListMapResult;
-import com.bizzan.bitrade.pagination.QueryDslContext;
-import com.bizzan.bitrade.vo.RegisterPromotionVO;
 import com.querydsl.core.types.Predicate;
-
 import lombok.Setter;
 import org.hibernate.SQLQuery;
 import org.hibernate.transform.ResultTransformer;
-import org.hibernate.transform.Transformers;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
-import org.aspectj.lang.annotation.Aspect;
-import org.hibernate.SQLQuery;
-import org.hibernate.transform.Transformers;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class TopBaseService<E, D extends BaseDao> {
 
-    @Autowired
-    protected EntityManager entityManager ;
+    @Resource
+    protected EntityManager entityManager;
 
     @Setter
     protected D dao;
@@ -120,29 +111,30 @@ public class TopBaseService<E, D extends BaseDao> {
 
     /**
      * 原生sql 多表关联分页查询 映射Map 或者 Class
+     *
      * @param countSql
      * @param sql
      * @param pageModel
-     * @param result  映射的对象 （Map 或者 Class）
+     * @param result    映射的对象 （Map 或者 Class）
      * @return
      */
-    public Page createNativePageQuery(StringBuilder countSql , StringBuilder sql , PageModel pageModel,ResultTransformer result){
+    public Page createNativePageQuery(StringBuilder countSql, StringBuilder sql, PageModel pageModel, ResultTransformer result) {
         Query query1 = entityManager.createNativeQuery(countSql.toString());
-        long count =((BigInteger) query1.getSingleResult()).longValue() ;
-        if(pageModel.getProperty()!=null && pageModel.getProperty().size()>0 && pageModel.getDirection().size() == pageModel.getProperty().size()){
-            sql.append(" order by") ;
-            for(int i = 0 ; i < pageModel.getProperty().size() ; i++){
-                sql.append(" "+pageModel.getProperty().get(i)+" "+pageModel.getDirection().get(i)+" ");
-                if(i < pageModel.getProperty().size()-1){
+        long count = ((BigInteger) query1.getSingleResult()).longValue();
+        if (pageModel.getProperty() != null && pageModel.getProperty().size() > 0 && pageModel.getDirection().size() == pageModel.getProperty().size()) {
+            sql.append(" order by");
+            for (int i = 0; i < pageModel.getProperty().size(); i++) {
+                sql.append(" " + pageModel.getProperty().get(i) + " " + pageModel.getDirection().get(i) + " ");
+                if (i < pageModel.getProperty().size() - 1) {
                     sql.append(",");
                 }
             }
         }
-        sql.append(" limit "+pageModel.getPageSize()*(pageModel.getPageNo()-1)+" , "+pageModel.getPageSize());
+        sql.append(" limit " + pageModel.getPageSize() * (pageModel.getPageNo() - 1) + " , " + pageModel.getPageSize());
         javax.persistence.Query query2 = entityManager.createNativeQuery(sql.toString());
         query2.unwrap(SQLQuery.class).setResultTransformer(result);
-        List list = query2.getResultList() ;
-        return new PageImpl<>(list,pageModel.getPageable(),count);
+        List list = query2.getResultList();
+        return new PageImpl<>(list, pageModel.getPageable(), count);
     }
 
 }

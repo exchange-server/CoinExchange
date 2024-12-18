@@ -1,6 +1,11 @@
 package com.bizzan.bitrade.interceptor;
 
 
+import com.bizzan.bitrade.constant.SysConstant;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.transform.AuthMember;
+import com.bizzan.bitrade.event.MemberEvent;
+import com.bizzan.bitrade.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,12 +13,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.bizzan.bitrade.constant.SysConstant;
-import com.bizzan.bitrade.entity.Member;
-import com.bizzan.bitrade.entity.transform.AuthMember;
-import com.bizzan.bitrade.event.MemberEvent;
-import com.bizzan.bitrade.service.MemberService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +28,18 @@ import java.util.Calendar;
 @Slf4j
 public class MemberInterceptor implements HandlerInterceptor {
 
+    public static void ajaxReturn(HttpServletResponse response, int code, String msg) throws IOException, JSONException {
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/json; charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        JSONObject json = new JSONObject();
+        json.put("code", code);
+        json.put("message", msg);
+        out.print(json.toString());
+        out.flush();
+        out.close();
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
@@ -39,7 +50,7 @@ public class MemberInterceptor implements HandlerInterceptor {
             return true;
         } else {
             String token = request.getHeader("access-auth-token");
-            log.info("token:{}",token);
+            log.info("token:{}", token);
             //解决service为null无法注入问题
             BeanFactory factory = WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
             MemberService memberService = (MemberService) factory.getBean("memberService");
@@ -58,19 +69,6 @@ public class MemberInterceptor implements HandlerInterceptor {
                 return false;
             }
         }
-    }
-
-
-    public static void ajaxReturn(HttpServletResponse response, int code, String msg) throws IOException, JSONException {
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/json; charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        JSONObject json = new JSONObject();
-        json.put("code", code);
-        json.put("message", msg);
-        out.print(json.toString());
-        out.flush();
-        out.close();
     }
 
     @Override

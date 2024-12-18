@@ -1,8 +1,10 @@
 package com.bizzan.bitrade.system;
 
+import com.bizzan.bitrade.exception.GeeTestException;
+import com.bizzan.bitrade.exception.InformationExpiredException;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.util.MessageResult;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.ServletRequestBindingException;
@@ -10,9 +12,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.bizzan.bitrade.exception.GeeTestException;
-import com.bizzan.bitrade.exception.InformationExpiredException;
-import com.bizzan.bitrade.util.MessageResult;
+import javax.annotation.Resource;
 
 /**
  * @author Jammy
@@ -27,7 +27,7 @@ public class ExceptionControllerAdvice {
      * @param ex
      * @return
      */
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     @ResponseBody

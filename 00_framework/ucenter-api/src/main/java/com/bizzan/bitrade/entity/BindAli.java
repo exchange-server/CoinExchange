@@ -15,6 +15,8 @@ public class BindAli {
     private String ali;
     @NotBlank(message = "{BindAli.jyPassword.null}")
     private String jyPassword;
-    /** 支付宝收款二维码 */
+    /**
+     * 支付宝收款二维码
+     */
     private String qrCodeUrl;
 }

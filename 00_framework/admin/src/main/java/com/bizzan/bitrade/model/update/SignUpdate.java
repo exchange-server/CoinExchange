@@ -1,13 +1,12 @@
 package com.bizzan.bitrade.model.update;
 
-import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.util.Assert;
-
 import com.bizzan.bitrade.entity.Coin;
 import com.bizzan.bitrade.entity.Sign;
 import com.bizzan.bitrade.service.CoinService;
 import com.bizzan.bitrade.util.DateUtil;
+import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.util.Assert;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -33,7 +32,6 @@ public class SignUpdate {
      */
     @Min(value = 0, message = "amount must gt 0!")
     private BigDecimal amount;
-
 
 
     /**

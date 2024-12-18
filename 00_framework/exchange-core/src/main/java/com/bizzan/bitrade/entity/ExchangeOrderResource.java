@@ -1,8 +1,8 @@
 package com.bizzan.bitrade.entity;
 
 /**
- * @description: ExchangeOrderResource
  * @author QQ:247818019 E-mail:247818019@qq.com
+ * @description: ExchangeOrderResource
  * @create: 2019/05/07 15:46
  */
 public enum ExchangeOrderResource {

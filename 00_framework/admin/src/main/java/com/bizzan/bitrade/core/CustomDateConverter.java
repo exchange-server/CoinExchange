@@ -12,7 +12,7 @@ import java.util.Date;
  */
 @Component
 public class CustomDateConverter implements Converter<String, Date> {
-    private static final String dateFormat      = "yyyy-MM-dd HH:mm:ss";
+    private static final String dateFormat = "yyyy-MM-dd HH:mm:ss";
     private static final String shortDateFormat = "yyyy-MM-dd";
 
     /**

@@ -1,10 +1,6 @@
 package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.MemberLevelEnum;
-import com.bizzan.bitrade.entity.Country;
-import com.bizzan.bitrade.entity.Location;
-import com.bizzan.bitrade.entity.Member;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -35,16 +31,16 @@ public class LoginInfo {
      * 签到能力
      */
     private Boolean signInAbility;
-    
+
     private int firstLevel = 0; // 一级邀请好友数量
     private int secondLevel = 0; // 二级邀请好友数量
     private int thirdLevel = 0; // 三级邀请好友数量
-    
+
     /**
      * 是否存在签到活动
      */
     private Boolean signInActivity;
-    private  String memberRate ;
+    private String memberRate;
 
     public static LoginInfo getLoginInfo(Member member, String token, Boolean signInActivity, String prefix) {
         return LoginInfo.builder().location(member.getLocation())

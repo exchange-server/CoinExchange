@@ -4,18 +4,23 @@ import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.constant.PromotionRewardType;
 import com.bizzan.bitrade.constant.RewardRecordType;
 import com.bizzan.bitrade.dao.MemberDao;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.Order;
+import com.bizzan.bitrade.entity.RewardPromotionSetting;
+import com.bizzan.bitrade.entity.RewardRecord;
 import com.bizzan.bitrade.service.MemberWalletService;
 import com.bizzan.bitrade.service.RewardPromotionSettingService;
 import com.bizzan.bitrade.service.RewardRecordService;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static com.bizzan.bitrade.util.BigDecimalUtils.*;
-
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Arrays;
+
+import static com.bizzan.bitrade.util.BigDecimalUtils.add;
+import static com.bizzan.bitrade.util.BigDecimalUtils.getRate;
+import static com.bizzan.bitrade.util.BigDecimalUtils.mulRound;
 
 /**
  * @author Shaoxianjun
@@ -23,13 +28,13 @@ import java.util.Arrays;
  */
 @Service
 public class OrderEvent {
-    @Autowired
+    @Resource
     private MemberDao memberDao;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private RewardRecordService rewardRecordService;
-    @Autowired
+    @Resource
     private RewardPromotionSettingService rewardPromotionSettingService;
 
     public void onOrderCompleted(Order order) {

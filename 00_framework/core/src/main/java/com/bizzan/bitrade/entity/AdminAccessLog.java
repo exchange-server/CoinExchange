@@ -2,11 +2,17 @@ package com.bizzan.bitrade.entity;
 
 import com.bizzan.bitrade.constant.AdminModule;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Date;
 
 /**
@@ -26,7 +32,7 @@ public class AdminAccessLog {
     private Long adminId;
 
     @Transient
-    private String adminName ;
+    private String adminName;
 
     private String uri;
 

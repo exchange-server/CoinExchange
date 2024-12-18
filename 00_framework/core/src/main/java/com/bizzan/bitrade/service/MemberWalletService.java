@@ -1,15 +1,5 @@
 package com.bizzan.bitrade.service;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.constant.PageModel;
 import com.bizzan.bitrade.constant.TransactionType;
@@ -38,27 +28,36 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
 public class MemberWalletService extends BaseService {
-	@Autowired
+    @Resource
     private SMSProvider smsProvider;
-	@Autowired
+    @Resource
     private MemberDao memberDao;
-    @Autowired
+    @Resource
     private MemberWalletDao memberWalletDao;
-    @Autowired
+    @Resource
     private CoinDao coinDao;
-    @Autowired
+    @Resource
     private MemberTransactionService transactionService;
-    @Autowired
+    @Resource
     private MemberDepositDao depositDao;
-    @Autowired(required=false)
+    @Autowired(required = false)
     private ESUtils esUtils;
-    
+
     public MemberWallet save(MemberWallet wallet) {
         return memberWalletDao.saveAndFlush(wallet);
     }
@@ -134,13 +133,13 @@ public class MemberWalletService extends BaseService {
         depositDao.save(deposit);
 
         // ERC20 USDT充值，余额增加到USDT上
-        if(coin.getUnit().equals("EUSDT")) {
+        if (coin.getUnit().equals("EUSDT")) {
             MemberWallet walletShadow = findByCoinUnitAndMemberId("USDT", wallet.getMemberId());
             walletShadow.setBalance(walletShadow.getBalance().add(amount));
-        }else {
+        } else {
             wallet.setBalance(wallet.getBalance().add(amount)); // 为用户增加余额
         }
-        
+
         MemberTransaction transaction = new MemberTransaction();
         transaction.setAmount(amount);
         transaction.setSymbol(wallet.getCoin().getUnit());
@@ -155,16 +154,16 @@ public class MemberWalletService extends BaseService {
         transaction = transactionService.save(transaction);
 
         Member mRes = memberDao.findOne(wallet.getMemberId());
-        if(mRes != null ) {
-        	try {
-				smsProvider.sendCustomMessage(mRes.getMobilePhone(), "尊敬的用户：恭喜您充值"+ wallet.getCoin().getUnit() + "成功，充值数量为：" + amount.stripTrailingZeros().toPlainString());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+        if (mRes != null) {
+            try {
+                smsProvider.sendCustomMessage(mRes.getMobilePhone(), "尊敬的用户：恭喜您充值" + wallet.getCoin().getUnit() + "成功，充值数量为：" + amount.stripTrailingZeros().toPlainString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return new MessageResult(0, "success");
     }
-    
+
     /**
      * 钱包充值(EOS地址类型）
      *
@@ -205,12 +204,12 @@ public class MemberWalletService extends BaseService {
         transaction = transactionService.save(transaction);
 
         Member mRes = memberDao.findOne(wallet.getMemberId());
-        if(mRes != null ) {
-        	try {
-				smsProvider.sendCustomMessage(mRes.getMobilePhone(), "尊敬的用户：恭喜您充值"+ wallet.getCoin().getUnit() + "成功，充值数量为：" + amount.stripTrailingZeros().toPlainString());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+        if (mRes != null) {
+            try {
+                smsProvider.sendCustomMessage(mRes.getMobilePhone(), "尊敬的用户：恭喜您充值" + wallet.getCoin().getUnit() + "成功，充值数量为：" + amount.stripTrailingZeros().toPlainString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return new MessageResult(0, "success");
     }
@@ -289,7 +288,7 @@ public class MemberWalletService extends BaseService {
         if (ret > 0) {
             return MessageResult.success();
         } else {
-            log.info("====order cancel=====订单取消异常（amount）："+amount);
+            log.info("====order cancel=====订单取消异常（amount）：" + amount);
             return MessageResult.error("Information Expired");
         }
     }
@@ -430,133 +429,137 @@ public class MemberWalletService extends BaseService {
         return memberWalletDao.findOne(and);
     }
 
-    public Page<MemberWalletDTO> joinFind(List<Predicate> predicates,QMember qMember ,QMemberWallet qMemberWallet,PageModel pageModel) {
+    public Page<MemberWalletDTO> joinFind(List<Predicate> predicates, QMember qMember, QMemberWallet qMemberWallet, PageModel pageModel) {
         List<OrderSpecifier> orderSpecifiers = pageModel.getOrderSpecifiers();
         predicates.add(qMember.id.eq(qMemberWallet.memberId));
         JPAQuery<MemberWalletDTO> query = queryFactory.select(
-                        Projections.fields(MemberWalletDTO.class, qMemberWallet.id.as("id"),qMemberWallet.memberId.as("memberId") ,qMember.username,qMember.realName.as("realName"),
-                        qMember.email,qMember.mobilePhone.as("mobilePhone"),qMemberWallet.balance,qMemberWallet.address,qMemberWallet.coin.unit
-                        ,qMemberWallet.frozenBalance.as("frozenBalance"),qMemberWallet.balance.add(qMemberWallet.frozenBalance).as("allBalance"))).from(QMember.member,QMemberWallet.memberWallet).where(predicates.toArray(new Predicate[predicates.size()]))
-                        .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]));
-        List<MemberWalletDTO> content = query.offset((pageModel.getPageNo()-1)*pageModel.getPageSize()).limit(pageModel.getPageSize()).fetch();
+                        Projections.fields(MemberWalletDTO.class, qMemberWallet.id.as("id"), qMemberWallet.memberId.as("memberId"), qMember.username, qMember.realName.as("realName"),
+                                qMember.email, qMember.mobilePhone.as("mobilePhone"), qMemberWallet.balance, qMemberWallet.address, qMemberWallet.coin.unit
+                                , qMemberWallet.frozenBalance.as("frozenBalance"), qMemberWallet.balance.add(qMemberWallet.frozenBalance).as("allBalance"))).from(QMember.member, QMemberWallet.memberWallet).where(predicates.toArray(new Predicate[predicates.size()]))
+                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]));
+        List<MemberWalletDTO> content = query.offset((pageModel.getPageNo() - 1) * pageModel.getPageSize()).limit(pageModel.getPageSize()).fetch();
         long total = query.fetchCount();
         return new PageImpl<>(content, pageModel.getPageable(), total);
     }
 
-    public BigDecimal getAllBalance(String coinName){
+    public BigDecimal getAllBalance(String coinName) {
         return memberWalletDao.getWalletAllBalance(coinName);
     }
 
-    public MemberDeposit findDeposit(String address,String txid){
-        return depositDao.findByAddressAndTxid(address,txid);
+    public MemberDeposit findDeposit(String address, String txid) {
+        return depositDao.findByAddressAndTxid(address, txid);
     }
-    
-    public MemberDeposit findDepositByTxid(String txid){
+
+    public MemberDeposit findDepositByTxid(String txid) {
         return depositDao.findByTxid(txid);
     }
 
-    public void decreaseFrozen(Long walletId,BigDecimal amount){
-        memberWalletDao.decreaseFrozen(walletId,amount);
+    public void decreaseFrozen(Long walletId, BigDecimal amount) {
+        memberWalletDao.decreaseFrozen(walletId, amount);
     }
 
-    public void increaseBalance(Long walletId,BigDecimal amount){
-        memberWalletDao.increaseBalance(walletId,amount);
+    public void increaseBalance(Long walletId, BigDecimal amount) {
+        memberWalletDao.increaseBalance(walletId, amount);
     }
-    
-    public int unfreezeLess(){
+
+    public int unfreezeLess() {
         return memberWalletDao.unfreezeLess();
     }
-    
-    public int unfreezeMore(){
+
+    public int unfreezeMore() {
         return memberWalletDao.unfreezeMore();
     }
-    
-    
+
+
 //    public int initSuperPaterner(long memberId){
 //        return memberWalletDao.initSuperPaterner(memberId);
 //    }
-    
-    public int dropWeekTable(int weekDay){
+
+    public int dropWeekTable(int weekDay) {
         return memberWalletDao.dropWeekTable(weekDay);
     }
-    
-    public int createWeekTable(int weekDay){
+
+    public int createWeekTable(int weekDay) {
         return memberWalletDao.createWeekTable(weekDay);
     }
 
-    public BigDecimal getWalletBalanceAmount(String coinId,int week){
-        return memberWalletDao.getWalletBalanceAmount(coinId,week);
+    public BigDecimal getWalletBalanceAmount(String coinId, int week) {
+        return memberWalletDao.getWalletBalanceAmount(coinId, week);
     }
 
-    public List<MemberWallet> geteveryBHB(String coinName,int week){
-        return memberWalletDao.geteveryBHB(coinName,week);
+    public List<MemberWallet> geteveryBHB(String coinName, int week) {
+        return memberWalletDao.geteveryBHB(coinName, week);
     }
 
 
     //更新团队钱包
-    public int updateTeamWallet(BigDecimal teamBalance,long teamId){
-        return memberWalletDao.updateTeamWallet(teamBalance,teamId);
+    public int updateTeamWallet(BigDecimal teamBalance, long teamId) {
+        return memberWalletDao.updateTeamWallet(teamBalance, teamId);
     }
 
     /**
      * 根据 coinId和会员ID查询会员账户信息
+     *
      * @param coinId
      * @param memberId
      * @return
      */
     public MemberWallet getMemberWalletByCoinAndMemberId(String coinId, long memberId) {
-        return memberWalletDao.getMemberWalletByCoinAndMemberId(coinId,memberId);
+        return memberWalletDao.getMemberWalletByCoinAndMemberId(coinId, memberId);
     }
 
     /**
      * 根据用户ID和coinID更新用户钱包
-     *
      */
     @Transactional
-    public int updateByMemberIdAndCoinId(long memberId,String coinId,BigDecimal balance){
-        return memberWalletDao.updateByMemberIdAndCoinId(memberId,coinId,balance);
+    public int updateByMemberIdAndCoinId(long memberId, String coinId, BigDecimal balance) {
+        return memberWalletDao.updateByMemberIdAndCoinId(memberId, coinId, balance);
     }
 
     /**
      * 增加用户BHB钱包余额
+     *
      * @param mineAmount
      * @param memberId
      * @return
      */
-    public int increaseBalanceForBHB(BigDecimal mineAmount,Long memberId) {
-       return  memberWalletDao.increaseBalanceForBHB(mineAmount,memberId);
+    public int increaseBalanceForBHB(BigDecimal mineAmount, Long memberId) {
+        return memberWalletDao.increaseBalanceForBHB(mineAmount, memberId);
     }
 
 
     /**
      * 查询待释放BHB大于500的
      */
-    public List<MemberWallet> findUnfreezeGTE(){
-        return  memberWalletDao.findUnfreezeGTE();
+    public List<MemberWallet> findUnfreezeGTE() {
+        return memberWalletDao.findUnfreezeGTE();
     }
+
     /**
      * 查询待释放BHB大于500的
      */
-    public List<MemberWallet> findUnfreezeLTE(){
-        return  memberWalletDao.findUnfreezeLTE();
+    public List<MemberWallet> findUnfreezeLTE() {
+        return memberWalletDao.findUnfreezeLTE();
     }
 
 
-    public int updateBalanceByIdAndAmount (long id,double amount){
-        return memberWalletDao.updateBalanceByIdAndAmount(id,amount);
+    public int updateBalanceByIdAndAmount(long id, double amount) {
+        return memberWalletDao.updateBalanceByIdAndAmount(id, amount);
     }
 
     /**
      * 增加冻结资产（与余额无关）
+     *
      * @param id
      * @param amount
      */
-	public void increaseFrozen(Long id, BigDecimal amount) {
-		memberWalletDao.increaseFrozen(id, amount);
-	}
+    public void increaseFrozen(Long id, BigDecimal amount) {
+        memberWalletDao.increaseFrozen(id, amount);
+    }
 
     /**
      * 增加待释放资产（与余额无关）
+     *
      * @param id
      * @param amount
      */
@@ -567,6 +570,7 @@ public class MemberWalletService extends BaseService {
 
     /**
      * 减少待释放资产（与余额无关）
+     *
      * @param id
      * @param amount
      */

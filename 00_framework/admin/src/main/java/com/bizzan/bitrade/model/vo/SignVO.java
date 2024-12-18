@@ -3,7 +3,6 @@ package com.bizzan.bitrade.model.vo;
 import com.bizzan.bitrade.constant.SignStatus;
 import com.bizzan.bitrade.entity.Sign;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Builder;
 import lombok.Data;
 

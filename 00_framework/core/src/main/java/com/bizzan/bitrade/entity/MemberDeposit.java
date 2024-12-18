@@ -4,7 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -13,7 +19,7 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table(uniqueConstraints ={@UniqueConstraint(columnNames={"txid", "address"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"txid", "address"})})
 public class MemberDeposit {
     @Id
     @GeneratedValue
@@ -29,5 +35,5 @@ public class MemberDeposit {
     private String address;
 
     @Transient
-    private String username ;
+    private String username;
 }

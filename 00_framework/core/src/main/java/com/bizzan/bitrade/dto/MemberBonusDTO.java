@@ -2,11 +2,14 @@ package com.bizzan.bitrade.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * @Description: 持币分红表
@@ -31,7 +34,7 @@ public class MemberBonusDTO {
     /**
      * 持币时间
      */
- 
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String haveTime;
 
@@ -58,5 +61,5 @@ public class MemberBonusDTO {
      * 币种ID
      */
     private String coinId;
-    
+
 }

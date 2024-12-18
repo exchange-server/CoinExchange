@@ -1,25 +1,21 @@
 package com.bizzan.bitrade.controller.system;
 
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
 import com.bizzan.bitrade.constant.OrderStatus;
 import com.bizzan.bitrade.controller.common.BaseAdminController;
-import com.bizzan.bitrade.dto.PageParam;
-import com.bizzan.bitrade.dto.Pagenation;
-import com.bizzan.bitrade.entity.OrderDetailAggregation;
-import com.bizzan.bitrade.entity.OrderTypeEnum;
 import com.bizzan.bitrade.entity.Statistics;
 import com.bizzan.bitrade.service.OrderDetailAggregationService;
 import com.bizzan.bitrade.service.StatisticsService;
 import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.util.MessageResult;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,11 +29,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/system/statistics")
 public class StatisticsController extends BaseAdminController {
-    @Autowired
+    @Resource
     private StatisticsService statisticsService;
 
-    @Autowired
-    private OrderDetailAggregationService orderDetailAggregationService ;
+    @Resource
+    private OrderDetailAggregationService orderDetailAggregationService;
 
     /**
      * @author Jammy

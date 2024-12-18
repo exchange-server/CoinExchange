@@ -1,42 +1,89 @@
 package com.bizzan.bitrade.controller;
 
 import com.bizzan.bitrade.coin.CoinExchangeFactory;
-import com.bizzan.bitrade.constant.*;
-import com.bizzan.bitrade.entity.*;
+import com.bizzan.bitrade.constant.AdvertiseControlStatus;
+import com.bizzan.bitrade.constant.AdvertiseType;
+import com.bizzan.bitrade.constant.BooleanEnum;
+import com.bizzan.bitrade.constant.CertifiedBusinessStatus;
+import com.bizzan.bitrade.constant.MemberLevelEnum;
+import com.bizzan.bitrade.constant.OrderStatus;
+import com.bizzan.bitrade.constant.PriceType;
+import com.bizzan.bitrade.constant.TransactionType;
+import com.bizzan.bitrade.entity.Advertise;
+import com.bizzan.bitrade.entity.Appeal;
+import com.bizzan.bitrade.entity.AppealApply;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberTransaction;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.Order;
+import com.bizzan.bitrade.entity.OrderDetail;
+import com.bizzan.bitrade.entity.OrderDetailAggregation;
+import com.bizzan.bitrade.entity.OrderTypeEnum;
+import com.bizzan.bitrade.entity.OtcCoin;
+import com.bizzan.bitrade.entity.PayInfo;
+import com.bizzan.bitrade.entity.PreOrderInfo;
+import com.bizzan.bitrade.entity.QMember;
+import com.bizzan.bitrade.entity.ScanOrder;
 import com.bizzan.bitrade.entity.chat.ChatMessageRecord;
 import com.bizzan.bitrade.entity.transform.AuthMember;
 import com.bizzan.bitrade.es.ESUtils;
 import com.bizzan.bitrade.event.OrderEvent;
 import com.bizzan.bitrade.exception.InformationExpiredException;
 import com.bizzan.bitrade.pagination.PageResult;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.AdvertiseService;
+import com.bizzan.bitrade.service.AppealService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberTransactionService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.OrderDetailAggregationService;
+import com.bizzan.bitrade.service.OrderService;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.DateUtil;
 import com.bizzan.bitrade.util.Md5;
 import com.bizzan.bitrade.util.MessageResult;
 import com.bizzan.bitrade.vendor.provider.SMSProvider;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 import static com.bizzan.bitrade.constant.BooleanEnum.IS_FALSE;
 import static com.bizzan.bitrade.constant.BooleanEnum.IS_TRUE;
-import static com.bizzan.bitrade.constant.PayMode.*;
+import static com.bizzan.bitrade.constant.PayMode.ALI;
+import static com.bizzan.bitrade.constant.PayMode.BANK;
+import static com.bizzan.bitrade.constant.PayMode.WECHAT;
 import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
-import static com.bizzan.bitrade.util.BigDecimalUtils.*;
+import static com.bizzan.bitrade.util.BigDecimalUtils.add;
+import static com.bizzan.bitrade.util.BigDecimalUtils.compare;
+import static com.bizzan.bitrade.util.BigDecimalUtils.div;
+import static com.bizzan.bitrade.util.BigDecimalUtils.divDown;
+import static com.bizzan.bitrade.util.BigDecimalUtils.getRate;
+import static com.bizzan.bitrade.util.BigDecimalUtils.isEqual;
+import static com.bizzan.bitrade.util.BigDecimalUtils.mulRound;
+import static com.bizzan.bitrade.util.BigDecimalUtils.rate;
+import static com.bizzan.bitrade.util.BigDecimalUtils.sub;
 import static org.springframework.util.Assert.isTrue;
 import static org.springframework.util.Assert.notNull;
 
@@ -49,48 +96,48 @@ import static org.springframework.util.Assert.notNull;
 @Slf4j
 public class OrderController {
 
-   /* private static Logger logger = LoggerFactory.getLogger(OrderController.class);*/
+    /* private static Logger logger = LoggerFactory.getLogger(OrderController.class);*/
 
-    @Autowired
+    @Resource
     private OrderService orderService;
 
-    @Autowired
+    @Resource
     private AdvertiseService advertiseService;
 
-    @Autowired
+    @Resource
     private MemberService memberService;
 
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
 
-    @Autowired
+    @Resource
     private CoinExchangeFactory coins;
 
-    @Autowired
+    @Resource
     private OrderEvent orderEvent;
 
-    @Autowired
+    @Resource
     private AppealService appealService;
 
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
-    @Autowired
+    @Resource
     private OrderDetailAggregationService orderDetailAggregationService;
 
-    @Autowired
+    @Resource
     private MemberTransactionService memberTransactionService;
 
 
     @Value("${spark.system.order.sms:1}")
     private int notice;
 
-    @Autowired
+    @Resource
     private SMSProvider smsProvider;
 
-    @Autowired
-    private MongoTemplate mongoTemplate ;
-    @Autowired
+    @Resource
+    private MongoTemplate mongoTemplate;
+    @Resource
     private ESUtils esUtils;
 
 
@@ -126,10 +173,10 @@ public class OrderController {
                 .remark(advertise.getRemark())
                 .build();
         //处理可交易的最大数量
-        if (advertise.getAdvertiseType().equals(AdvertiseType.SELL)){
-            BigDecimal maxTransactions=divDown(advertise.getRemainAmount(),add(BigDecimal.ONE,getRate(otcCoin.getJyRate())));
+        if (advertise.getAdvertiseType().equals(AdvertiseType.SELL)) {
+            BigDecimal maxTransactions = divDown(advertise.getRemainAmount(), add(BigDecimal.ONE, getRate(otcCoin.getJyRate())));
             preOrderInfo.setMaxTradableAmount(maxTransactions);
-        }else {
+        } else {
             preOrderInfo.setMaxTradableAmount(advertise.getRemainAmount());
         }
         if (advertise.getPriceType().equals(PriceType.REGULAR)) {
@@ -181,7 +228,7 @@ public class OrderController {
         if (mode == 0) {
             isTrue(isEqual(div(money, price), amount), msService.getMessage("NUMBER_ERROR"));
         } else {
-            isTrue(isEqual(mulRound(amount, price,2), money), msService.getMessage("NUMBER_ERROR"));
+            isTrue(isEqual(mulRound(amount, price, 2), money), msService.getMessage("NUMBER_ERROR"));
         }
         isTrue(compare(money, advertise.getMinLimit()), msService.getMessage("MONEY_MIN") + advertise.getMinLimit().toString() + " CNY");
         isTrue(compare(advertise.getMaxLimit(), money), msService.getMessage("MONEY_MAX") + advertise.getMaxLimit().toString() + " CNY");
@@ -192,10 +239,10 @@ public class OrderController {
 
         //认证商家法币交易免手续费
         Member member = memberService.findOne(user.getId());
-        log.info("会员等级************************************:{},********,{}",member.getCertifiedBusinessStatus(),member.getMemberLevel());
-        if(member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.VERIFIED)
+        log.info("会员等级************************************:{},********,{}", member.getCertifiedBusinessStatus(), member.getMemberLevel());
+        if (member.getCertifiedBusinessStatus().equals(CertifiedBusinessStatus.VERIFIED)
                 && member.getMemberLevel().equals(MemberLevelEnum.IDENTIFICATION)) {
-            commission = BigDecimal.ZERO ;
+            commission = BigDecimal.ZERO;
         }
         isTrue(compare(advertise.getRemainAmount(), amount), msService.getMessage("AMOUNT_NOT_ENOUGH"));
         Order order = new Order();
@@ -214,7 +261,7 @@ public class OrderController {
         order.setMaxLimit(advertise.getMaxLimit());
         order.setMinLimit(advertise.getMinLimit());
         order.setMoney(money);
-        order.setNumber(sub(amount,commission));
+        order.setNumber(sub(amount, commission));
         order.setPayMode(advertise.getPayMode());
         order.setPrice(price);
         order.setRemark(remark);
@@ -233,9 +280,9 @@ public class OrderController {
         }
         Order order1 = orderService.saveOrder(order);
         if (order1 != null) {
-            if (notice==1){
+            if (notice == 1) {
                 try {
-                    smsProvider.sendMessageByTempId(advertise.getMember().getMobilePhone(), advertise.getCoin().getUnit()+"##"+user.getName(),"9499");
+                    smsProvider.sendMessageByTempId(advertise.getMember().getMobilePhone(), advertise.getCoin().getUnit() + "##" + user.getName(), "9499");
                 } catch (Exception e) {
                     log.error("sms 发送失败");
                     e.printStackTrace();
@@ -244,19 +291,19 @@ public class OrderController {
             /**
              * 下单后，将自动回复记录添加到mongodb
              */
-           if(advertise.getAuto()==BooleanEnum.IS_TRUE){
-               ChatMessageRecord chatMessageRecord = new ChatMessageRecord();
-               chatMessageRecord.setOrderId(order1.getOrderSn());
-               chatMessageRecord.setUidFrom(order1.getMemberId().toString());
-               chatMessageRecord.setUidTo(order1.getCustomerId().toString());
-               chatMessageRecord.setNameFrom(order1.getMemberName());
-               chatMessageRecord.setNameTo(order1.getCustomerName());
-               chatMessageRecord.setContent(advertise.getAutoword());
-               chatMessageRecord.setSendTime(Calendar.getInstance().getTimeInMillis());
-               chatMessageRecord.setSendTimeStr(DateUtil.getDateTime());
-               //自动回复消息保存到mogondb
-               mongoTemplate.insert(chatMessageRecord,"chat_message");
-           }
+            if (advertise.getAuto() == BooleanEnum.IS_TRUE) {
+                ChatMessageRecord chatMessageRecord = new ChatMessageRecord();
+                chatMessageRecord.setOrderId(order1.getOrderSn());
+                chatMessageRecord.setUidFrom(order1.getMemberId().toString());
+                chatMessageRecord.setUidTo(order1.getCustomerId().toString());
+                chatMessageRecord.setNameFrom(order1.getMemberName());
+                chatMessageRecord.setNameTo(order1.getCustomerName());
+                chatMessageRecord.setContent(advertise.getAutoword());
+                chatMessageRecord.setSendTime(Calendar.getInstance().getTimeInMillis());
+                chatMessageRecord.setSendTimeStr(DateUtil.getDateTime());
+                //自动回复消息保存到mogondb
+                mongoTemplate.insert(chatMessageRecord, "chat_message");
+            }
             MessageResult result = MessageResult.success(msService.getMessage("CREATE_ORDER_SUCCESS"));
             result.setData(order1.getOrderSn().toString());
             return result;
@@ -303,16 +350,16 @@ public class OrderController {
         if (mode == 0) {
             isTrue(isEqual(div(money, price), amount), msService.getMessage("NUMBER_ERROR"));
         } else {
-            isTrue(isEqual(mulRound(amount, price,2), money), msService.getMessage("NUMBER_ERROR"));
+            isTrue(isEqual(mulRound(amount, price, 2), money), msService.getMessage("NUMBER_ERROR"));
         }
         isTrue(compare(money, advertise.getMinLimit()), msService.getMessage("MONEY_MIN") + advertise.getMinLimit().toString() + " CNY");
         isTrue(compare(advertise.getMaxLimit(), money), msService.getMessage("MONEY_MAX") + advertise.getMaxLimit().toString() + " CNY");
         //计算手续费
         BigDecimal commission = mulRound(amount, getRate(otcCoin.getJyRate()));
-        log.info("会员等级************************************:{},********,{}",advertise.getMember().getCertifiedBusinessStatus(),advertise.getMember().getMemberLevel());
-        if(advertise.getMember().getCertifiedBusinessStatus()==CertifiedBusinessStatus.VERIFIED
-                && advertise.getMember().getMemberLevel()==MemberLevelEnum.IDENTIFICATION) {
-            commission = BigDecimal.ZERO ;
+        log.info("会员等级************************************:{},********,{}", advertise.getMember().getCertifiedBusinessStatus(), advertise.getMember().getMemberLevel());
+        if (advertise.getMember().getCertifiedBusinessStatus() == CertifiedBusinessStatus.VERIFIED
+                && advertise.getMember().getMemberLevel() == MemberLevelEnum.IDENTIFICATION) {
+            commission = BigDecimal.ZERO;
         }
 
         isTrue(compare(advertise.getRemainAmount(), amount), msService.getMessage("AMOUNT_NOT_ENOUGH"));
@@ -369,9 +416,9 @@ public class OrderController {
         }
         Order order1 = orderService.saveOrder(order);
         if (order1 != null) {
-            if (notice==1){
+            if (notice == 1) {
                 try {
-                    smsProvider.sendMessageByTempId(advertise.getMember().getMobilePhone(), advertise.getCoin().getUnit()+"##"+user.getName(),"9499");
+                    smsProvider.sendMessageByTempId(advertise.getMember().getMobilePhone(), advertise.getCoin().getUnit() + "##" + user.getName(), "9499");
                 } catch (Exception e) {
                     log.error("sms 发送失败");
                     e.printStackTrace();
@@ -397,22 +444,22 @@ public class OrderController {
     @RequestMapping(value = "self")
     public MessageResult myOrder(@SessionAttribute(SESSION_MEMBER) AuthMember user, OrderStatus status, int pageNo, int pageSize, String orderSn) {
         Page<Order> page = orderService.pageQuery(pageNo, pageSize, status, user.getId(), orderSn);
-        List<Long> memberIdList=new ArrayList<>();
-        page.forEach(order->{
-            if(!memberIdList.contains(order.getMemberId())){
+        List<Long> memberIdList = new ArrayList<>();
+        page.forEach(order -> {
+            if (!memberIdList.contains(order.getMemberId())) {
                 memberIdList.add(order.getMemberId());
             }
-            if(!memberIdList.contains(order.getCustomerId())){
+            if (!memberIdList.contains(order.getCustomerId())) {
                 memberIdList.add(order.getCustomerId());
             }
         });
         List<BooleanExpression> booleanExpressionList = new ArrayList();
         booleanExpressionList.add(QMember.member.id.in(memberIdList));
-        PageResult<Member> memberPage= memberService.queryWhereOrPage(booleanExpressionList,null,null);
+        PageResult<Member> memberPage = memberService.queryWhereOrPage(booleanExpressionList, null, null);
         Page<ScanOrder> scanOrders = page.map(x -> ScanOrder.toScanOrder(x, user.getId()));
-        for(ScanOrder scanOrder:scanOrders){
-            for(Member member:memberPage.getContent()){
-                if(scanOrder.getMemberId().equals(member.getId())){
+        for (ScanOrder scanOrder : scanOrders) {
+            for (Member member : memberPage.getContent()) {
+                if (scanOrder.getMemberId().equals(member.getId())) {
                     scanOrder.setAvatar(member.getAvatar());
                 }
             }
@@ -447,13 +494,13 @@ public class OrderController {
                 .myId(user.getId()).memberMobile(member.getMobilePhone())
                 .build();
         /*if (!order.getStatus().equals(OrderStatus.CANCELLED)) {*/
-            PayInfo payInfo = PayInfo.builder()
-                    .bankInfo(order.getBankInfo())
-                    .alipay(order.getAlipay())
-                    .wechatPay(order.getWechatPay())
-                    .build();
-            info.setPayInfo(payInfo);
-       /* }*/
+        PayInfo payInfo = PayInfo.builder()
+                .bankInfo(order.getBankInfo())
+                .alipay(order.getAlipay())
+                .wechatPay(order.getWechatPay())
+                .build();
+        info.setPayInfo(payInfo);
+        /* }*/
         if (order.getMemberId().equals(user.getId())) {
             info.setHisId(order.getCustomerId());
             info.setOtherSide(order.getCustomerName());
@@ -579,7 +626,7 @@ public class OrderController {
              * 聚合otc订单手续费等明细存入mongodb
              */
             OrderDetailAggregation aggregation = new OrderDetailAggregation();
-            BeanUtils.copyProperties(order,aggregation);
+            BeanUtils.copyProperties(order, aggregation);
             aggregation.setUnit(order.getCoin().getUnit());
             aggregation.setOrderId(order.getOrderSn());
             aggregation.setFee(order.getCommission().doubleValue());
@@ -643,7 +690,7 @@ public class OrderController {
         memberWalletService.transfer(order, ret);
         MemberTransaction memberTransaction = new MemberTransaction();
         MemberTransaction memberTransaction1 = new MemberTransaction();
-        if (ret==1){
+        if (ret == 1) {
             memberTransaction.setSymbol(order.getCoin().getUnit());
             memberTransaction.setType(TransactionType.OTC_SELL);
             memberTransaction.setFee(BigDecimal.ZERO);
@@ -661,17 +708,17 @@ public class OrderController {
             memberTransaction1.setSymbol(order.getCoin().getUnit());
             memberTransaction1.setFee(order.getCommission());
             memberTransaction1.setDiscountFee("0");
-            memberTransaction1.setRealFee(order.getCommission()+"");
+            memberTransaction1.setRealFee(order.getCommission() + "");
             memberTransaction1.setCreateTime(new Date());
             memberTransaction1 = memberTransactionService.save(memberTransaction1);
-        }else{
+        } else {
             memberTransaction.setSymbol(order.getCoin().getUnit());
             memberTransaction.setType(TransactionType.OTC_SELL);
             memberTransaction.setFee(order.getCommission());
             memberTransaction.setMemberId(user.getId());
             memberTransaction.setAmount(order.getNumber());
             memberTransaction.setDiscountFee("0");
-            memberTransaction.setRealFee(order.getCommission()+"");
+            memberTransaction.setRealFee(order.getCommission() + "");
             memberTransaction.setCreateTime(new Date());
             memberTransaction = memberTransactionService.save(memberTransaction);
 
@@ -682,7 +729,7 @@ public class OrderController {
             memberTransaction1.setFee(BigDecimal.ZERO);
 
             memberTransaction1.setDiscountFee("0");
-            memberTransaction1.setRealFee(order.getCommission()+"");
+            memberTransaction1.setRealFee(order.getCommission() + "");
             memberTransaction1.setCreateTime(new Date());
             memberTransaction1 = memberTransactionService.save(memberTransaction1);
         }

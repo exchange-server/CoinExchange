@@ -1,5 +1,8 @@
 package com.bizzan.bitrade.vendor.provider.support;
 
+import com.bizzan.bitrade.util.MessageResult;
+import com.bizzan.bitrade.vendor.provider.SMSProvider;
+import com.bizzan.bitrade.vendor.provider.involve.SSLClient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +20,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-
-import com.bizzan.bitrade.util.MessageResult;
-import com.bizzan.bitrade.vendor.provider.SMSProvider;
-import com.bizzan.bitrade.vendor.provider.involve.SSLClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +51,47 @@ public class HuaXinSMSProvider implements SMSProvider {
 
     public static String getName() {
         return "huaxin";
+    }
+
+    // 字符编码成HEX
+    public static String encodeHexStr(int dataCoding, String realStr) {
+        String strhex = "";
+        try {
+            byte[] bytSource = null;
+            if (dataCoding == 15) {
+                bytSource = realStr.getBytes("GBK");
+            } else if (dataCoding == 3) {
+                bytSource = realStr.getBytes("ISO-8859-1");
+            } else if (dataCoding == 8) {
+                bytSource = realStr.getBytes("UTF-16BE");
+            } else {
+                bytSource = realStr.getBytes("ASCII");
+            }
+            strhex = bytesToHexString(bytSource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return strhex;
+    }
+
+    /**
+     * 把字节数组转换成16进制字符串
+     *
+     * @param bArray
+     * @return
+     */
+    public static final String bytesToHexString(byte[] bArray) {
+        StringBuffer sb = new StringBuffer(bArray.length);
+        String sTemp;
+        for (int i = 0; i < bArray.length; i++) {
+            sTemp = Integer.toHexString(0xFF & bArray[i]);
+            if (sTemp.length() < 2) {
+                sb.append("0");
+            }
+            sb.append(sTemp.toUpperCase());
+        }
+        return sb.toString();
     }
 
     @Override
@@ -115,9 +155,13 @@ public class HuaXinSMSProvider implements SMSProvider {
         return String.format("【%s】验证码：%s，10分钟内有效，请勿告诉他人。", sign, code);
     }
 
+    /**
+     *
+     */
+
     @Override
     public MessageResult sendInternationalMessage(String content, String phone) throws IOException, DocumentException {
-        content=String.format("[%s]Verification Code:%s.If you do not send it, please ignore this message.", sign,content);
+        content = String.format("[%s]Verification Code:%s.If you do not send it, please ignore this message.", sign, content);
         HttpClient client = new HttpClient();
         PostMethod method = new PostMethod(internationalGateway);
         String result = encodeHexStr(8, content);
@@ -162,53 +206,11 @@ public class HuaXinSMSProvider implements SMSProvider {
         return messageResult;
     }
 
-    // 字符编码成HEX
-    public static String encodeHexStr(int dataCoding, String realStr) {
-        String strhex = "";
-        try {
-            byte[] bytSource = null;
-            if (dataCoding == 15) {
-                bytSource = realStr.getBytes("GBK");
-            } else if (dataCoding == 3) {
-                bytSource = realStr.getBytes("ISO-8859-1");
-            } else if (dataCoding == 8) {
-                bytSource = realStr.getBytes("UTF-16BE");
-            } else {
-                bytSource = realStr.getBytes("ASCII");
-            }
-            strhex = bytesToHexString(bytSource);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return strhex;
+    @Override
+    public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
     }
-
-    /** */
-    /**
-     * 把字节数组转换成16进制字符串
-     *
-     * @param bArray
-     * @return
-     */
-    public static final String bytesToHexString(byte[] bArray) {
-        StringBuffer sb = new StringBuffer(bArray.length);
-        String sTemp;
-        for (int i = 0; i < bArray.length; i++) {
-            sTemp = Integer.toHexString(0xFF & bArray[i]);
-            if (sTemp.length() < 2) {
-                sb.append("0");
-            }
-            sb.append(sTemp.toUpperCase());
-        }
-        return sb.toString();
-    }
-
-	@Override
-	public MessageResult sendCustomMessage(String mobile, String content) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
 }

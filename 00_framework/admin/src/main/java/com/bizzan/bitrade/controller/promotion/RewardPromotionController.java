@@ -1,22 +1,5 @@
 package com.bizzan.bitrade.controller.promotion;
 
-import javax.validation.Valid;
-
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-
 import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.annotation.AccessLog;
 import com.bizzan.bitrade.constant.AdminModule;
@@ -35,44 +18,62 @@ import com.bizzan.bitrade.service.RewardPromotionSettingService;
 import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.sparkframework.security.Encrypt;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import javax.validation.Valid;
 
 /**
  * 邀请交易佣金奖励设置
- * @author shaox
  *
+ * @author shaox
  */
 @RestController
 @RequestMapping("promotion/reward")
 public class RewardPromotionController extends BaseAdminController {
 
-    @Autowired
+    @Resource
     private RewardPromotionSettingService rewardPromotionSettingService;
 
-    @Autowired
-    private CoinService coinService ;
+    @Resource
+    private CoinService coinService;
 
     @Value("${spark.system.md5.key}")
     private String md5Key;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService messageSource;
 
     @RequiresPermissions("promotion:reward:merge")
     @PostMapping("merge")
     @AccessLog(module = AdminModule.SYSTEM, operation = "创建修改邀请奖励设置")
-    public MessageResult merge(@Valid RewardPromotionSetting setting, @SessionAttribute(SysConstant.SESSION_ADMIN)Admin admin
-                                ,String unit, @RequestParam(value = "password") String password) {
+    public MessageResult merge(@Valid RewardPromotionSetting setting, @SessionAttribute(SysConstant.SESSION_ADMIN) Admin admin
+            , String unit, @RequestParam(value = "password") String password) {
         password = Encrypt.MD5(password + md5Key);
-        org.apache.shiro.util.Assert.isTrue(password.equals(admin.getPassword()),messageSource.getMessage("WRONG_PASSWORD"));
-        Coin coin = null ;
-        if (setting.getType() != PromotionRewardType.EXCHANGE_TRANSACTION){
+        org.apache.shiro.util.Assert.isTrue(password.equals(admin.getPassword()), messageSource.getMessage("WRONG_PASSWORD"));
+        Coin coin = null;
+        if (setting.getType() != PromotionRewardType.EXCHANGE_TRANSACTION) {
             coin = coinService.findByUnit(unit);
             setting.setCoin(coin);
         }
         RewardPromotionSetting rewardPromotionSetting = rewardPromotionSettingService.findByType(setting.getType());
-        if(setting.getId()==null&&rewardPromotionSetting!=null) {
+        if (setting.getId() == null && rewardPromotionSetting != null) {
             return error("该类型的配置已存在");
         }
-        setting.setInfo("{\"one\":"+setting.getOne()+",\"two\":"+setting.getTwo()+"}");
+        setting.setInfo("{\"one\":" + setting.getOne() + ",\"two\":" + setting.getTwo() + "}");
         rewardPromotionSettingService.save(setting);
         return MessageResult.success(messageSource.getMessage("SUCCESS"));
     }
@@ -80,19 +81,19 @@ public class RewardPromotionController extends BaseAdminController {
     @RequiresPermissions("promotion:reward:detail")
     @PostMapping("detail")
     @AccessLog(module = AdminModule.SYSTEM, operation = "邀请奖励设置详情")
-    public MessageResult detail(@RequestParam("id")Long id) {
+    public MessageResult detail(@RequestParam("id") Long id) {
         RewardPromotionSetting setting = rewardPromotionSettingService.findById(id);
-        if(setting==null){
+        if (setting == null) {
             return error("该配置不存在");
         }
         String jsonStr = setting.getInfo();
-        if(!StringUtils.isEmpty(jsonStr)){
+        if (!StringUtils.isEmpty(jsonStr)) {
             JSONObject json = JSONObject.parseObject(jsonStr);
             setting.setOne(json.getBigDecimal("one"));
             setting.setTwo(json.getBigDecimal("two"));
         }
 
-        return success(messageSource.getMessage("SUCCESS"),setting);
+        return success(messageSource.getMessage("SUCCESS"), setting);
     }
 
     /**
@@ -115,9 +116,9 @@ public class RewardPromotionController extends BaseAdminController {
             predicate.andAnyOf(QRewardPromotionSetting.rewardPromotionSetting.type.eq(type));
         }
         Page<RewardPromotionSetting> all = rewardPromotionSettingService.findAll(predicate, pageModel);
-        for(RewardPromotionSetting setting : all){
-            if(StringUtils.isEmpty(setting.getInfo())) {
-                continue ;
+        for (RewardPromotionSetting setting : all) {
+            if (StringUtils.isEmpty(setting.getInfo())) {
+                continue;
             }
             JSONObject jsonObject = JSONObject.parseObject(setting.getInfo());
             setting.setOne(jsonObject.getBigDecimal("one"));

@@ -9,17 +9,17 @@ import java.math.BigDecimal;
 @Builder
 public class PromotionRewardVO {
 
-    private String username ;
+    private String username;
 
-    private String realName ;
+    private String realName;
 
-    private String mobilePhone ;
+    private String mobilePhone;
 
-    private String email ;
+    private String email;
 
-    private String promotionCode ;
+    private String promotionCode;
 
-    private int promotionNum ;
+    private int promotionNum;
 
-    private BigDecimal promotionReward ;
+    private BigDecimal promotionReward;
 }

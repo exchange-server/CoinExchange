@@ -3,44 +3,32 @@ package com.bizzan.bitrade.service;
 import com.bizzan.bitrade.constant.ActivityRewardType;
 import com.bizzan.bitrade.constant.BooleanEnum;
 import com.bizzan.bitrade.dao.RewardActivitySettingDao;
-import com.bizzan.bitrade.dto.PageParam;
-import com.bizzan.bitrade.entity.QRewardActivitySetting;
-import com.bizzan.bitrade.entity.QRewardPromotionSetting;
 import com.bizzan.bitrade.entity.RewardActivitySetting;
-import com.bizzan.bitrade.entity.RewardPromotionSetting;
-import com.bizzan.bitrade.service.Base.BaseService;
 import com.bizzan.bitrade.service.Base.TopBaseService;
-import com.querydsl.core.types.Predicate;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import javax.annotation.Resource;
 
 /**
  * @author Jammy
  * @date 2020年03月08日
  */
 @Service
-public class RewardActivitySettingService extends TopBaseService<RewardActivitySetting,RewardActivitySettingDao> {
+public class RewardActivitySettingService extends TopBaseService<RewardActivitySetting, RewardActivitySettingDao> {
 
     @Override
-    @Autowired
+    @Resource
     public void setDao(RewardActivitySettingDao dao) {
-        this.dao = dao ;
+        this.dao = dao;
     }
 
 
-    public RewardActivitySetting findByType(ActivityRewardType type){
+    public RewardActivitySetting findByType(ActivityRewardType type) {
         return dao.findByStatusAndType(BooleanEnum.IS_TRUE, type);
     }
 
     @Override
-    public RewardActivitySetting save(RewardActivitySetting rewardActivitySetting){
+    public RewardActivitySetting save(RewardActivitySetting rewardActivitySetting) {
         return dao.save(rewardActivitySetting);
     }
 

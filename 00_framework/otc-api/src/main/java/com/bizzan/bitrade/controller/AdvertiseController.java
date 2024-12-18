@@ -2,13 +2,31 @@ package com.bizzan.bitrade.controller;
 
 
 import com.bizzan.bitrade.coin.CoinExchangeFactory;
-import com.bizzan.bitrade.constant.*;
-import com.bizzan.bitrade.controller.BaseController;
-import com.bizzan.bitrade.entity.*;
-import com.bizzan.bitrade.entity.transform.*;
+import com.bizzan.bitrade.constant.AdvertiseControlStatus;
+import com.bizzan.bitrade.constant.AdvertiseLevel;
+import com.bizzan.bitrade.constant.AdvertiseType;
+import com.bizzan.bitrade.constant.MemberLevelEnum;
+import com.bizzan.bitrade.constant.PageModel;
+import com.bizzan.bitrade.entity.Advertise;
+import com.bizzan.bitrade.entity.Country;
+import com.bizzan.bitrade.entity.Member;
+import com.bizzan.bitrade.entity.MemberWallet;
+import com.bizzan.bitrade.entity.OtcCoin;
+import com.bizzan.bitrade.entity.QAdvertise;
+import com.bizzan.bitrade.entity.transform.AuthMember;
+import com.bizzan.bitrade.entity.transform.MemberAdvertiseDetail;
+import com.bizzan.bitrade.entity.transform.MemberAdvertiseInfo;
+import com.bizzan.bitrade.entity.transform.ScanAdvertise;
+import com.bizzan.bitrade.entity.transform.Special;
+import com.bizzan.bitrade.entity.transform.SpecialPage;
 import com.bizzan.bitrade.exception.InformationExpiredException;
 import com.bizzan.bitrade.model.screen.AdvertiseScreen;
-import com.bizzan.bitrade.service.*;
+import com.bizzan.bitrade.service.AdvertiseService;
+import com.bizzan.bitrade.service.CountryService;
+import com.bizzan.bitrade.service.LocaleMessageSourceService;
+import com.bizzan.bitrade.service.MemberService;
+import com.bizzan.bitrade.service.MemberWalletService;
+import com.bizzan.bitrade.service.OtcCoinService;
 import com.bizzan.bitrade.util.BigDecimalUtils;
 import com.bizzan.bitrade.util.BindingResultUtil;
 import com.bizzan.bitrade.util.Md5;
@@ -16,25 +34,35 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.sparkframework.sql.DataException;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import javax.validation.Valid;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static com.bizzan.bitrade.constant.PayMode.*;
+import static com.bizzan.bitrade.constant.PayMode.ALI;
+import static com.bizzan.bitrade.constant.PayMode.BANK;
+import static com.bizzan.bitrade.constant.PayMode.WECHAT;
 import static com.bizzan.bitrade.constant.SysConstant.SESSION_MEMBER;
 import static com.bizzan.bitrade.util.BigDecimalUtils.compare;
-
-import java.sql.SQLException;
-import java.util.*;
 
 
 /**
@@ -46,19 +74,19 @@ import java.util.*;
 @Slf4j
 public class AdvertiseController extends BaseController {
 
-    @Autowired
+    @Resource
     private AdvertiseService advertiseService;
-    @Autowired
+    @Resource
     private MemberService memberService;
-    @Autowired
+    @Resource
     private OtcCoinService otcCoinService;
-    @Autowired
+    @Resource
     private MemberWalletService memberWalletService;
-    @Autowired
+    @Resource
     private CoinExchangeFactory coins;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
-    @Autowired
+    @Resource
     private CountryService countryService;
     @Value("${spark.system.advertise:1}")
     private int allow;
@@ -84,7 +112,7 @@ public class AdvertiseController extends BaseController {
         Member member1 = memberService.findOne(member.getId());
         Assert.isTrue(member1.getIdNumber() != null, msService.getMessage("NO_REALNAME"));
 //        if (allow == 1) {
-            //allow是1的时候，必须是认证商家才能发布广告
+        //allow是1的时候，必须是认证商家才能发布广告
         Assert.isTrue(member1.getMemberLevel().equals(MemberLevelEnum.IDENTIFICATION), msService.getMessage("NO_BUSINESS"));
 //        }
         String mbPassword = member1.getJyPassword();
@@ -119,8 +147,9 @@ public class AdvertiseController extends BaseController {
             PageModel pageModel,
             @SessionAttribute(SESSION_MEMBER) AuthMember shiroUser, HttpServletRequest request) {
         BooleanExpression eq = QAdvertise.advertise.member.id.eq(shiroUser.getId()).
-                and(QAdvertise.advertise.status.ne(AdvertiseControlStatus.TURNOFF));;
-        if(request.getParameter("status") != null){
+                and(QAdvertise.advertise.status.ne(AdvertiseControlStatus.TURNOFF));
+        ;
+        if (request.getParameter("status") != null) {
             eq.and(QAdvertise.advertise.status.eq(AdvertiseControlStatus.valueOf(request.getParameter("status"))));
         }
         Page<Advertise> all = advertiseService.findAll(eq, pageModel.getPageable());
@@ -390,20 +419,20 @@ public class AdvertiseController extends BaseController {
         double finalPrice;
 
         //空指针
-        if(list==null|| list.getContext() ==null) {
+        if (list == null || list.getContext() == null) {
             return success("data null!");
         }
 
         for (ScanAdvertise adv : list.getContext()) {
-            if(null != adv){
+            if (null != adv) {
                 otcCoin = otcCoinService.findOne(adv.getCoinId());
-                if(null == otcCoin){
+                if (null == otcCoin) {
                     continue;
                 }
                 finalPrice = coins.get(otcCoin.getUnit()).doubleValue();
-                if(null != adv.getPremiseRate()){
+                if (null != adv.getPremiseRate()) {
                     //pricetype = 0 ? price : 计算价格
-                    adv.setPrice(BigDecimalUtils.round(((adv.getPremiseRate().doubleValue() + 100) / 100) * finalPrice,2));
+                    adv.setPrice(BigDecimalUtils.round(((adv.getPremiseRate().doubleValue() + 100) / 100) * finalPrice, 2));
                 }
                 adv.setUnit(otcCoin.getUnit());
                 adv.setCoinName(otcCoin.getName());

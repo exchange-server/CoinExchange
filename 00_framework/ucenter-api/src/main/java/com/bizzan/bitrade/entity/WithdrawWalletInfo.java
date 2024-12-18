@@ -1,13 +1,12 @@
 package com.bizzan.bitrade.entity;
 
+import com.bizzan.bitrade.constant.BooleanEnum;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
-import com.bizzan.bitrade.constant.BooleanEnum;
 
 /**
  * @author Jammy
@@ -40,5 +39,5 @@ public class WithdrawWalletInfo {
     /**
      * 地址
      */
-    private List<Map<String,String>> addresses;
+    private List<Map<String, String>> addresses;
 }

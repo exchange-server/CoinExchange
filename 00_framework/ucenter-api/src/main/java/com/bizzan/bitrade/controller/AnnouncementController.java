@@ -2,7 +2,6 @@ package com.bizzan.bitrade.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bizzan.bitrade.constant.SysConstant;
-import com.bizzan.bitrade.controller.BaseController;
 import com.bizzan.bitrade.entity.Announcement;
 import com.bizzan.bitrade.entity.QAnnouncement;
 import com.bizzan.bitrade.pagination.PageResult;
@@ -11,11 +10,19 @@ import com.bizzan.bitrade.util.MessageResult;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +37,10 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("announcement")
 public class AnnouncementController extends BaseController {
-    @Autowired
+    @Resource
     private AnnouncementService announcementService;
 
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
 
 
@@ -61,8 +68,8 @@ public class AnnouncementController extends BaseController {
         //查
         PageResult<Announcement> pageResult = announcementService.queryDsl(pageNo, pageSize, predicates, QAnnouncement.announcement, orderSpecifiers);
         List<Announcement> rlist = pageResult.getContent();
-        for(int i = 0; i < rlist.size(); i++) {
-        	rlist.get(i).setContent(null);
+        for (int i = 0; i < rlist.size(); i++) {
+            rlist.get(i).setContent(null);
         }
         pageResult.setContent(rlist);
         return success(pageResult);
@@ -77,27 +84,27 @@ public class AnnouncementController extends BaseController {
 
     /**
      * 根据ID获取当前公告及上一条和下一条
+     *
      * @param id
      * @return
      */
-    @RequestMapping(value = "more",method = RequestMethod.POST)
-    public MessageResult moreDetail(@RequestParam("id")Long id, @RequestParam("lang")String paramLang,@RequestHeader(value = "lang") String lang){
+    @RequestMapping(value = "more", method = RequestMethod.POST)
+    public MessageResult moreDetail(@RequestParam("id") Long id, @RequestParam("lang") String paramLang, @RequestHeader(value = "lang") String lang) {
         ValueOperations redisOperations = redisTemplate.opsForValue();
-        JSONObject result  = (JSONObject) redisOperations.get(SysConstant.NOTICE_DETAIL+id);
-        if ( result != null){
+        JSONObject result = (JSONObject) redisOperations.get(SysConstant.NOTICE_DETAIL + id);
+        if (result != null) {
             return success(result);
-        }else {
+        } else {
             JSONObject resultObj = new JSONObject();
             Announcement announcement = announcementService.findById(id);
             Assert.notNull(announcement, "validate id!");
-            resultObj.put("info",announcement);
-            resultObj.put("back",announcementService.getBack(id, lang));
-            resultObj.put("next",announcementService.getNext(id, lang));
-            redisOperations.set(SysConstant.NOTICE_DETAIL+id,resultObj,SysConstant.NOTICE_DETAIL_EXPIRE_TIME, TimeUnit.SECONDS);
+            resultObj.put("info", announcement);
+            resultObj.put("back", announcementService.getBack(id, lang));
+            resultObj.put("next", announcementService.getNext(id, lang));
+            redisOperations.set(SysConstant.NOTICE_DETAIL + id, resultObj, SysConstant.NOTICE_DETAIL_EXPIRE_TIME, TimeUnit.SECONDS);
             return success(resultObj);
         }
     }
-
 
 
 }

@@ -1,17 +1,17 @@
 package com.bizzan.bitrade.controller;
 
+import com.bizzan.bitrade.service.CoinService;
+import com.bizzan.bitrade.util.MessageResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-
-import com.bizzan.bitrade.controller.BaseController;
-import com.bizzan.bitrade.service.CoinService;
-import com.bizzan.bitrade.util.MessageResult;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,9 +21,9 @@ import java.util.List;
 @RequestMapping("test")
 public class TestController extends BaseController {
     private Logger logger = LoggerFactory.getLogger(TestController.class);
-    @Autowired
+    @Resource
     private RestTemplate restTemplate;
-    @Autowired
+    @Resource
     private CoinService coinService;
 
     @RequestMapping("/height/{unit}")

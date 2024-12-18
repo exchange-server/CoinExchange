@@ -11,7 +11,7 @@ import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Document(collection="exchange_turnover_statistics")
+@Document(collection = "exchange_turnover_statistics")
 @Data
 @ToString
 public class ExchangeTurnoverStatistics {
@@ -19,27 +19,27 @@ public class ExchangeTurnoverStatistics {
     /**
      * 成交日期:以天为最小单位统计
      */
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    private Date date ;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    private Date date;
 
-    private int year ;
+    private int year;
 
     @Max(value = 12)
     @Min(value = 1)
-    private int month ;
+    private int month;
 
     @Max(value = 31)
     @Min(value = 1)
-    private int day ;
+    private int day;
 
-    private String baseSymbol ;
+    private String baseSymbol;
 
-    private String coinSymbol ;
-
-    @Column(name = "Salary1", columnDefinition = "decimal(18,8)")
-    private BigDecimal amount ;
+    private String coinSymbol;
 
     @Column(name = "Salary1", columnDefinition = "decimal(18,8)")
-    private BigDecimal money ;
+    private BigDecimal amount;
+
+    @Column(name = "Salary1", columnDefinition = "decimal(18,8)")
+    private BigDecimal money;
 
 }

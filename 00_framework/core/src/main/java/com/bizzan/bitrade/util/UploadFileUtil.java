@@ -6,7 +6,11 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +20,43 @@ import java.util.HashMap;
  * @date 2019/4/10
  */
 public class UploadFileUtil {
+    // 缓存文件头信息-文件头信息
+    public static final HashMap<String, String> mFileTypes = new HashMap<String, String>();
+
+    static {
+        // images
+        mFileTypes.put("FFD8FFE0", "jpg");
+        mFileTypes.put("FFD8FFE1", "jpg");
+        mFileTypes.put("89504E47", "png");
+        mFileTypes.put("47494638", "gif");
+        mFileTypes.put("49492A00", "tif");
+        mFileTypes.put("424D", "bmp");
+        //
+        mFileTypes.put("41433130", "dwg"); // CAD
+        mFileTypes.put("38425053", "psd");
+        mFileTypes.put("7B5C727466", "rtf"); // 日记本
+        mFileTypes.put("3C3F786D6C", "xml");
+        mFileTypes.put("68746D6C3E", "html");
+        mFileTypes.put("44656C69766572792D646174653A", "eml"); // 邮件
+        mFileTypes.put("D0CF11E0", "doc");
+        mFileTypes.put("D0CF11E0", "xls");//excel2003版本文件
+        mFileTypes.put("5374616E64617264204A", "mdb");
+        mFileTypes.put("252150532D41646F6265", "ps");
+        mFileTypes.put("255044462D312E", "pdf");
+        mFileTypes.put("504B0304", "docx");
+        mFileTypes.put("504B0304", "xlsx");//excel2007以上版本文件
+        mFileTypes.put("52617221", "rar");
+        mFileTypes.put("57415645", "wav");
+        mFileTypes.put("41564920", "avi");
+        mFileTypes.put("2E524D46", "rm");
+        mFileTypes.put("000001BA", "mpg");
+        mFileTypes.put("000001B3", "mpg");
+        mFileTypes.put("6D6F6F76", "mov");
+        mFileTypes.put("3026B2758E66CF11", "asf");
+        mFileTypes.put("4D546864", "mid");
+        mFileTypes.put("1F8B08", "gz");
+    }
+
     public static String uploadFile(MultipartFile file, String fileName) throws IOException {
         String directory = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         FileOutputStream fop = null;
@@ -55,14 +96,15 @@ public class UploadFileUtil {
 
     /**
      * 按设置的宽度高度压缩图片文件<br> 先保存原文件，再压缩、上传
-     * @param oldFile  要进行压缩的文件全路径
-     * @param newFile  新文件
-     * @param width  宽度
-     * @param height 高度
+     *
+     * @param oldFile 要进行压缩的文件全路径
+     * @param newFile 新文件
+     * @param width   宽度
+     * @param height  高度
      * @param quality 质量
      * @return 返回压缩后的文件的全路径
      */
-    public static String zipWidthHeightImageFile(File oldFile,File newFile, int width, int height,float quality) {
+    public static String zipWidthHeightImageFile(File oldFile, File newFile, int width, int height, float quality) {
         if (oldFile == null) {
             return null;
         }
@@ -74,18 +116,18 @@ public class UploadFileUtil {
             String srcImgPath = newFile.getAbsoluteFile().toString();
             System.out.println(srcImgPath);
             String subfix = "jpg";
-            subfix = srcImgPath.substring(srcImgPath.lastIndexOf(".")+1,srcImgPath.length());
+            subfix = srcImgPath.substring(srcImgPath.lastIndexOf(".") + 1, srcImgPath.length());
 
             BufferedImage buffImg = null;
-            if("png".equals(subfix)){
+            if ("png".equals(subfix)) {
                 buffImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            }else{
+            } else {
                 buffImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             }
 
             Graphics2D graphics = buffImg.createGraphics();
-            graphics.setBackground(new Color(255,255,255));
-            graphics.setColor(new Color(255,255,255));
+            graphics.setBackground(new Color(255, 255, 255));
+            graphics.setColor(new Color(255, 255, 255));
             graphics.fillRect(0, 0, width, height);
             graphics.drawImage(srcFile.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
 
@@ -96,43 +138,6 @@ public class UploadFileUtil {
             e.printStackTrace();
         }
         return newImage;
-    }
-
-    // 缓存文件头信息-文件头信息
-    public static final HashMap<String, String> mFileTypes = new HashMap<String, String>();
-
-    static {
-        // images
-        mFileTypes.put("FFD8FFE0", "jpg");
-        mFileTypes.put("FFD8FFE1", "jpg");
-        mFileTypes.put("89504E47", "png");
-        mFileTypes.put("47494638", "gif");
-        mFileTypes.put("49492A00", "tif");
-        mFileTypes.put("424D", "bmp");
-        //
-        mFileTypes.put("41433130", "dwg"); // CAD
-        mFileTypes.put("38425053", "psd");
-        mFileTypes.put("7B5C727466", "rtf"); // 日记本
-        mFileTypes.put("3C3F786D6C", "xml");
-        mFileTypes.put("68746D6C3E", "html");
-        mFileTypes.put("44656C69766572792D646174653A", "eml"); // 邮件
-        mFileTypes.put("D0CF11E0", "doc");
-        mFileTypes.put("D0CF11E0", "xls");//excel2003版本文件
-        mFileTypes.put("5374616E64617264204A", "mdb");
-        mFileTypes.put("252150532D41646F6265", "ps");
-        mFileTypes.put("255044462D312E", "pdf");
-        mFileTypes.put("504B0304", "docx");
-        mFileTypes.put("504B0304", "xlsx");//excel2007以上版本文件
-        mFileTypes.put("52617221", "rar");
-        mFileTypes.put("57415645", "wav");
-        mFileTypes.put("41564920", "avi");
-        mFileTypes.put("2E524D46", "rm");
-        mFileTypes.put("000001BA", "mpg");
-        mFileTypes.put("000001B3", "mpg");
-        mFileTypes.put("6D6F6F76", "mov");
-        mFileTypes.put("3026B2758E66CF11", "asf");
-        mFileTypes.put("4D546864", "mid");
-        mFileTypes.put("1F8B08", "gz");
     }
 
     /**

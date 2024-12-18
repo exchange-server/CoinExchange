@@ -1,8 +1,7 @@
 package com.bizzan.bitrade.dao;
 
+import com.bizzan.bitrade.entity.ExchangeTrade;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.bizzan.bitrade.entity.ExchangeTrade;
-
-public interface TradeRepository extends MongoRepository<ExchangeTrade,Long>{
+public interface TradeRepository extends MongoRepository<ExchangeTrade, Long> {
 }

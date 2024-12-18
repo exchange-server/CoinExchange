@@ -11,19 +11,29 @@ import com.bizzan.bitrade.entity.SysAdvertise;
 import com.bizzan.bitrade.model.screen.SysAdvertiseScreen;
 import com.bizzan.bitrade.service.LocaleMessageSourceService;
 import com.bizzan.bitrade.service.SysAdvertiseService;
-import com.bizzan.bitrade.util.*;
+import com.bizzan.bitrade.util.BindingResultUtil;
+import com.bizzan.bitrade.util.DateUtil;
+import com.bizzan.bitrade.util.FileUtil;
+import com.bizzan.bitrade.util.MessageResult;
+import com.bizzan.bitrade.util.PredicateUtils;
+import com.bizzan.bitrade.util.UUIDUtil;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,9 +54,9 @@ import static org.springframework.util.Assert.notNull;
 @RestController
 @RequestMapping("/cms/system-advertise")
 public class AdvertiseController extends BaseAdminController {
-    @Autowired
+    @Resource
     private SysAdvertiseService sysAdvertiseService;
-    @Autowired
+    @Resource
     private LocaleMessageSourceService msService;
 
     @RequiresPermissions("cms:system-advertise:create")
@@ -63,7 +73,7 @@ public class AdvertiseController extends BaseAdminController {
         sysAdvertise.setSerialNumber(UUIDUtil.getUUID());
         sysAdvertise.setCreateTime(DateUtil.getCurrentDate());
 
-        updateSort(sysAdvertise.getSort(),sysAdvertise.getSysAdvertiseLocation().getOrdinal());
+        updateSort(sysAdvertise.getSort(), sysAdvertise.getSysAdvertiseLocation().getOrdinal());
         return success(sysAdvertiseService.save(sysAdvertise));
     }
 
@@ -102,7 +112,6 @@ public class AdvertiseController extends BaseAdminController {
         sysAdvertiseService.save(sysAdvertise);
         return success();
     }
-
 
 
     @RequiresPermissions("cms:system-advertise:deletes")
@@ -190,11 +199,11 @@ public class AdvertiseController extends BaseAdminController {
      * 获取所有广告，没有该序号设定，存在该序号时，大于该序号的全部递增
      * @param sort
      */
-    public  void  updateSort(int  sort ,int cate){
-        List<SysAdvertise> list=sysAdvertiseService.querySysAdvertise(sort,cate);
+    public void updateSort(int sort, int cate) {
+        List<SysAdvertise> list = sysAdvertiseService.querySysAdvertise(sort, cate);
         //筛选大于该序号的广告
-        for(int i=0;i<list.size();i++){
-            list.get(i).setSort(list.get(i).getSort()+1);
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setSort(list.get(i).getSort() + 1);
         }
     }
 }
